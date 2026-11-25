@@ -80,8 +80,8 @@
 
   /* ---------------------------------------------------------------- scenes */
   var SCENES = [
-    { id: 'top', mode: 'free' },
-    { id: 'about', mode: 'free' },
+    { id: 'top', mode: 'hero' },
+    { id: 'about', mode: 'rope' },
     { id: 'work', mode: 'drone', sel: '.section-work .sec-title' },
     { id: 'coursework', mode: 'lamp', sel: '#coursework .sec-title' },
     { id: 'skills', mode: 'hook', sel: '#skills .sec-title' },
@@ -119,8 +119,120 @@
   }
   function floorY() { return scrollY + innerHeight - 6; }
 
-  // where the robot's feet land in each scene (page coordinates)
-  function landing(sc) {
+  /* ---------------------------------------------------------------- front page and About (decision SH25)
+     Front page: the name is a block. The robot walks on the ink of MIGUEL and on the part of
+     A. CASTRO that sticks out, follows the cursor left and right, drops down, and goes up with a
+     small rocket hop. Below the name the only level is the edge where About starts (the whole
+     width), with "scroll" as a small step on it. When the top of the screen starts to squeeze it,
+     it hangs from the ledge and lets go.
+     About: it rappels down a rope hung to the right of the text, keeping pace with the scroll,
+     and at the end lets go onto the edge where Work starts. */
+  function firstLine(el) {                       // first line of text in el: x range and the top of its capitals
+    var tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), node, rg = document.createRange(), line = null;
+    while ((node = tw.nextNode())) {
+      if (!node.nodeValue.trim()) continue;
+      var cs = getComputedStyle(node.parentElement);
+      if (cs.visibility === 'hidden') continue;
+      rg.selectNodeContents(node);
+      var rs = rg.getClientRects(), ins = capInset(cs);
+      for (var k = 0; k < rs.length; k++) {
+        var r = rs[k]; if (r.width < 2) continue;
+        if (!line) line = { top: r.top, x1: r.left, x2: r.right, y: r.top + ins };
+        else if (Math.abs(r.top - line.top) < 6) { line.x1 = Math.min(line.x1, r.left); line.x2 = Math.max(line.x2, r.right); line.y = Math.min(line.y, r.top + ins); }
+        else if (r.top > line.top + 6) return line;
+      }
+    }
+    return line;
+  }
+  function visibleP(p) { return p.y > scrollY + 80 && p.y <= scrollY + innerHeight + 4; }   // a surface on the bottom edge counts
+  function nearestP(P, x, y, onlyVisible) {
+    var bi = 0, bd = 1e9;
+    P.forEach(function (p, i) {
+      if (onlyVisible && !visibleP(p)) return;
+      var dx = x < p.x1 ? p.x1 - x : x > p.x2 ? x - p.x2 : 0, d = Math.abs(p.y - y) + dx * 0.5;
+      if (d < bd) { bd = d; bi = i; }
+    });
+    return bi;
+  }
+
+  // The name as a landscape: the name is drawn into a hidden canvas and, column by column, the top of
+  // the ink is read. The robot walks on that profile, so it follows the real letters (the L is a stem
+  // with a foot, not a box).
+  var heroTitle = document.querySelector('.hero-title');
+  var hintEl = document.querySelector('.scroll-hint'), aboutEl = document.getElementById('about'), workEl = document.getElementById('work');
+  var sky = null, skyAt = 0, bornAt = performance.now();
+  var sctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+  function buildSky() {
+    if (!heroTitle) return;
+    var box = heroTitle.getBoundingClientRect();
+    var ox = Math.floor(box.left - 30), oy = Math.floor(box.top - 60), w = Math.ceil(box.width + 60), h = Math.ceil(box.height + 120);
+    var c = sctx.canvas; c.width = w; c.height = h;
+    sctx.clearRect(0, 0, w, h); sctx.fillStyle = '#000'; sctx.textBaseline = 'alphabetic';
+    var tw = document.createTreeWalker(heroTitle, NodeFilter.SHOW_TEXT), node, rg = document.createRange();
+    while ((node = tw.nextNode())) {
+      var txt = node.nodeValue, cs = getComputedStyle(node.parentElement);
+      sctx.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+      var asc = sctx.measureText('H').fontBoundingBoxAscent || parseFloat(cs.fontSize) * 0.9;
+      for (var i = 0; i < txt.length; i++) {
+        if (!txt[i].trim()) continue;
+        rg.setStart(node, i); rg.setEnd(node, i + 1);
+        var r = rg.getBoundingClientRect(); if (!r.width) continue;
+        sctx.fillText(txt[i], r.left - ox, r.top + asc - oy);
+      }
+    }
+    var d = sctx.getImageData(0, 0, w, h).data, top = new Float32Array(w), L = -1, Rr = -1;
+    for (var x = 0; x < w; x++) {
+      top[x] = Infinity;
+      for (var y = 0; y < h; y++) if (d[(y * w + x) * 4 + 3] > 110) { top[x] = y + oy + scrollY; break; }
+      if (top[x] < Infinity) { if (L < 0) L = x; Rr = x; }
+    }
+    sky = { x0: ox + scrollX, top: top, w: w, xl: L + ox + scrollX, xr: Rr + ox + scrollX };
+    skyAt = performance.now();
+  }
+  var FOOT_HALF = 9;                                         // half the width of the feet, in px
+  function skyY(x) {                                         // highest ink under the feet at page x
+    if (!sky) return Infinity;
+    var i0 = Math.round(x - sky.x0), m = Infinity;
+    for (var i = i0 - FOOT_HALF; i <= i0 + FOOT_HALF; i++) if (i >= 0 && i < sky.w && sky.top[i] < m) m = sky.top[i];
+    return m;
+  }
+  function stepBox() {                                       // the scroll text itself: a low step standing on the line
+    var b = hintEl.getBoundingClientRect(), l = firstLine(hintEl);
+    return { x1: b.left - 2 + scrollX, x2: b.right + 2 + scrollX, y: (l ? l.y : b.top) + scrollY };
+  }
+  function lineY() { return aboutEl.getBoundingClientRect().top + scrollY; }
+  window.addEventListener('resize', function () { sky = null; });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { sky = null; });
+
+  var aboutText = Array.prototype.slice.call(document.querySelectorAll('.about-text > *'));
+  function ropeHB() { return (R.H - (feet().top - 3)) * S; }          // from the top of the ring to the feet
+  function ropeAnchor() {
+    var right = 0;
+    aboutText.forEach(function (e) { right = Math.max(right, e.getBoundingClientRect().right); });
+    return { x: (right + innerWidth) / 2 + scrollX, y: aboutEl.getBoundingClientRect().top + scrollY,
+             bottom: workEl.getBoundingClientRect().top + scrollY };
+  }
+  function ropeLimit(an) { return an.bottom - ropeHB() - 46; }       // lowest the ring goes before it lets go
+  function ropeWant(an) { return clamp(scrollY + innerHeight * 0.4, an.y + 50, ropeLimit(an)); }
+
+  function landing(sc, pi) {
+    if (sc.mode === 'hero') {
+      if (!sky) buildSky();
+      var lv = typeof pi === 'string' ? pi : null, st = stepBox(), ly = lineY();
+      if (!lv) {
+        var sx3 = clamp(W.x, sky ? sky.xl + 12 : 0, sky ? sky.xr - 12 : innerWidth), sy3 = skyY(sx3);
+        var opts = [{ lv: 'line', d: Math.abs(ly - W.y) }, { lv: 'step', d: Math.abs(st.y - W.y) + Math.max(0, st.x1 - W.x, W.x - st.x2) * 0.5 }];
+        if (sy3 < Infinity && sy3 > scrollY + 80) opts.push({ lv: 'sky', d: Math.abs(sy3 - W.y) });
+        opts.sort(function (a, b) { return a.d - b.d; }); lv = opts[0].lv;
+      }
+      if (lv === 'sky') { var xs = clamp(W.x, sky.xl + 12, sky.xr - 12); return { x: xs, y: skyY(xs), pi: 'sky' }; }
+      if (lv === 'step') return { x: clamp(W.x, st.x1 + 14, st.x2 - 14), y: st.y, pi: 'step' };
+      return { x: clamp(W.x, 30, innerWidth - 30), y: ly, pi: 'line' };
+    }
+    if (sc.mode === 'rope') {
+      var an = ropeAnchor(), ry = ropeWant(an);
+      return { x: an.x, y: ry + ropeHB(), rope: true };
+    }
     if (sc.mode === 'free') return { x: clamp(W.x, 40, innerWidth - 40), y: floorY() };
     var t = textLine(sc.el);
     if (sc.mode === 'drone') { var dp = droneSpot(sc); return { x: dp.x + scrollX, y: dp.y + scrollY + 9 * S, air: true }; }
@@ -293,6 +405,13 @@
             hop: -1, landT: -1e9, act: 0, actT: 0, idleT: 0, gesture: null,
             drone: null, lamp: null, hook: null, travel: null, morph: null, plane: null };
   wc.addEventListener('click', function () { Home.newRandom(); });
+  (function startOnHero() {
+    buildSky();
+    if (!sky) return;
+    W.x = sky.xl + 70; W.y = skyY(W.x);
+    W.h = { lv: 'sky', act: null };
+    W.state = 'hero';
+  })();
 
   function setState(s, now) { W.state = s; W.t0 = now; }
 
@@ -323,12 +442,13 @@
   function startTravel(sc, now, fromCells) {
     var top = scrollY;
     var sx = W.x, sy = clamp(W.y, top - 30, top + innerHeight + 70);
+    W.x = sx; W.y = sy;
     var tg = landing(sc);
     var d = Math.hypot(tg.x - sx, tg.y - sy);
     var kind = d < 230 ? (tg.y > sy + 40 ? 'fall' : 'hop') : (tg.y > sy && d < 360) ? 'fall' : 'fly';
     W.scene = sc;
     var quick = W.tempo === 'express';
-    W.travel = { sc: sc, sx: sx, sy: sy, kind: kind,
+    W.travel = { sc: sc, sx: sx, sy: sy, kind: kind, pi: tg.pi,
                  dur: kind === 'hop' ? (quick ? 320 : 480) : quick ? clamp(d * 0.5, 350, 650) : clamp(d * 0.85, 600, 1100) };
     W.x = sx; W.y = sy;
     if (W.tempo === 'teleport') { startTeleport(now); return; }
@@ -338,6 +458,8 @@
 
   function leaveScene(now) {               // transformed? turn back into a robot first
     W.tempo = tempoNow(now);
+    var ids = W.scene.id + '>' + sceneNow().id;
+    if (ids === 'work>coursework' || ids === 'coursework>work') W.tempo = 'teleport';   // the long way between them: always beamed
     rope.style.opacity = 0; lightCone = null; clearLit();
     if (W.tempo !== 'teleport' && (W.state === 'drone' || W.state === 'lamp' || W.state === 'plane')) {
       var from = W.state === 'drone' ? droneCells(now, 0, false) : W.state === 'lamp' ? lampCells(W.lamp.angle, false, false, false) : planeCells(false);
@@ -377,7 +499,7 @@
   function tick(now, dt) {
     var blink = now < Home.blinkUntil;
     var sc = sceneNow();
-    var busy = W.state === 'morph' || W.state === 'crouch' || W.state === 'ignite' || W.state === 'flight' || W.state === 'hopoff' || W.state === 'land' || W.state === 'ride' || W.state === 'beam';
+    var busy = W.state === 'morph' || W.state === 'crouch' || W.state === 'ignite' || W.state === 'flight' || W.state === 'hopoff' || W.state === 'land' || W.state === 'ride' || W.state === 'beam' || W.state === 'climbout';
     if (W.rodeLast && W.rodeLast.section.getBoundingClientRect().top > innerHeight) W.rodeLast = null;
     if (!busy || W.state === 'land') {
       var inc = incoming();
@@ -425,7 +547,7 @@
         break;
       }
       case 'flight': {
-        var tr = W.travel, tg = landing(tr.sc), t = clamp((now - tr.t0) / tr.dur, 0, 1), x, y;
+        var tr = W.travel, tg = landing(tr.sc, tr.pi), t = clamp((now - tr.t0) / tr.dur, 0, 1), x, y;
         if (tr.kind === 'fly') {
           var e = easeIO(t), cx = (tr.sx + tg.x) / 2, cy = Math.min(tr.sy, tg.y) - 120;
           x = (1 - e) * (1 - e) * tr.sx + 2 * (1 - e) * e * cx + e * e * tg.x;
@@ -451,14 +573,14 @@
         } else cells = robotCells({ step: 1, blink: blink, armL: 'up', armR: 'up' }, W.dir, dark);
         if (t >= 1) {
           W.y = tg.y; W.x = tg.x; W.landT = now;
-          if (tg.air) { arrive(now); break; }
+          if (tg.air || tg.rope) { arrive(now); break; }
           puff(W.x, W.y, 8, dark ? '#777' : '#B9B2A6', 0.14, 0.03);
           setState('land', now);
         }
         break;
       }
       case 'land': {                                       // squash, then shake it off
-        var lt = landing(W.scene);
+        var lt = landing(W.scene, W.travel && W.travel.pi);
         W.x = lt.x; W.y = lt.y;
         atFeet(W.x, W.y);
         if (el < 120) place.top += S;
@@ -469,8 +591,209 @@
         break;
       }
 
+      case 'hero': {
+        if (!sky || (now - bornAt < 3500 && now - skyAt > 250)) buildSky();   // the letters rise in at first
+        var hz = W.h, on = mouseActive(now), pz = { blink: blink }, st = stepBox(), ly = lineY();
+        var mx = on ? mouse.cx + scrollX : (hz.wx != null ? hz.wx : W.x), my = on ? mouse.cy + scrollY : W.y - 30;
+        if (!on && (!hz.wt || now > hz.wt)) {
+          var lo = hz.lv === 'sky' ? sky.xl + 14 : hz.lv === 'step' ? st.x1 + 14 : 40, hi = hz.lv === 'sky' ? sky.xr - 14 : hz.lv === 'step' ? st.x2 - 14 : innerWidth - 40;
+          hz.wx = lo + Math.random() * Math.max(0, hi - lo); hz.wt = now + 3500 + Math.random() * 3500;
+        }
+        var A = hz.act, cy0 = hz.lv === 'sky' ? skyY(W.x) : hz.lv === 'step' ? st.y : ly;
+
+        // which level does the cursor point at?
+        if (!A) {
+          var want = hz.lv;
+          if (on) {
+            var sxm = clamp(mx, sky.xl + 12, sky.xr - 12), sym = skyY(sxm), opts2 = [];
+            opts2.push({ lv: 'line', d: Math.abs(ly - (my + 25)) });
+            opts2.push({ lv: 'step', d: Math.abs(st.y - (my + 25)) + Math.max(0, st.x1 - mx, mx - st.x2) * 0.6 });
+            if (sym < Infinity && sym > scrollY + 80) opts2.push({ lv: 'sky', d: Math.abs(sym - (my + 25)) + Math.max(0, sky.xl - mx, mx - sky.xr) * 0.3 });
+            opts2.sort(function (a, b) { return a.d - b.d; }); want = opts2[0].lv;
+          }
+          if (hz.lv === 'step' && hz.crossing) {
+            var goalBeyond = hz.crossing > 0 ? mx > st.x2 + 4 : mx < st.x1 - 4;
+            if (!on || goalBeyond || want === 'line') want = 'cross';
+            else hz.crossing = 0;
+          }
+          var head = W.y - (R.H - feet().top) * S;
+          if (hz.lv === 'sky' && head < scrollY + 72) want = 'line';            // squeezed by the top of the screen
+          if (want !== hz.lv) {
+            if (hz.lv === 'sky') A = hz.act = { type: 'toend', hurry: head < scrollY + 72 };
+            else if (want === 'sky') {
+              var rx = clamp(mx, sky.xl + 14, sky.xr - 14);
+              A = hz.act = { type: 'rocket', t0: now, sx: W.x, sy: W.y, x: rx };
+            } else if (want === 'step') {
+              A = hz.act = { type: 'hop', t0: now, sx: W.x, sy: W.y, x: clamp(mx, st.x1 + 14, st.x2 - 14), to: 'step', arc: 26, dur: 360 };
+            } else if (want === 'cross') {                                     // across the step and down the far side
+              var edge = hz.crossing > 0 ? st.x2 - 12 : st.x1 + 12;
+              if (Math.abs(W.x - edge) > 3) { W.dir = hz.crossing; W.x += hz.crossing * Math.min(0.2 * dt, Math.abs(W.x - edge)); W.y = st.y;
+                if (now - W.lastStep > 140) { W.step ^= 1; W.lastStep = now; } pz.step = W.step; A = hz.act = { type: 'noop' }; }
+              else { A = hz.act = { type: 'hop', t0: now, sx: W.x, sy: W.y, x: hz.crossing > 0 ? st.x2 + 24 : st.x1 - 24, to: 'line', arc: 14, dur: 300 }; hz.crossing = 0; }
+            } else {                                                            // step -> line: off the nearer side
+              var off = (mx < (st.x1 + st.x2) / 2) ? st.x1 - 26 : st.x2 + 26;
+              A = hz.act = { type: 'hop', t0: now, sx: W.x, sy: W.y, x: off, to: 'line', arc: 16, dur: 320 };
+            }
+          }
+        }
+
+        if (A && A.type === 'noop') hz.act = null;
+        if (A && A.type === 'toend') {                                          // along the letters to the end of the O
+          var res = skyWalk(sky.xr - 3, (A.hurry ? 0.36 : 0.22) * dt, pz);
+          if (res === 'edge' || res === 'there') A = hz.act = { type: 'ledge', t0: now, x0: W.x, y0: W.y };
+        }
+        if (A && A.type === 'skyhop') {
+          var kt = clamp((now - A.t0) / A.dur, 0, 1), ke = easeIO(kt), ky = skyY(A.x);
+          W.x = A.sx + (A.x - A.sx) * ke; W.y = A.sy + (ky - A.sy) * ke - Math.sin(kt * Math.PI) * A.arc;
+          pz.step = 1; pz.armL = 'up'; pz.armR = 'up';
+          if (kt >= 1) { hz.act = null; W.y = ky; W.landT = now; }
+        }
+        if (A && A.type === 'wall') {                                           // climbing a wall of a letter
+          var ph = now - A.t0;
+          W.dir = A.face;
+          if (A.down) {
+            if (ph < 240) {                                                     // over the edge: hands on top, body lowers
+              var e1 = easeIO(ph / 240);
+              W.x = A.x0 + (A.x - A.x0) * e1; W.y = A.y0 + 13 * S * e1;
+              pz.armL = 'up'; pz.armR = 'up'; pz.step = 0;
+            } else {
+              var goal = A.y1, v = 0.15 * dt;
+              W.x = A.x;
+              if (W.y + v >= goal) { W.y = goal; hz.act = null; W.landT = now; }
+              else W.y += v;
+              var rg2 = Math.floor(W.y / 8) % 2; pz.step = rg2; pz.armL = rg2 ? 'climb' : 'down'; pz.armR = rg2 ? 'down' : 'climb';
+            }
+          } else {
+            var top2 = A.y1 + 13 * S;
+            if (W.y > top2 + 0.5) {                                             // climbing up
+              W.x = A.x; W.y = Math.max(top2, W.y - 0.15 * dt);
+              var rg3 = Math.floor(W.y / 8) % 2; pz.step = rg3; pz.armL = rg3 ? 'climb' : 'down'; pz.armR = rg3 ? 'down' : 'climb';
+              if (W.y <= top2 + 0.5) A.t1 = now;
+            } else {                                                            // pulls itself up onto the top
+              var e2 = easeIO(clamp((now - A.t1) / 260, 0, 1));
+              W.x = A.x + (A.xTop - A.x) * e2; W.y = top2 + (A.y1 - top2) * e2;
+              pz.armL = 'up'; pz.armR = 'up'; pz.step = 1;
+              if (e2 >= 1) { hz.act = null; W.y = skyY(W.x); }
+            }
+          }
+        }
+        if (A && A.type === 'ledge') {                                          // hangs from the end of the O, then lets go
+          var lt = now - A.t0, endX = sky.xr + 14;
+          W.dir = -1;                                                           // facing the letters
+          if (lt < 300) {
+            var e3 = easeIO(lt / 300);
+            W.x = A.x0 + (endX - A.x0) * e3; W.y = A.y0 + 13 * S * e3;
+            pz.armL = 'up'; pz.armR = 'up'; pz.step = 0;
+          } else if (lt < (A.hurryRel ? 420 : 760)) {
+            W.x = endX; W.y = A.y0 + 13 * S;
+            pz.armL = 'up'; pz.armR = 'up'; pz.step = Math.floor(lt / 170) % 2;
+            place.rot = Math.sin(lt / 110) * 3;
+          } else { hz.act = { type: 'fall', vy: 0.04 }; pz.armL = 'up'; pz.armR = 'up'; }
+          atFeet(W.x, W.y); cells = robotCells(pz, W.dir, false); break;
+        }
+        if (A && A.type === 'fall') {
+          var py = W.y;
+          A.vy += 0.0026 * dt; W.y += A.vy * dt;
+          pz.armL = 'up'; pz.armR = 'up'; pz.step = 1;
+          var onStep = W.x >= st.x1 - 4 && W.x <= st.x2 + 4;
+          if (onStep && py <= st.y && W.y >= st.y) { W.y = st.y; hz.lv = 'step'; hz.act = null; W.landT = now; puff(W.x, W.y, 6, '#B9B2A6', 0.1, 0.02); }
+          else if (W.y >= ly) { W.y = ly; hz.lv = 'line'; hz.act = null; W.landT = now; puff(W.x, W.y, 7, '#B9B2A6', 0.12, 0.02); }
+        }
+        if (A && A.type === 'hop') {                                            // an ordinary jump, no rockets
+          var ht = clamp((now - A.t0) / A.dur, 0, 1), he = easeIO(ht);
+          var ty2 = A.to === 'step' ? st.y : ly;
+          W.x = A.sx + (A.x - A.sx) * he; W.y = A.sy + (ty2 - A.sy) * he - Math.sin(ht * Math.PI) * A.arc;
+          if (Math.abs(A.x - A.sx) > 2) W.dir = A.x > A.sx ? 1 : -1;
+          pz.step = 1; pz.armL = ht < 0.5 ? 'up' : 'down'; pz.armR = ht < 0.5 ? 'up' : 'down';
+          if (ht >= 1) {
+            hz.lv = A.to; hz.act = null; W.landT = now;
+            if (A.cross && A.to === 'step') hz.crossing = A.cross;            // keep going: walk across, hop down the other side
+          }
+        }
+        if (A && A.type === 'rocket') {                                         // from below up onto the letters
+          var gy = skyY(A.x), rdur = clamp(Math.abs(A.sy - gy) * 1.1, 420, 760), rt2 = clamp((now - A.t0) / rdur, 0, 1), re = easeIO(rt2);
+          W.x = A.sx + (A.x - A.sx) * re; W.y = A.sy + (gy - A.sy) * re - Math.sin(rt2 * Math.PI) * 36;
+          if (Math.abs(A.x - A.sx) > 3) W.dir = A.x > A.sx ? 1 : -1;
+          pz.armR = 'up'; pz.step = 1;
+          atFeet(W.x, W.y);
+          cells = robotCells(pz, W.dir, false).concat(rt2 < 0.85 ? flames(now, 2) : []);
+          if (rt2 < 0.85 && Math.random() < 0.5) parts.push({ x: W.x, y: W.y + 4, vx: (Math.random() - 0.5) * 0.03, vy: 0.03, life: 0, max: 300, col: Math.random() < 0.5 ? '#F2B33D' : '#E0662E', g: 0 });
+          if (rt2 >= 1) { hz.lv = 'sky'; hz.act = null; W.landT = now; }
+          break;
+        }
+
+        if (!hz.act && !A) {                                                    // on its level: under the cursor
+          if (hz.lv === 'sky') {
+            var r4 = skyWalk(clamp(mx, sky.xl + 10, sky.xr - 10), (on ? 0.2 : 0.07) * dt, pz);
+            if ((r4 === 'there' || r4 === 'edge') && on && (mx < sky.xl - 24 || mx > sky.xr + 24)) reachTo(mx, my, pz);
+            else if (r4 === 'there') idleOrWave(now, on, mx, my, pz, hz);
+          } else {
+            var lo2 = hz.lv === 'step' ? st.x1 + 12 : 30, hi2 = hz.lv === 'step' ? st.x2 - 12 : innerWidth - 30;
+            var gx = clamp(mx, lo2, hi2), dxs = gx - W.x, sp2 = (on ? 0.2 : 0.07) * dt;
+            W.y = hz.lv === 'step' ? st.y : ly;
+            // on the line, the scroll text is in the way: hop onto it to get past
+            if (hz.lv === 'line' && Math.abs(dxs) > 3) {
+              var nxl = W.x + clamp(dxs, -sp2, sp2), dirl = dxs > 0 ? 1 : -1;
+              if (nxl + FOOT_HALF >= st.x1 && nxl - FOOT_HALF <= st.x2 && !(W.x + FOOT_HALF >= st.x1 && W.x - FOOT_HALF <= st.x2)) {
+                hz.act = { type: 'hop', t0: now, sx: W.x, sy: W.y, x: dirl > 0 ? st.x1 + 12 : st.x2 - 12, to: 'step', arc: 18, dur: 300, cross: dirl };
+                dxs = 0;
+              }
+            }
+            if (Math.abs(dxs) > 3) { W.dir = dxs > 0 ? 1 : -1; W.x += clamp(dxs, -sp2, sp2); if (now - W.lastStep > 140) { W.step ^= 1; W.lastStep = now; } pz.step = W.step; hz.idleT = now; }
+            else if (on && (mx < lo2 - 24 || mx > hi2 + 24)) reachTo(mx, my, pz);
+            else idleOrWave(now, on, mx, my, pz, hz);
+          }
+        }
+        var hy3 = 0;
+        if (W.hop >= 0) { var hh = (now - W.hop) / 420; if (hh >= 1) W.hop = -1; else hy3 = -Math.sin(hh * Math.PI) * 12; }
+        atFeet(W.x, W.y + hy3);
+        cells = robotCells(pz, W.dir, false);
+        break;
+      }
+
+      case 'rope': {                                                    // rappelling down the right side of About
+        var an = ropeAnchor(), want = ropeWant(an), rp = W.rp;
+        if (scrollY + innerHeight * 0.4 > ropeLimit(an) + 40) { setState('ropefall', now); W.rf = { vy: 0.05 }; rope.style.opacity = 0; cells = robotCells({ blink: blink }, W.dir, false); break; }
+        var gap = want - rp.ring;
+        rp.ring += gap * Math.min(1, dt * 0.008);                        // it lags a little behind the scroll
+        var moving = Math.abs(gap) > 3;
+        var sway = Math.sin(now / 760) * 3 + (moving ? Math.sin(now / 95) * 1.5 : 0);
+        var rx = an.x + sway;
+        showRope(an.x, an.y, rx, rp.ring);
+        place.left = rx - RC * S; place.top = rp.ring - (TOPM + feet().top - 3) * S;
+        place.rot = -sway * 0.6;
+        W.x = rx; W.y = rp.ring + ropeHB();
+        var kick = Math.floor(now / 160) % 2;
+        if (mouseActive(now) && !moving && Math.abs(mouse.cx + scrollX - rx) > 40) W.dir = mouse.cx + scrollX > rx ? 1 : -1;
+        var dyr = mouse.cy + scrollY - (rp.ring + 40);
+        cells = robotCells({ blink: blink, armL: 'up', armR: moving ? (kick ? 'climb' : 'down') : 'down', step: moving ? kick : 0,
+                             look: !moving && mouseActive(now) ? { x: 1, y: Math.abs(dyr) > 60 ? (dyr > 0 ? 1 : -1) : 0 } : null }, W.dir, false).concat(ring(false));
+        break;
+      }
+      case 'ropefall': {                                                // lets go and lands on the edge where Work starts
+        var an2 = ropeAnchor();
+        W.rf.vy += 0.0026 * dt; W.y += W.rf.vy * dt; W.x = an2.x;
+        var floorW = an2.bottom;
+        atFeet(W.x, Math.min(W.y, floorW));
+        cells = robotCells({ blink: blink, armL: 'up', armR: 'up', step: 1 }, W.dir, false);
+        if (W.y >= floorW) { W.y = floorW; W.landT = now; puff(W.x, W.y, 6, '#B9B2A6', 0.1, 0.02); setState('workline', now); }
+        break;
+      }
+      case 'workline': {                                                // standing on that edge, until Work takes over
+        var an3 = ropeAnchor();
+        W.x = an3.x; W.y = an3.bottom;
+        if (scrollY + innerHeight * 0.4 < ropeLimit(an3) - 20) {        // scrolled back up: back on the rope
+          W.rp = { ring: W.y - ropeHB() - 30 }; setState('rope', now); cells = robotCells({ blink: blink }, W.dir, false); atFeet(W.x, W.y); break;
+        }
+        var nearW = mouseActive(now) && Math.abs(mouse.cx + scrollX - W.x) < 30 && Math.abs(mouse.cy + scrollY - (W.y - 30)) < 50;
+        if (mouseActive(now) && Math.abs(mouse.cx + scrollX - W.x) > 40) W.dir = mouse.cx + scrollX > W.x ? 1 : -1;
+        atFeet(W.x, W.y);
+        cells = robotCells({ blink: blink, armR: nearW ? 'wave' : 'down' }, W.dir, false);
+        break;
+      }
+
       case 'beam': {                                       // gone for a moment, then printed row by row at its goal
-        var bg2 = landing(W.scene);
+        var bg2 = landing(W.scene, W.travel && W.travel.pi);
         var bt2 = clamp((el - 120) / 300, 0, 1);
         W.x = bg2.x; W.y = bg2.y; atFeet(bg2.x, bg2.y);
         var rows = Math.floor(bt2 * R.H);
@@ -639,7 +962,7 @@
       }
     }
 
-    if (W.state !== 'hook' && W.state !== 'hookgrab') rope.style.opacity = 0;
+    if (W.state !== 'hook' && W.state !== 'hookgrab' && W.state !== 'rope') rope.style.opacity = 0;
     paint(cells, null);                                     // no outline: it may blend with dark letters (MA prefers it)
     commit();
     drawFx(now, dt);
@@ -655,6 +978,44 @@
     } else go(now);
   }
 
+  // walk along the letters towards tx; small steps are taken in stride, bigger ones start a hop or a climb
+  function skyWalk(tx, speed, pz) {
+    var hz = W.h, dx = tx - W.x;
+    if (Math.abs(dx) < 2) { W.y = skyY(W.x); pz.step = 0; return 'there'; }
+    var dir = dx > 0 ? 1 : -1, stepPx = Math.min(Math.abs(dx), speed, 3), nx = W.x + dir * stepPx, ny = skyY(nx);
+    W.dir = dir;
+    if (ny === Infinity) { pz.step = 0; return 'edge'; }
+    var dy = ny - W.y;
+    if (Math.abs(dy) <= 12) { W.x = nx; W.y = ny; if (performance.now() - W.lastStep > 140) { W.step ^= 1; W.lastStep = performance.now(); } pz.step = W.step; hz.idleT = performance.now(); return 'walk'; }
+    var now = performance.now();
+    if (dy > 0) {                                            // the letters drop away under the feet
+      var outX = nx + dir * (FOOT_HALF + 6), lowY = skyY(outX);
+      if (lowY === Infinity) return 'edge';
+      if (lowY - W.y <= 40) { hz.act = { type: 'skyhop', t0: now, sx: W.x, sy: W.y, x: outX, dur: 260, arc: 10 }; return 'busy'; }
+      hz.act = { type: 'wall', down: true, t0: now, x0: W.x, y0: W.y, x: outX, y1: lowY, face: -dir };
+      return 'busy';
+    }
+    var up = -dy;                                            // a wall rises in front
+    if (up <= 40) { hz.act = { type: 'skyhop', t0: now, sx: W.x, sy: W.y, x: nx + dir * 4, dur: 240, arc: 14 }; return 'busy'; }
+    hz.act = { type: 'wall', down: false, t0: now, x: W.x, y1: ny, xTop: nx + dir * (FOOT_HALF + 2), face: dir };
+    return 'busy';
+  }
+  function reachTo(mx, my, pz) {
+    W.dir = mx > W.x ? 1 : -1;
+    var dyh = my - (W.y - 30);
+    pz.armR = dyh < -50 ? 'reachUp' : dyh > 50 ? 'reachDown' : 'reach';
+    pz.look = { x: 1, y: dyh < -50 ? -1 : dyh > 50 ? 1 : 0 };
+  }
+  function idleOrWave(now, on, mx, my, pz, hz) {
+    if (on && Math.abs(mx - W.x) < 26 && Math.abs(my - (W.y - 28)) < 40) { pz.armR = 'wave'; return; }
+    if (on || now - (hz.idleT || 0) < 2600) return;
+    if (!W.gesture || now > W.gesture.until) W.gesture = { kind: ['look', 'scratch', 'stretch', 'none'][Math.floor(Math.random() * 4)], t0: now, until: now + 1800 };
+    var gt = now - W.gesture.t0;
+    if (W.gesture.kind === 'look') pz.look = { x: gt < 900 ? -1 : 1, y: 0 };
+    if (W.gesture.kind === 'scratch') pz.armR = Math.floor(gt / 160) % 2 ? 'climb' : 'up';
+    if (W.gesture.kind === 'stretch') { pz.armL = 'up'; pz.armR = 'up'; }
+  }
+
   function arrive(now) {
     var sc = W.scene;
     if (sc.mode === 'drone') {
@@ -665,6 +1026,8 @@
       startMorph(robotCells({}, 1, false), function () { return lampCells(1.15, false, false, false); }, now, function (n) { setState('lamp', n); });
     } else if (sc.mode === 'hook') setState('hookgrab', now);
     else if (sc.mode === 'show') { W.actT = now; W.act = 0; setState('show', now); }
+    else if (sc.mode === 'hero') { W.h = { lv: (W.travel && typeof W.travel.pi === 'string') ? W.travel.pi : 'line', act: null }; setState('hero', now); }
+    else if (sc.mode === 'rope') { W.rp = { ring: W.y - ropeHB() }; setState('rope', now); }
     else setState('free', now);
   }
 
@@ -704,6 +1067,6 @@
 
   window.Walker = {
     tick: tick,
-    onRebuild: function () { fb = null; if (W.state === 'free') W.hop = performance.now(); }
+    onRebuild: function () { fb = null; if (W.state === 'free' || W.state === 'hero') W.hop = performance.now(); }
   };
 })();

@@ -274,3 +274,13 @@ a.row .row-side { color: var(--ink); }
 
 /* coursework intro: justified block */
 .section-course .sec-lead { text-align: justify; text-align-last: left; hyphens: auto; -webkit-hyphens: auto; max-width: 32ch; }
+
+/* about: justified paragraphs */
+.about-bio { text-align: justify; text-align-last: left; hyphens: auto; -webkit-hyphens: auto; }
+
+/* the scroll hint is a small box standing on the edge where About starts (a step for the robot) */
+.scroll-hint { bottom: 1.5rem; padding: 0; line-height: 1; z-index: 2; word-spacing: .35em; }
+.js .scroll-hint { animation: none; }
+.scroll-hint .arr { display: inline-block; }
+.js .scroll-hint .arr { animation: arrow 2.2s ease-in-out infinite; }
+@keyframes arrow { 50% { transform: translateY(3px); } }
