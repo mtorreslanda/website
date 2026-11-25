@@ -180,3 +180,4 @@ figcaption { font-size: 14px; color: var(--muted); margin-top: 12px; max-width: 
   .case-fig img { transition: none; }
 }
 .grid.two { grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); }
+.gallery figure:has(img[src*="mtah-possession"]) { grid-column: 1 / -1; }
