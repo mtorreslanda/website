@@ -458,6 +458,17 @@
 
   function leaveScene(now) {               // transformed? turn back into a robot first
     W.tempo = tempoNow(now);
+    if (W.state === 'workline' && sceneNow().id === 'work' && W.tempo !== 'teleport') {
+      var to = sceneNow();
+      startMorph(robotCells({}, W.dir, false), function (n) { return droneCells(n, 0.1, false); }, now, function (n) {
+        W.scene = to;
+        var spot = droneSpot(to), cyNow = W.y - 9 * S - scrollY;
+        W.drone = { x: W.x - scrollX, v: 0, wob: 1, yo: cyNow - spot.y, vy: 0 };
+        setState('drone', n);
+      });
+      W.scene = to;
+      return;
+    }
     var ids = W.scene.id + '>' + sceneNow().id;
     if (ids === 'work>coursework' || ids === 'coursework>work') W.tempo = 'teleport';   // the long way between them: always beamed
     rope.style.opacity = 0; lightCone = null; clearLit();
@@ -753,7 +764,8 @@
 
       case 'rope': {                                                    // rappelling down the right side of About
         var an = ropeAnchor(), want = ropeWant(an), rp = W.rp;
-        if (scrollY + innerHeight * 0.4 > ropeLimit(an) + 40) { setState('ropefall', now); W.rf = { vy: 0.05 }; rope.style.opacity = 0; cells = robotCells({ blink: blink }, W.dir, false); break; }
+        // the edge with Work is in sight: let go
+        if (an.bottom - scrollY < innerHeight * 0.85) { setState('ropefall', now); W.rf = { vy: 0.05 }; rope.style.opacity = 0; cells = robotCells({ blink: blink }, W.dir, false); break; }
         var gap = want - rp.ring;
         rp.ring += gap * Math.min(1, dt * 0.008);                        // it lags a little behind the scroll
         var moving = Math.abs(gap) > 3;
@@ -779,16 +791,19 @@
         if (W.y >= floorW) { W.y = floorW; W.landT = now; puff(W.x, W.y, 6, '#B9B2A6', 0.1, 0.02); setState('workline', now); }
         break;
       }
-      case 'workline': {                                                // standing on that edge, until Work takes over
-        var an3 = ropeAnchor();
-        W.x = an3.x; W.y = an3.bottom;
-        if (scrollY + innerHeight * 0.4 < ropeLimit(an3) - 20) {        // scrolled back up: back on the rope
-          W.rp = { ring: W.y - ropeHB() - 30 }; setState('rope', now); cells = robotCells({ blink: blink }, W.dir, false); atFeet(W.x, W.y); break;
+      case 'workline': {                                                // walking on the edge where Work starts
+        var an3 = ropeAnchor(), onW = mouseActive(now);
+        W.y = an3.bottom;
+        if (an3.bottom - scrollY > innerHeight * 0.97) {                // scrolled back up: back on the rope
+          W.x = an3.x; W.rp = { ring: ropeWant(an3) }; setState('rope', now); cells = robotCells({ blink: blink }, W.dir, false); atFeet(W.x, W.y); break;
         }
-        var nearW = mouseActive(now) && Math.abs(mouse.cx + scrollX - W.x) < 30 && Math.abs(mouse.cy + scrollY - (W.y - 30)) < 50;
-        if (mouseActive(now) && Math.abs(mouse.cx + scrollX - W.x) > 40) W.dir = mouse.cx + scrollX > W.x ? 1 : -1;
+        var pw = { blink: blink };
+        if (!onW && (!W.wlT || now > W.wlT)) { W.wlX = 40 + Math.random() * (innerWidth - 80); W.wlT = now + 3500 + Math.random() * 3500; }
+        var gxw = clamp(onW ? mouse.cx + scrollX : W.wlX, 30, innerWidth - 30), dxw = gxw - W.x, spw = (onW ? 0.2 : 0.07) * dt;
+        if (Math.abs(dxw) > 3) { W.dir = dxw > 0 ? 1 : -1; W.x += clamp(dxw, -spw, spw); if (now - W.lastStep > 140) { W.step ^= 1; W.lastStep = now; } pw.step = W.step; }
+        else if (onW && Math.abs(mouse.cy + scrollY - (W.y - 30)) < 50) pw.armR = 'wave';
         atFeet(W.x, W.y);
-        cells = robotCells({ blink: blink, armR: nearW ? 'wave' : 'down' }, W.dir, false);
+        cells = robotCells(pw, W.dir, false);
         break;
       }
 
@@ -877,7 +892,8 @@
         D.v += acc * dt; D.x += D.v * dt;
         var still = Math.abs(D.v) < 0.02;
         D.wob = still ? D.wob * 0.96 : Math.min(1, D.wob + 0.05);
-        var cyv = spot.y + Math.sin(now / 380) * (1.2 + 2.5 * D.wob);
+        if (D.yo) { D.vy += (-0.00005 * D.yo - 0.011 * D.vy) * dt; D.yo += D.vy * dt; if (Math.abs(D.yo) < 0.3 && Math.abs(D.vy) < 0.01) D.yo = 0; }
+        var cyv = spot.y + (D.yo || 0) + Math.sin(now / 380) * (1.2 + 2.5 * D.wob);
         W.x = D.x + scrollX; W.y = cyv + scrollY + 9 * S;
         place.left = D.x + scrollX - RC * S; place.top = cyv + scrollY - 12 * S;
         place.rot = clamp(D.v * 55, -16, 16);
