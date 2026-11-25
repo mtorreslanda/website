@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Augmented Rapport — Miguel Ángel Castro Torreslanda</title>
+<meta name="description" content="A local tool for online therapists: it describes the non-verbal side of a video session (speaking time, prosody, facial and head movement, synchrony) and never diagnoses.">
+<meta property="og:title" content="Augmented Rapport — Miguel Ángel Castro Torreslanda">
+<meta property="og:description" content="A local tool for online therapists: it describes the non-verbal side of a video session (speaking time, prosody, facial and head movement, synchrony) and never diagnoses.">
+<meta property="og:image" content="https://mtorreslanda.com/assets/img/nfl-play-trails.jpg">
+<meta name="theme-color" content="#F5F3EE">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/site.css?v=1">
+</head>
+<body>
+<nav class="nav"><div class="wrap">
+  <a class="logo" href="../index.html">M<span>·</span>A<span>·</span>C</a>
+  <div class="nav-links">
+    <a href="../index.html#work">Work</a>
+    <a class="opt" href="../index.html#coursework">Coursework</a>
+    <a href="../index.html#about">About</a>
+    <a href="../index.html#contact">Contact</a>
+  </div>
+</div></nav>
+<main class="wrap">
+<header class="case-head">
+  <a class="back" href="../index.html#work">← All work</a>
+  <div class="kicker" style="margin-top:28px">Multimodal ML · Video + audio · Health tech · 2026</div>
+  <h1>Augmented Rapport</h1>
+  <p class="oneliner">A local tool for online therapists: it describes the non-verbal side of a video session (speaking time, prosody, facial and head movement, synchrony) and never diagnoses.</p>
+  <div class="tags"><span>MediaPipe</span><span>Whisper</span><span>Signal processing</span><span>Local LLM</span><span>Pre-registered validation</span></div>
+</header>
+<div class="metrics"><div><b>0.99</b><span>AUC of the smile signal against expert facial-action labels</span></div><div><b>0.85</b><span>F1 for who-is-speaking from audio</span></div><div><b>p &lt; 10⁻⁵</b><span>movement synchrony above chance in long conversations</span></div><div><b>0</b><span>diagnoses — description only, by design</span></div></div>
+<div class="prose">
+<h2 class="rv">The idea</h2><div class="body rv"><p>Therapists who work online already record sessions. Augmented Rapport turns the recording into a session report: a timeline with speaking turns, silences, prosody and movement, a measure of non-verbal synchrony between the two people, and a draft note written by a local language model. The interpretation stays with the clinician.</p></div>
+<h2 class="rv">How it works</h2><div class="body rv"><ol class="pipeline"><li><b>Session</b><span>two video + audio streams</span></li><li><b>Speech</b><span>Whisper transcript, turns, prosody</span></li><li><b>Face &amp; head</b><span>MediaPipe landmarks → movement</span></li><li><b>Synchrony</b><span>vs shuffled pseudo-synchrony</span></li><li><b>Report</b><span>timeline + draft note, local LLM</span></li></ol></div>
+<h2 class="rv">Validation, honestly reported</h2><div class="body rv"><p>Every indicator ships with its own validation and a control, and the larger tests were pre-registered before looking at the results.</p><ul class='facts'><li><b>Works:</b> smile detection (AUC 0.99), speaker attribution (F1 0.85), reliability of the indicators (14 of 14 with ρ ≥ 0.67), and non-verbal synchrony that is clearly above shuffled pseudo-synchrony in ~300 long conversations.</li><li><b>Does not (yet):</b> synchrony does not predict the rapport people report after the conversation beyond trivial baselines. It is reported as a negative result, not hidden.</li></ul></div>
+<h2 class="rv">Principles</h2><div class="body rv"><p>Describe, do not infer emotions. Process locally, never in the cloud. Use only components with commercial licences.</p></div>
+</div>
+<div class="note"><b>About the data.</b> Validation used licensed research corpora that cannot be redistributed; no participant data is shown. The demo will use a short, blurred clip of a publicly available acted interview, credited to its source.</div>
+<nav class="next"><a href="legal-rag.html"><small>← Previous</small><span>Searchable case law with local LLMs</span></a><a href="signature-detection.html"><small>Next →</small><span>Signature detection in documents</span></a></nav>
+</main>
+<footer><div class="wrap">
+  <span>© 2026 Miguel Ángel Castro Torreslanda</span>
+  <span>The lines on the front page are real trajectories from my projects.</span>
+</div></footer>
+<script src="../assets/js/site.js?v=1"></script>
+</body>
+</html>

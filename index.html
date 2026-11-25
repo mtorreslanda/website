@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Miguel Ángel Castro Torreslanda — Data Scientist</title>
+<meta name="description" content="Data scientist in Madrid. Computer vision for sports, reinforcement learning, legal NLP and applied machine learning, with honest metrics.">
+<meta property="og:title" content="Miguel Ángel Castro Torreslanda — Data Scientist">
+<meta property="og:description" content="Data scientist in Madrid. Computer vision for sports, reinforcement learning, legal NLP and applied machine learning, with honest metrics.">
+<meta property="og:image" content="https://mtorreslanda.com/assets/img/nfl-play-trails.jpg">
+<meta name="theme-color" content="#F5F3EE">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=1">
+</head>
+<body>
+<nav class="nav"><div class="wrap">
+  <a class="logo" href="index.html">M<span>·</span>A<span>·</span>C</a>
+  <div class="nav-links">
+    <a href="index.html#work">Work</a>
+    <a class="opt" href="index.html#coursework">Coursework</a>
+    <a href="index.html#about">About</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+</div></nav>
+
+<header class="hero" id="top">
+  <canvas id="hero-canvas" data-src="assets/data/paths.json" aria-hidden="true"></canvas>
+  <div class="wrap hero-in">
+    <div class="kicker">Data scientist · Madrid</div>
+    <h1>Miguel Ángel<br><em>Castro</em> Torreslanda</h1>
+    <p class="lead">I build the data that does not exist yet — from video, simulators and documents — and measure it honestly.</p>
+    <div class="meta"><span>MSc Data Science, Big Data &amp; Business Analytics · UCM</span><a href="#contact">Get in touch</a></div>
+  </div>
+  <div class="hero-note">Drawn above: a drone's race line from my RL simulator and NFL player routes from my tracker.</div>
+</header>
+
+<section class="block" id="work"><div class="wrap">
+  <div class="sec-head rv"><h2>Selected work</h2><p>Personal and competition projects from 2026. Each one has a short case with how it works and what it measured.</p></div>
+  <div class="work">
+<a class="case rv" href="work/nflvision.html">
+  <div class="case-fig"><img src="assets/img/nfl-play-trails.jpg" alt="Top-down reconstruction of a passing play: offense in blue, defense in terracotta, with each player&#x27;s path after the snap." loading="lazy" decoding="async"></div>
+  <div class="case-txt">
+    <div class="num">01 — Computer vision · American football</div>
+    <h3>NFLVision</h3>
+    <p>From football video to player-tracking data in yards: every player detected, followed and placed on the field, frame by frame.</p>
+    <div class="mini-metrics"><div><b>93%</b><span>players detected, 87% inside crowded line play</span></div><div><b>0.838</b><span>IDF1 — how consistently each player keeps one identity</span></div></div>
+    <span class="more">Read the case →</span>
+  </div>
+</a>
+<a class="case rv" href="work/tennisvision.html">
+  <div class="case-fig"><img src="assets/img/tennis-3d.jpg" alt="3D reconstruction of a rally: a virtual court with both players and the fitted ball flight." loading="lazy" decoding="async"></div>
+  <div class="case-txt">
+    <div class="num">02 — Computer vision · Tennis</div>
+    <h3>TennisVision</h3>
+    <p>Broadcast video in, shot-by-shot data out: every shot, bounce and player position of a match, with the ball rebuilt in 3D.</p>
+    <div class="mini-metrics"><div><b>96%</b><span>of 3,199 hand-checked shots and bounces detected</span></div><div><b>99.5%</b><span>of serves found</span></div></div>
+    <span class="more">Read the case →</span>
+  </div>
+</a>
+<a class="case rv" href="work/liftoff-agent.html">
+  <div class="case-fig"><img src="assets/img/drone-laps.jpg" alt="Top-down view of the race line flown by the agent at successive training stages, getting tighter each time." loading="lazy" decoding="async"></div>
+  <div class="case-txt">
+    <div class="num">03 — Reinforcement learning · Simulation · Rust</div>
+    <h3>Autonomous FPV racing</h3>
+    <p>A racing-drone simulator rewritten in Rust from recorded flights, and a reinforcement-learning pilot trained in it that then flies the real race.</p>
+    <div class="mini-metrics"><div><b>1–3%</b><span>lap-time error of the simulator against real flights</span></div><div><b>0.17–0.54 m</b><span>position error 1 s ahead, on flights it never saw</span></div></div>
+    <span class="more">Read the case →</span>
+  </div>
+</a>
+<a class="case rv" href="work/more-than-a-hack.html">
+  <div class="case-fig contain"><img src="assets/img/mtah-snapshot.png" alt="Diagram of one instant of a public match with the per-player features the model computes." loading="lazy" decoding="async"></div>
+  <div class="case-txt">
+    <div class="num">04 — Football analytics · Hackathon · 37th of 759</div>
+    <h3>Ball possession from tracking</h3>
+    <p>Who has the ball, frame by frame, when the tracking loses it 40% of the time: a set-based temporal network applied blind to a LaLiga match.</p>
+    <div class="mini-metrics"><div><b>37 / 759</b><span>final position, More than a Hack 2027</span></div><div><b>0.802</b><span>spellF1 on two held-out public matches</span></div></div>
+    <span class="more">Read the case →</span>
+  </div>
+</a>
+<a class="case rv" href="work/pokemon-tcg-agent.html">
+  <div class="case-fig"><div class="plate"><span class="kicker">Game AI · Search · Kaggle</span><div><div class="big">53.4%</div><div class="lbl">win rate against a bank of 28 opponents</div></div></div></div>
+  <div class="case-txt">
+    <div class="num">05 — Game AI · Search · Kaggle</div>
+    <h3>A game-playing agent for Pokémon TCG</h3>
+    <p>An AlphaGo-style agent for a card game with hidden information: learned policy, learned evaluation and search over the turn.</p>
+    <div class="mini-metrics"><div><b>38.0%</b><span>best previous agent on the same bank</span></div><div><b>15.9 → 35.0%</b><span>after PPO, against the strongest heuristic opponent</span></div></div>
+    <span class="more">Read the case →</span>
+  </div>
+</a>
+<a class="case rv" href="work/legal-rag.html">
+  <div class="case-fig"><div class="plate"><span class="kicker">NLP · RAG · Legal tech</span><div><div class="big">364,521</div><div class="lbl">indexed passages from ten district courts</div></div></div></div>
+  <div class="case-txt">
+    <div class="num">06 — NLP · RAG · Legal tech</div>
+    <h3>Searchable case law with local LLMs</h3>
+    <p>Hundreds of thousands of passages from Mexican federal court rulings, made searchable with hybrid retrieval and answered with literal citations by a model that runs locally.</p>
+    <div class="mini-metrics"><div><b>1,161</b><span>rulings summarised into structured argument cards</span></div><div><b>99%</b><span>agreement of our ruling segmentation with the official outcome field</span></div></div>
+    <span class="more">Read the case →</span>
+  </div>
+</a>
+<a class="case rv" href="work/augmented-rapport.html">
+  <div class="case-fig"><div class="plate"><span class="kicker">Multimodal ML · Video + audio · Health tech</span><div><div class="big">0.99</div><div class="lbl">AUC of the smile signal against expert facial-action labels</div></div></div></div>
+  <div class="case-txt">
+    <div class="num">07 — Multimodal ML · Video + audio · Health tech</div>
+    <h3>Augmented Rapport</h3>
+    <p>A local tool for online therapists: it describes the non-verbal side of a video session (speaking time, prosody, facial and head movement, synchrony) and never diagnoses.</p>
+    <div class="mini-metrics"><div><b>0.85</b><span>F1 for who-is-speaking from audio</span></div><div><b>p &lt; 10⁻⁵</b><span>movement synchrony above chance in long conversations</span></div></div>
+    <span class="more">Read the case →</span>
+  </div>
+</a>
+<a class="case rv" href="work/signature-detection.html">
+  <div class="case-fig"><div class="plate"><span class="kicker">Computer vision · Document AI</span><div><div class="big">0.984</div><div class="lbl">AUC with detector + VLM verifier combined</div></div></div></div>
+  <div class="case-txt">
+    <div class="num">08 — Computer vision · Document AI</div>
+    <h3>Signature detection in documents</h3>
+    <p>Flags which PDFs in a folder carry a handwritten signature or initials, tuned for recall, with an optional local vision-language model as a second opinion.</p>
+    <div class="mini-metrics"><div><b>0.943</b><span>AUC of the detector alone</span></div><div><b>96.6%</b><span>of signatures caught on 400 hand-labelled real scans</span></div></div>
+    <span class="more">Read the case →</span>
+  </div>
+</a>
+<a class="case rv" href="work/water-from-space.html">
+  <div class="case-fig"><div class="plate"><span class="kicker">Remote sensing · Epidemiology</span><div><div class="big">42,500</div><div class="lbl">satellite–lab matchups after cleaning</div></div></div></div>
+  <div class="case-txt">
+    <div class="num">09 — Remote sensing · Epidemiology</div>
+    <h3>Water quality from space</h3>
+    <p>Estimating turbidity and chlorophyll from Sentinel-2 where there are no labs, and testing whether it says anything about waterborne disease.</p>
+    <div class="mini-metrics"><div><b>25</b><span>countries for out-of-domain validation</span></div><div><b>115 → 85%</b><span>turbidity error in Argentina with clean pixels</span></div></div>
+    <span class="more">Read the case →</span>
+  </div>
+</a>
+  </div>
+</div></section>
+
+<section class="block" id="coursework"><div class="wrap">
+  <div class="sec-head rv"><h2>Coursework</h2><p>From the Master's at Universidad Complutense de Madrid.</p></div>
+  <div class="grid">
+<article class="card rv">
+  <div class="thumb"><img src="assets/img/pumpitup-rank.png" alt="Pump It Up: Data Mining the Water Table" loading="lazy" decoding="async"></div>
+  <div class="body">
+    <h3>Pump It Up: Data Mining the Water Table</h3>
+    <p>Predicting which water pumps in Tanzania work, need repair or are broken. Gradient-boosting ensemble with careful encoding of high-cardinality features.</p>
+    <div class="res">Reached #6 on the public leaderboard (score 0.8304)</div>
+    <div class="tags"><span>CatBoost</span><span>XGBoost</span><span>Feature engineering</span></div>
+    
+  </div>
+</article>
+<article class="card rv">
+  <div class="thumb type">PySpark</div>
+  <div class="body">
+    <h3>Big data with Spark</h3>
+    <p>Three months of New York yellow-taxi trips joined with city traffic events, processed with PySpark.</p>
+    <div class="res">Distributed ETL and aggregation over millions of rows</div>
+    <div class="tags"><span>PySpark</span><span>Databricks</span></div>
+    
+  </div>
+</article>
+<article class="card rv">
+  <div class="thumb type">Python</div>
+  <div class="body">
+    <h3>How data and rules changed the NFL, 1999–2025</h3>
+    <p>Advanced visualisation project over 27 seasons of play-by-play data.</p>
+    <div class="res">Narrative visual analysis of rule changes and strategy</div>
+    <div class="tags"><span>Python</span><span>Visualisation</span><span>nflverse</span></div>
+    
+  </div>
+</article>
+<article class="card rv">
+  <div class="thumb"><img src="assets/img/draft-dispersion.png" alt="Does the NFL draft get it right?" loading="lazy" decoding="async"></div>
+  <div class="body">
+    <h3>Does the NFL draft get it right?</h3>
+    <p>College stats, the combine and draft position against NFL careers; data stored and queried in MongoDB.</p>
+    <div class="res">Draft precision by round and position</div>
+    <div class="tags"><span>MongoDB</span><span>pandas</span><span>Web data</span></div>
+    
+  </div>
+</article>
+<article class="card rv">
+  <div class="thumb type">scikit-learn</div>
+  <div class="body">
+    <h3>Data mining</h3>
+    <p>Classification and regression on tabular data, plus time-series work on stock prices.</p>
+    <div class="res">End-to-end modelling notebooks</div>
+    <div class="tags"><span>scikit-learn</span><span>Time series</span></div>
+    
+  </div>
+</article>
+<article class="card rv">
+  <div class="thumb type">SQL</div>
+  <div class="body">
+    <h3>SQL on Snowflake: Smart Desk</h3>
+    <p>Business questions for a sales company answered in SQL: sales, targets, forecasts and accounts.</p>
+    <div class="res">Analytical queries with window functions and CTEs</div>
+    <div class="tags"><span>SQL</span><span>Snowflake</span></div>
+    
+  </div>
+</article>
+<article class="card rv">
+  <div class="thumb type">NLP</div>
+  <div class="body">
+    <h3>Text mining</h3>
+    <p>Text classification exercise with predictions on a held-out set.</p>
+    <div class="res">Classical NLP pipeline</div>
+    <div class="tags"><span>NLP</span><span>scikit-learn</span></div>
+    
+  </div>
+</article>
+<article class="card rv">
+  <div class="thumb type">Tableau</div>
+  <div class="body">
+    <h3>Tableau: Easy Loans</h3>
+    <p>Operations dashboard for a lending business: volume, refunds and merchants on a map.</p>
+    <div class="res">Interactive dashboard</div>
+    <div class="tags"><span>Tableau</span></div>
+    
+  </div>
+</article>
+<article class="card rv">
+  <div class="thumb type">Statistics</div>
+  <div class="body">
+    <h3>Statistics and advanced Python</h3>
+    <p>Inference, hypothesis testing and Python tooling notebooks.</p>
+    <div class="res">Coursework</div>
+    <div class="tags"><span>Statistics</span><span>Python</span></div>
+    
+  </div>
+</article>
+  </div>
+</div></section>
+
+<section class="block" id="about"><div class="wrap">
+  <div class="sec-head rv"><h2>About</h2></div>
+  <div class="about rv">
+    <img src="assets/img/profile.jpg" alt="Portrait of Miguel Ángel Castro Torreslanda" loading="lazy" decoding="async">
+    <div><p>I came to data science from law and economics. I studied both at ITAM, then a Master's in Human Rights (ITAM – University of Genoa, double degree) and a PhD at Universidad Panamericana, currently in the final stage. Today I am doing the Master's in Data Science, Big Data &amp; Business Analytics at Universidad Complutense de Madrid.</p><p>I like problems where the data has to be built before it can be modelled: turning sports video into tracking data, a video game into a physics simulator, or thousands of court rulings into something a lawyer can search. I measure everything against a reference, and I write down what did not work.</p>
+      <div class="where"><span>Mexico City → Madrid</span><span>Law · Economics · Data science</span><span>Spanish · English</span></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="block" id="toolkit"><div class="wrap">
+  <div class="sec-head rv"><h2>Toolkit</h2></div>
+  <div class="toolkit rv"><div><b>Machine learning</b><span>PyTorch · scikit-learn · XGBoost / CatBoost · PPO · ensembles · calibration</span></div><div><b>Computer vision</b><span>RF-DETR · tracking · homography · keypoints · OCR · MediaPipe</span></div><div><b>Data</b><span>Python · SQL · Spark · Snowflake · MongoDB · DuckDB · Earth Engine</span></div><div><b>Systems</b><span>Rust · PyO3 · ROCm/CUDA · llama.cpp · Git</span></div><div><b>Communication</b><span>Tableau · data visualisation · technical writing in English and Spanish</span></div></div>
+</div></section>
+
+<section class="block contact" id="contact"><div class="wrap rv">
+  <div class="kicker">Contact</div>
+  <h2>Let's talk.</h2>
+  <a class="mail" href="mailto:mtorreslanda@gmail.com">mtorreslanda@gmail.com</a>
+  <div class="links"><a href="https://www.linkedin.com/in/miguel-angel-castro-torreslanda/">LinkedIn</a><a href="https://github.com/mtorreslanda">GitHub</a></div>
+</div></section>
+<script src="assets/js/hero.js?v=1"></script>
+<footer><div class="wrap">
+  <span>© 2026 Miguel Ángel Castro Torreslanda</span>
+  <span>The lines on the front page are real trajectories from my projects.</span>
+</div></footer>
+<script src="assets/js/site.js?v=1"></script>
+</body>
+</html>

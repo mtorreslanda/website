@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autonomous FPV racing — Miguel Ángel Castro Torreslanda</title>
+<meta name="description" content="A racing-drone simulator rewritten in Rust from recorded flights, and a reinforcement-learning pilot trained in it that then flies the real race.">
+<meta property="og:title" content="Autonomous FPV racing — Miguel Ángel Castro Torreslanda">
+<meta property="og:description" content="A racing-drone simulator rewritten in Rust from recorded flights, and a reinforcement-learning pilot trained in it that then flies the real race.">
+<meta property="og:image" content="https://mtorreslanda.com/assets/img/drone-laps.jpg">
+<meta name="theme-color" content="#F5F3EE">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/site.css?v=1">
+</head>
+<body>
+<nav class="nav"><div class="wrap">
+  <a class="logo" href="../index.html">M<span>·</span>A<span>·</span>C</a>
+  <div class="nav-links">
+    <a href="../index.html#work">Work</a>
+    <a class="opt" href="../index.html#coursework">Coursework</a>
+    <a href="../index.html#about">About</a>
+    <a href="../index.html#contact">Contact</a>
+  </div>
+</div></nav>
+<main class="wrap">
+<header class="case-head">
+  <a class="back" href="../index.html#work">← All work</a>
+  <div class="kicker" style="margin-top:28px">Reinforcement learning · Simulation · Rust · 2026</div>
+  <h1>Autonomous FPV racing</h1>
+  <p class="oneliner">A racing-drone simulator rewritten in Rust from recorded flights, and a reinforcement-learning pilot trained in it that then flies the real race.</p>
+  <div class="tags"><span>Rust</span><span>PyO3</span><span>PPO</span><span>System identification</span><span>Domain randomization</span><span>PyTorch</span></div>
+</header>
+<figure class="cover"><div class="frame"><img src="../assets/img/drone-laps.webp" alt="Top-down view of the race line flown by the agent at successive training stages, getting tighter each time." loading="lazy" decoding="async"></div><figcaption>Best simulated lap at successive training stages, top-down. Early policies in light tones; the final one in blue.</figcaption></figure>
+<div class="metrics"><div><b>1–3%</b><span>lap-time error of the simulator against real flights</span></div><div><b>0.17–0.54 m</b><span>position error 1 s ahead, on flights it never saw</span></div><div><b>51.1 → 13.8 s</b><span>best lap: scripted controller → RL policy</span></div><div><b>3 / 3</b><span>laps valid, no contacts, reproduced on 3 flights</span></div></div>
+<div class="prose">
+<h2 class="rv">The problem</h2><div class="body rv"><p>Training a racing pilot by trial and error needs millions of crashes. That is only possible in a simulator, and a policy trained in a simulator only flies well if the simulator is faithful.</p></div>
+<h2 class="rv">How it works</h2><div class="body rv"><ol class="pipeline"><li><b>Flights</b><span>telemetry recorded from real flights</span></li><li><b>Physics</b><span>thrust, drag and rotation identified from data</span></li><li><b>Residual</b><span>small network for what the equations miss</span></li><li><b>Simulator</b><span>Rust, thousands of parallel environments, Python bindings</span></li><li><b>Policy</b><span>PPO with randomized physics and full races</span></li><li><b>Real race</b><span>policy flies the game in real time</span></li></ol></div>
+<h2 class="rv">What made it transfer</h2><div class="body rv"><ul class='facts'><li><b>Validated by trajectory, out of sample.</b> Every version of the physics was judged on whole flights it had not been fitted to, by how far the predicted path drifts after one second.</li><li><b>A small residual network</b> on top of the identified physics closes most of the remaining gap.</li><li><b>Training for robustness, not for the simulator.</b> Full races with battery sag, a safety margin around obstacles and randomized physics; a separate robust evaluation picks the policy that flies.</li><li><b>Negative results kept.</b> Correcting rotation with the network made trajectories worse; spreading battery over the race gained under 0.3 s. Both were measured and dropped.</li></ul></div>
+</div>
+<div class="note"><b>About the data.</b> Only our own simulator, training code and flight data are shown. Nothing from the game itself is published.</div>
+<nav class="next"><a href="tennisvision.html"><small>← Previous</small><span>TennisVision</span></a><a href="more-than-a-hack.html"><small>Next →</small><span>Ball possession from tracking</span></a></nav>
+</main>
+<footer><div class="wrap">
+  <span>© 2026 Miguel Ángel Castro Torreslanda</span>
+  <span>The lines on the front page are real trajectories from my projects.</span>
+</div></footer>
+<script src="../assets/js/site.js?v=1"></script>
+</body>
+</html>

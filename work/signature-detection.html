@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signature detection in documents — Miguel Ángel Castro Torreslanda</title>
+<meta name="description" content="Flags which PDFs in a folder carry a handwritten signature or initials, tuned for recall, with an optional local vision-language model as a second opinion.">
+<meta property="og:title" content="Signature detection in documents — Miguel Ángel Castro Torreslanda">
+<meta property="og:description" content="Flags which PDFs in a folder carry a handwritten signature or initials, tuned for recall, with an optional local vision-language model as a second opinion.">
+<meta property="og:image" content="https://mtorreslanda.com/assets/img/nfl-play-trails.jpg">
+<meta name="theme-color" content="#F5F3EE">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/site.css?v=1">
+</head>
+<body>
+<nav class="nav"><div class="wrap">
+  <a class="logo" href="../index.html">M<span>·</span>A<span>·</span>C</a>
+  <div class="nav-links">
+    <a href="../index.html#work">Work</a>
+    <a class="opt" href="../index.html#coursework">Coursework</a>
+    <a href="../index.html#about">About</a>
+    <a href="../index.html#contact">Contact</a>
+  </div>
+</div></nav>
+<main class="wrap">
+<header class="case-head">
+  <a class="back" href="../index.html#work">← All work</a>
+  <div class="kicker" style="margin-top:28px">Computer vision · Document AI · 2026</div>
+  <h1>Signature detection in documents</h1>
+  <p class="oneliner">Flags which PDFs in a folder carry a handwritten signature or initials, tuned for recall, with an optional local vision-language model as a second opinion.</p>
+  <div class="tags"><span>YOLOS</span><span>Transformers</span><span>Synthetic data</span><span>VLM</span><span>Threshold calibration</span></div>
+</header>
+<div class="metrics"><div><b>0.984</b><span>AUC with detector + VLM verifier combined</span></div><div><b>0.943</b><span>AUC of the detector alone</span></div><div><b>96.6%</b><span>of signatures caught on 400 hand-labelled real scans</span></div><div><b>177 PDFs / 103 s</b><span>end-to-end on one GPU</span></div></div>
+<div class="prose">
+<h2 class="rv">The problem</h2><div class="body rv"><p>Reviewing which of hundreds of scanned contracts are actually signed is slow, and a missed signature costs more than a false alarm. The tool marks documents; a person reviews the marked ones.</p></div>
+<h2 class="rv">How it works</h2><div class="body rv"><ol class="pipeline"><li><b>PDF</b><span>render pages, read digital signatures</span></li><li><b>Detector</b><span>transformer object detector</span></li><li><b>Verifier</b><span>optional local VLM on each crop</span></li><li><b>Output</b><span>CSV + local gallery for review</span></li></ol></div>
+<h2 class="rv">What mattered</h2><div class="body rv"><ul class='facts'><li><b>Recall first.</b> Thresholds are chosen on a held-out split at 95–98% recall, never on the test set.</li><li><b>Unlabelled is not negative.</b> In public document datasets about 1 in 5 of the hard "no signature" examples actually contained one; training on them hurt. Clean negatives fixed it.</li><li><b>Synthetic signatures</b> composed onto scanned backgrounds with scanner noise extend the training set.</li><li><b>Second opinion.</b> A local vision-language model re-checks each crop (0.22 s per crop) and cuts false positives at the same recall.</li></ul></div>
+</div>
+<div class="note"><b>About the data.</b> Trained and evaluated only on public document datasets.</div>
+<nav class="next"><a href="augmented-rapport.html"><small>← Previous</small><span>Augmented Rapport</span></a><a href="water-from-space.html"><small>Next →</small><span>Water quality from space</span></a></nav>
+</main>
+<footer><div class="wrap">
+  <span>© 2026 Miguel Ángel Castro Torreslanda</span>
+  <span>The lines on the front page are real trajectories from my projects.</span>
+</div></footer>
+<script src="../assets/js/site.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ball possession from tracking — Miguel Ángel Castro Torreslanda</title>
+<meta name="description" content="Who has the ball, frame by frame, when the tracking loses it 40% of the time: a set-based temporal network applied blind to a LaLiga match.">
+<meta property="og:title" content="Ball possession from tracking — Miguel Ángel Castro Torreslanda">
+<meta property="og:description" content="Who has the ball, frame by frame, when the tracking loses it 40% of the time: a set-based temporal network applied blind to a LaLiga match.">
+<meta property="og:image" content="https://mtorreslanda.com/assets/img/mtah-snapshot.png">
+<meta name="theme-color" content="#F5F3EE">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/site.css?v=1">
+</head>
+<body>
+<nav class="nav"><div class="wrap">
+  <a class="logo" href="../index.html">M<span>·</span>A<span>·</span>C</a>
+  <div class="nav-links">
+    <a href="../index.html#work">Work</a>
+    <a class="opt" href="../index.html#coursework">Coursework</a>
+    <a href="../index.html#about">About</a>
+    <a href="../index.html#contact">Contact</a>
+  </div>
+</div></nav>
+<main class="wrap">
+<header class="case-head">
+  <a class="back" href="../index.html#work">← All work</a>
+  <div class="kicker" style="margin-top:28px">Football analytics · Hackathon · 37th of 759 · 2026</div>
+  <h1>Ball possession from tracking</h1>
+  <p class="oneliner">Who has the ball, frame by frame, when the tracking loses it 40% of the time: a set-based temporal network applied blind to a LaLiga match.</p>
+  <div class="tags"><span>PyTorch</span><span>Deep Sets</span><span>Temporal CNN</span><span>Viterbi</span><span>Ensembles</span></div>
+</header>
+<figure class="cover"><div class="frame"><img src="../assets/img/mtah-snapshot.png" alt="Diagram of one instant of a public match with the per-player features the model computes." loading="lazy" decoding="async"></div><figcaption>One instant of a public match with some of the 13 per-player features the model reads.</figcaption></figure>
+<div class="metrics"><div><b>37 / 759</b><span>final position, More than a Hack 2027</span></div><div><b>0.802</b><span>spellF1 on two held-out public matches</span></div><div><b>0</b><span>frames of the target match used for training or tuning</span></div><div><b>&lt; 1 min</b><span>to label the whole match on a laptop CPU</span></div></div>
+<div class="prose">
+<h2 class="rv">The problem</h2><div class="body rv"><p>Label every frame of FC Barcelona – Athletic Club as home possession, away possession or dead ball, using automatic tracking where the ball is missing on about 40% of frames and player tracks keep breaking. No part of the match could be labelled, so the model had to learn elsewhere and run blind.</p></div>
+<h2 class="rv">Key idea</h2><div class="body rv"><p>Possession leaves a signature in collective movement even when the ball is not seen: the team with the ball stretches and advances, the other compacts and presses. The model reads that signature and uses the ball as one more input when it is there.</p></div>
+<h2 class="rv">How it works</h2><div class="body rv"><ol class="pipeline"><li><b>Tracking</b><span>automatic, incomplete</span></li><li><b>Features</b><span>13 per player + 11 match-level, 5 Hz</span></li><li><b>Model</b><span>set encoder + bidirectional TCN</span></li><li><b>Ensemble</b><span>10 networks, geometric mean</span></li><li><b>Decoding</b><span>3-state Viterbi → possessions</span></li></ol></div>
+<h2 class="rv">Design choices</h2><div class="body rv"><ul class='facts'><li><b>Teams as sets.</b> A shared per-player encoder pooled per team, so broken tracks, slot order and identity switches do not matter.</li><li><b>±25 s of context</b> with a bidirectional temporal CNN, to infer the owner across ball gaps.</li><li><b>Auxiliary targets</b> (where the ball is now, in 0.5 s and in 1 s) teach the network to track the ball implicitly.</li><li><b>Training on 15 public matches</b> whose tracking was deliberately degraded to look like the target's.</li><li><b>Ten networks</b> combined by geometric mean, then a 3-state Viterbi decoder turns probabilities into possessions.</li></ul></div>
+</div>
+<div class="gallery"><figure class="rv"><div class="frame"><img src="../assets/img/mtah-decoder.png" alt="From frame-wise probabilities to contiguous possessions." loading="lazy" decoding="async"></div><figcaption>From frame-wise probabilities to contiguous possessions.</figcaption></figure><figure class="rv"><div class="frame"><img src="../assets/img/mtah-results.png" alt="Results on held-out public matches." loading="lazy" decoding="async"></div><figcaption>Results on held-out public matches.</figcaption></figure></div>
+<div class="note"><b>About the data.</b> Team MAD-R-ID: Felipe Andrés Cruz Méndez, Anton Rivera Evseeva and Miguel Ángel Castro Torreslanda. The public repository regenerates the submission.</div>
+<div class="case-links"><a href="https://github.com/mtorreslanda/MAD-R-ID-mtah2027">Repository →</a></div>
+<nav class="next"><a href="liftoff-agent.html"><small>← Previous</small><span>Autonomous FPV racing</span></a><a href="pokemon-tcg-agent.html"><small>Next →</small><span>A game-playing agent for Pokémon TCG</span></a></nav>
+</main>
+<footer><div class="wrap">
+  <span>© 2026 Miguel Ángel Castro Torreslanda</span>
+  <span>The lines on the front page are real trajectories from my projects.</span>
+</div></footer>
+<script src="../assets/js/site.js?v=1"></script>
+</body>
+</html>

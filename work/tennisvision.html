@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TennisVision — Miguel Ángel Castro Torreslanda</title>
+<meta name="description" content="Broadcast video in, shot-by-shot data out: every shot, bounce and player position of a match, with the ball rebuilt in 3D.">
+<meta property="og:title" content="TennisVision — Miguel Ángel Castro Torreslanda">
+<meta property="og:description" content="Broadcast video in, shot-by-shot data out: every shot, bounce and player position of a match, with the ball rebuilt in 3D.">
+<meta property="og:image" content="https://mtorreslanda.com/assets/img/tennis-3d.jpg">
+<meta name="theme-color" content="#F5F3EE">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/site.css?v=1">
+</head>
+<body>
+<nav class="nav"><div class="wrap">
+  <a class="logo" href="../index.html">M<span>·</span>A<span>·</span>C</a>
+  <div class="nav-links">
+    <a href="../index.html#work">Work</a>
+    <a class="opt" href="../index.html#coursework">Coursework</a>
+    <a href="../index.html#about">About</a>
+    <a href="../index.html#contact">Contact</a>
+  </div>
+</div></nav>
+<main class="wrap">
+<header class="case-head">
+  <a class="back" href="../index.html#work">← All work</a>
+  <div class="kicker" style="margin-top:28px">Computer vision · Tennis · 2026</div>
+  <h1>TennisVision</h1>
+  <p class="oneliner">Broadcast video in, shot-by-shot data out: every shot, bounce and player position of a match, with the ball rebuilt in 3D.</p>
+  <div class="tags"><span>PyTorch</span><span>RF-DETR</span><span>ByteTrack</span><span>Keypoint detection</span><span>3D physics</span><span>OCR</span></div>
+</header>
+<figure class="cover"><div class="frame dark"><img src="../assets/img/tennis-3d.jpg" alt="3D reconstruction of a rally: a virtual court with both players and the fitted ball flight." loading="lazy" decoding="async"></div><figcaption>Our 3D reconstruction of a rally: a virtual camera over the court, each player at the measured position and the ball flight fitted with gravity, drag and spin.</figcaption></figure>
+<div class="metrics"><div><b>96%</b><span>of 3,199 hand-checked shots and bounces detected</span></div><div><b>99.5%</b><span>of serves found</span></div><div><b>97%</b><span>clean points on matches it never saw, clay and grass included</span></div><div><b>9.5 km/h</b><span>serve-speed error against the official radar display</span></div></div>
+<div class="prose">
+<h2 class="rv">The problem</h2><div class="body rv"><p>Shot-level tennis data (where every ball bounces, how fast, who hit it) comes from multi-camera systems installed at a few venues. TennisVision gets it from a single broadcast feed.</p></div>
+<h2 class="rv">How it works</h2><div class="body rv"><ol class="pipeline"><li><b>Scenes</b><span>keep the main-camera shots</span></li><li><b>Scoreboard</b><span>OCR: server, score, serve speed</span></li><li><b>Players</b><span>RF-DETR + ByteTrack, feet → metres</span></li><li><b>Court</b><span>own keypoint network, per-frame homography</span></li><li><b>Ball</b><span>full-frame detector + native-resolution crop refinement</span></li><li><b>Events</b><span>event network + rule-aware decoder</span></li><li><b>3D</b><span>flight fit with gravity, drag and spin</span></li></ol></div>
+<h2 class="rv">Engineering choices</h2><div class="body rv"><ul class='facts'><li><b>Our own court detector.</b> 14 court keypoints per frame, trained from scratch on 4,950 images from 5 matches and 3 surfaces: 0.68 px error against the painted lines, versus 2.11 px for the off-the-shelf model it replaced.</li><li><b>Grammar over the events.</b> A neural event detector proposes shots and bounces; a decoder that knows the rules (shot, bounce, shot…) arbitrates. On 439 hand-reviewed points this cut errors from 195 to 144.</li><li><b>Physics, not interpolation.</b> The ball between two events is a fitted 3D flight. The broadcast camera zooms, so it is modelled with a fixed centre and a focal length per frame.</li><li><b>The scoreboard is data too.</b> OCR reads server, score and the official serve speed, which became our yardstick for speed error (it started at 33 km/h).</li></ul></div>
+<h2 class="rv">Amateur version</h2><div class="body rv"><p>A second line of work adapts the system to a single fixed amateur camera with no scoreboard. Rallies are cut by detecting the serve pose, and the score is rebuilt from the structure of the match: with clean tracks, 38 of 38 serves found and the set reconstructed correctly.</p></div>
+</div>
+<div class="gallery"><figure class="rv"><div class="frame"><img src="../assets/img/tennis-topview.jpg" alt="Bounces and player paths in metres, from the same rally." loading="lazy" decoding="async"></div><figcaption>Bounces and player paths in metres, from the same rally.</figcaption></figure><figure class="rv"><div class="frame"><img src="../assets/img/tennis-clay.jpg" alt="Debug view on clay: player boxes with court coordinates, ball track and bounce candidates. Frame from public match footage, shown small for illustration." loading="lazy" decoding="async"></div><figcaption>Debug view on clay: player boxes with court coordinates, ball track and bounce candidates. Frame from public match footage, shown small for illustration.</figcaption></figure></div>
+<div class="note"><b>About the data.</b> Built only with permissively licensed components and our own code. Match footage belongs to its broadcasters; it is not redistributed here.</div>
+<nav class="next"><a href="nflvision.html"><small>← Previous</small><span>NFLVision</span></a><a href="liftoff-agent.html"><small>Next →</small><span>Autonomous FPV racing</span></a></nav>
+</main>
+<footer><div class="wrap">
+  <span>© 2026 Miguel Ángel Castro Torreslanda</span>
+  <span>The lines on the front page are real trajectories from my projects.</span>
+</div></footer>
+<script src="../assets/js/site.js?v=1"></script>
+</body>
+</html>
