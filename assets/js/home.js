@@ -64,9 +64,10 @@
     roles.querySelectorAll('span').forEach(function (sp, i) {
       sp.setAttribute('data-final', sp.textContent);
       sp.style.visibility = 'hidden';
-      setTimeout(function () { sp.style.visibility = ''; scramble(sp); }, 900 + i * 260);
+      setTimeout(function () { sp.style.visibility = 'visible'; scramble(sp); }, 900 + i * 260);
     });
   }
+  doc.classList.add('roles-ready');                         // from here each span shows itself
 
   /* ================================================================ reveal on view */
   var reveal = document.querySelectorAll('.rv, [data-scramble], .row');

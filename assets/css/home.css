@@ -317,6 +317,11 @@ a.row .row-side { color: var(--ink); }
 /* the name drawn in pencil over the real (now transparent) text */
 .hero-title { position: relative; }
 .hero-title.pencil-on > span { color: transparent; }
+/* hidden from the first paint while the pencil drawing loads; back if it fails or takes too long */
+.js .hero-title > span { color: transparent; }
+.js .hero-title.pencil-fail > span { color: inherit; }
+/* the roles under the name decode in one by one: hidden from the first paint, not after it */
+.js:not(.roles-ready) .hero-roles span { visibility: hidden; }
 .pencil-layer { position: absolute; left: -40px; top: -40px; pointer-events: none; }
 .pencil-layer canvas, .pencil-layer svg { position: absolute; left: 0; top: 0; }
 
@@ -344,3 +349,10 @@ a.row .row-side { color: var(--ink); }
 @media (prefers-reduced-motion: reduce) { .capsule-sketch line, .capsule-sketch path, .build-btn rect, .build-btn path { stroke-dasharray: none; stroke-dashoffset: 0; } }
 /* phones: no capsule, no spec sheet, no robot */
 @media (max-width: 820px) { .hero-bot { display: none; } }
+
+/* first paint, clean: what is not drawn yet does not show (the rest arrives with its own animation) */
+@keyframes appear { from { opacity: 0; } to { opacity: 1; } }
+.js:not(.roles-ready) .hero-roles i { visibility: hidden; }
+.js .build-btn span { animation: appear .5s ease 1.3s both; }
+.js .hero-areas { animation: appear .7s ease 1.5s both; }
+@media (prefers-reduced-motion: reduce) { .js .build-btn span, .js .hero-areas { animation: none; } }

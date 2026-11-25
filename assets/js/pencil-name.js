@@ -5,11 +5,14 @@
 (function () {
   'use strict';
   var title = document.querySelector('.hero-title');
-  if (!title || !window.fetch) return;
+  if (!title) return;
+  if (!window.fetch) { title.classList.add('pencil-fail'); return; }
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var NS = 'http://www.w3.org/2000/svg', PAD = 40, CAP = 0.708;
   var GL = null, built = null;
   window.__nameDone = false;
+  // safety: if the outlines have not arrived in 5 s, show the plain name instead of an empty space
+  var guard = setTimeout(function () { if (!built) title.classList.add('pencil-fail'); }, 5000);
 
   function rnd(a, b) { return a + Math.random() * (b - a); }
   function mk(w, h) { var c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
@@ -40,6 +43,8 @@
   }
 
   function draw(animate) {
+    clearTimeout(guard);
+    title.classList.remove('pencil-fail');
     var L = letters(), W = Math.ceil(L.w), H = Math.ceil(L.h), dpr = window.devicePixelRatio || 1, PW = Math.round(W * dpr), PH = Math.round(H * dpr);
     if (built) built.remove();
     var wrap = document.createElement('div'); wrap.className = 'pencil-layer'; wrap.setAttribute('aria-hidden', 'true');
@@ -160,5 +165,5 @@
         lastW = innerWidth; draw(false);
       });
     })
-    .catch(function () { title.classList.remove('pencil-on'); window.__nameDone = true; });   // the plain name stays
+    .catch(function () { title.classList.remove('pencil-on'); title.classList.add('pencil-fail'); window.__nameDone = true; });   // the plain name stays
 })();
