@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#F5F3EE">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=1">
+<link rel="stylesheet" href="assets/css/site.css?v=2">
 </head>
 <body>
 <nav class="nav"><div class="wrap">
@@ -132,36 +132,36 @@
 </div></section>
 
 <section class="block" id="coursework"><div class="wrap">
-  <div class="sec-head rv"><h2>Coursework</h2><p>From the Master's at Universidad Complutense de Madrid.</p></div>
+  <div class="sec-head rv"><h2>Coursework</h2><p>From the Master's at Universidad Complutense de Madrid. Code is public.</p></div>
   <div class="grid">
 <article class="card rv">
   <div class="thumb"><img src="assets/img/pumpitup-rank.png" alt="Pump It Up: Data Mining the Water Table" loading="lazy" decoding="async"></div>
   <div class="body">
     <h3>Pump It Up: Data Mining the Water Table</h3>
     <p>Predicting which water pumps in Tanzania work, need repair or are broken. Gradient-boosting ensemble with careful encoding of high-cardinality features.</p>
-    <div class="res">Reached #6 on the public leaderboard (score 0.8304)</div>
+    <div class="res">Peaked at #6 on the public leaderboard (0.8304); reproducible model 0.8280</div>
     <div class="tags"><span>CatBoost</span><span>XGBoost</span><span>Feature engineering</span></div>
-    
+    <a class="repo" href="https://github.com/mtorreslanda/pump-it-up-water-table">Code on GitHub →</a>
   </div>
 </article>
 <article class="card rv">
   <div class="thumb type">PySpark</div>
   <div class="body">
-    <h3>Big data with Spark</h3>
-    <p>Three months of New York yellow-taxi trips joined with city traffic events, processed with PySpark.</p>
-    <div class="res">Distributed ETL and aggregation over millions of rows</div>
+    <h3>Do city events pull taxis?</h3>
+    <p>Three months of New York yellow-taxi trips joined in space and time with the city&#x27;s 511 event feed, processed with PySpark on Databricks.</p>
+    <div class="res">Taxi demand around events compared with normal hours</div>
     <div class="tags"><span>PySpark</span><span>Databricks</span></div>
-    
+    <a class="repo" href="https://github.com/mtorreslanda/msc-data-science-coursework/tree/main/spark">Code on GitHub →</a>
   </div>
 </article>
 <article class="card rv">
-  <div class="thumb type">Python</div>
+  <div class="thumb"><img src="assets/img/viz-points-clock.jpg" alt="How data and rules changed the NFL, 1999–2025" loading="lazy" decoding="async"></div>
   <div class="body">
     <h3>How data and rules changed the NFL, 1999–2025</h3>
     <p>Advanced visualisation project over 27 seasons of play-by-play data.</p>
-    <div class="res">Narrative visual analysis of rule changes and strategy</div>
-    <div class="tags"><span>Python</span><span>Visualisation</span><span>nflverse</span></div>
-    
+    <div class="res">A 76-page visual essay: fourth downs, kicking, two-point tries, scoring by minute</div>
+    <div class="tags"><span>matplotlib</span><span>seaborn</span><span>nflverse</span></div>
+    <a class="repo" href="https://github.com/mtorreslanda/msc-data-science-coursework/tree/main/visualisation">Code on GitHub →</a>
   </div>
 </article>
 <article class="card rv">
@@ -171,17 +171,17 @@
     <p>College stats, the combine and draft position against NFL careers; data stored and queried in MongoDB.</p>
     <div class="res">Draft precision by round and position</div>
     <div class="tags"><span>MongoDB</span><span>pandas</span><span>Web data</span></div>
-    
+    <a class="repo" href="https://github.com/mtorreslanda/msc-data-science-coursework/tree/main/nfl-draft">Code on GitHub →</a>
   </div>
 </article>
 <article class="card rv">
   <div class="thumb type">scikit-learn</div>
   <div class="body">
     <h3>Data mining</h3>
-    <p>Classification and regression on tabular data, plus time-series work on stock prices.</p>
-    <div class="res">End-to-end modelling notebooks</div>
-    <div class="tags"><span>scikit-learn</span><span>Time series</span></div>
-    
+    <p>Cleaning and modelling a salary dataset full of impossible values; stationarity tests and forecasts on a stock price series.</p>
+    <div class="res">Regression, classification, ARIMA / SARIMAX / Holt–Winters</div>
+    <div class="tags"><span>scikit-learn</span><span>statsmodels</span></div>
+    <a class="repo" href="https://github.com/mtorreslanda/msc-data-science-coursework/tree/main/data-mining">Code on GitHub →</a>
   </div>
 </article>
 <article class="card rv">
@@ -189,19 +189,19 @@
   <div class="body">
     <h3>SQL on Snowflake: Smart Desk</h3>
     <p>Business questions for a sales company answered in SQL: sales, targets, forecasts and accounts.</p>
-    <div class="res">Analytical queries with window functions and CTEs</div>
+    <div class="res">Profit by category, targets, forecast accuracy, account rankings</div>
     <div class="tags"><span>SQL</span><span>Snowflake</span></div>
-    
+    <a class="repo" href="https://github.com/mtorreslanda/msc-data-science-coursework/tree/main/sql">Code on GitHub →</a>
   </div>
 </article>
 <article class="card rv">
   <div class="thumb type">NLP</div>
   <div class="body">
     <h3>Text mining</h3>
-    <p>Text classification exercise with predictions on a held-out set.</p>
-    <div class="res">Classical NLP pipeline</div>
-    <div class="tags"><span>NLP</span><span>scikit-learn</span></div>
-    
+    <p>Detecting mentions of professions in Spanish tweets (ProfNER shared task).</p>
+    <div class="res">Fine-tuned BETO, a Spanish BERT</div>
+    <div class="tags"><span>NLP</span><span>transformers</span></div>
+    <a class="repo" href="https://github.com/mtorreslanda/msc-data-science-coursework/tree/main/text-mining">Code on GitHub →</a>
   </div>
 </article>
 <article class="card rv">
@@ -211,16 +211,6 @@
     <p>Operations dashboard for a lending business: volume, refunds and merchants on a map.</p>
     <div class="res">Interactive dashboard</div>
     <div class="tags"><span>Tableau</span></div>
-    
-  </div>
-</article>
-<article class="card rv">
-  <div class="thumb type">Statistics</div>
-  <div class="body">
-    <h3>Statistics and advanced Python</h3>
-    <p>Inference, hypothesis testing and Python tooling notebooks.</p>
-    <div class="res">Coursework</div>
-    <div class="tags"><span>Statistics</span><span>Python</span></div>
     
   </div>
 </article>
@@ -248,11 +238,11 @@
   <a class="mail" href="mailto:mtorreslanda@gmail.com">mtorreslanda@gmail.com</a>
   <div class="links"><a href="https://www.linkedin.com/in/miguel-angel-castro-torreslanda/">LinkedIn</a><a href="https://github.com/mtorreslanda">GitHub</a></div>
 </div></section>
-<script src="assets/js/hero.js?v=1"></script>
+<script src="assets/js/hero.js?v=2"></script>
 <footer><div class="wrap">
   <span>© 2026 Miguel Ángel Castro Torreslanda</span>
   <span>The lines on the front page are real trajectories from my projects.</span>
 </div></footer>
-<script src="assets/js/site.js?v=1"></script>
+<script src="assets/js/site.js?v=2"></script>
 </body>
 </html>
