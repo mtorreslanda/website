@@ -9,48 +9,191 @@
 <meta property="og:title" content="NFLVision — Miguel Ángel Castro Torreslanda">
 <meta property="og:description" content="From football video to player-tracking data, and from tracking data to live analytics: every player detected, followed and placed on the field in yards, ten times per second.">
 <meta property="og:image" content="https://mtorreslanda.com/assets/img/nfl-board-poster.jpg">
-<meta name="theme-color" content="#F5F3EE">
+<meta property="og:type" content="website">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/site.css?v=6">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/project.css?v=3">
 </head>
 <body>
-<nav class="nav"><div class="wrap">
-  <a class="logo" href="../index.html">M<span>·</span>A<span>·</span>C</a>
+<nav class="nav" aria-label="Main">
+  <a href="../index.html" class="nav-logo" aria-label="Miguel Ángel Castro Torreslanda, home">
+    <svg viewBox="0 0 170 100" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <defs><filter id="pencil" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G" result="d"/>
+        <feComposite in="d" in2="n" operator="in" result="grain"/><feMerge><feMergeNode in="d"/><feMergeNode in="grain"/></feMerge></filter></defs>
+      <!-- NFLVision: the monogram inside a football, all in orange pencil (decision SH40) -->
+      <g class="guides" stroke="#A0A0A0" stroke-width=".6">
+        <line x1="2" y1="18" x2="168" y2="18" style="--len:170"/><line x1="2" y1="82" x2="168" y2="82" style="--len:170"/>
+        <line x1="14" y1="2" x2="14" y2="98" style="--len:100"/><line x1="156" y1="2" x2="156" y2="98" style="--len:100"/>
+        <line x1="14" y1="50" x2="156" y2="50" style="--len:145"/></g>
+      <g class="hatch" stroke="#C0522A" stroke-width=".9" opacity=".45" filter="url(#pencil)">
+        <path d="M24 44 L34 34 M26 56 L46 36 M30 64 L58 36 M38 70 L72 36 M50 72 L86 36 M64 72 L100 36 M80 70 L114 36 M96 68 L128 36 M112 66 L140 38 M128 62 L148 42 M140 58 L152 46" style="--len:60"/></g>
+      <g class="strokes" filter="url(#pencil)" stroke="#C0522A" stroke-width="2.4">
+        <path d="M14 50 A95 95 0 0 1 156 50 A95 95 0 0 1 14 50 Z" style="--len:330"/>
+        <path d="M36 38 Q26 50 36 62 M134 38 Q144 50 134 62" stroke-width="1.6" style="--len:30"/>
+        <path d="M42 66 L42 34 L60 56 L78 34 L78 66" stroke-width="2.6" style="--len:130"/>
+        <path d="M92 34 L128 34 M110 34 L110 66" stroke-width="2.6" style="--len:70"/></g>
+    </svg>
+  </a>
   <div class="nav-links">
     <a href="../index.html#work">Work</a>
     <a class="opt" href="../index.html#coursework">Coursework</a>
     <a href="../index.html#about">About</a>
     <a href="../index.html#contact">Contact</a>
   </div>
-</div></nav>
-<main class="wrap">
-<header class="case-head">
-  <a class="back" href="../index.html#work">← All work</a>
-  <div class="kicker" style="margin-top:28px">Computer vision · American football · 2026</div>
-  <h1>NFLVision</h1>
-  <p class="oneliner">From football video to player-tracking data, and from tracking data to live analytics: every player detected, followed and placed on the field in yards, ten times per second.</p>
-  <div class="tags"><span>PyTorch</span><span>RF-DETR</span><span>Multi-object tracking</span><span>Homography</span><span>Sports analytics</span><span>ROCm</span></div>
+</nav>
+
+<header class="p-hero">
+  <!-- the printed sheet: a playbook page in faded ink -->
+  <svg class="p-print" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <filter id="ink" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="11" result="g"/>
+        <feDisplacementMap in="SourceGraphic" in2="g" scale="1.4" xChannelSelector="R" yChannelSelector="G" result="d"/>
+        <feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="3" seed="5" result="blot"/>
+        <feColorMatrix in="blot" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.55" result="fade"/>
+        <feComposite in="d" in2="fade" operator="in"/>
+      </filter>
+    </defs>
+    <g filter="url(#ink)" fill="none" stroke="currentColor">
+      <g stroke-width="1.2" id="yards"></g>
+      <g stroke-width="1" id="hash"></g>
+      <line x1="0" y1="64" x2="1600" y2="64" stroke-width="2"/><line x1="0" y1="836" x2="1600" y2="836" stroke-width="2"/>
+      <g id="nums" fill="currentColor" stroke="none" font-family="DM Sans, sans-serif" font-weight="500" font-size="64" letter-spacing="14"></g>
+    </g>
+  </svg>
+  <div class="p-kicker"><b>01</b> &nbsp;·&nbsp; Computer vision · American football · 2026</div>
+  <div class="p-titlebar">
+    <h1 class="p-title" data-pencil data-pencil-glyphs="../assets/data/title-glyphs.json"><span>NFLVision</span></h1>
+  </div>
+  <p class="p-lede">From game video to player-tracking data, and from tracking data to live analytics.</p>
+  <div class="p-cta"><a href="#board">Watch the live board ↓</a><a href="https://github.com/mtorreslanda/nflvision">Technical write-up ↗</a></div>
+  <canvas class="p-field" data-costume="football" aria-hidden="true"></canvas>
 </header>
-<figure class="cover"><div class="frame"><video src="../assets/img/nfl-board.mp4" poster="../assets/img/nfl-board-poster.jpg" controls muted loop playsinline autoplay preload="auto" data-autoplay aria-label="Live board of a Kansas City pass play: the game video with tracked players and the pocket drawn on the grass, the same play from above, and live metrics for pocket, pressure, separation and speed." style="width:100%;display:block"></video></div><figcaption>A pass play from a public video the model had never seen, with no tracking data available for that game. Everything drawn (the overlays, the top-down view and every number) is computed from NFLVision tracks.</figcaption></figure>
-<div class="metrics"><div><b>93.4%</b><span>players detected; 89.9% in crowds of three or more</span></div><div><b>0.838</b><span>IDF1: how consistently each player keeps one identity</span></div><div><b>0.56 yd</b><span>median position error against reference tracking</span></div><div><b>85.6%</b><span>correct role for all 22 players at the snap</span></div></div>
-<div class="prose">
-<h2 class="rv">The problem</h2><div class="body rv"><p>Player-tracking data is the raw material of modern football analytics, but it only exists for the games and seasons someone has chosen to release. Video exists for everything. NFLVision turns ordinary game footage into tracking data (the position of all 22 players in field yards, ten times per second, with team, role, speed and direction) and then does something with it.</p></div>
-<h2 class="rv">The live board</h2><div class="body rv"><p>Tracking data is only interesting for what you can do with it. Each panel of the board above is a small analysis running on the tracks, frame by frame:</p><ul class='facts'><li><b>Pocket:</b> area enclosed by the five offensive linemen and the quarterback. Here it opens to 26 yd² and collapses to 4.8 yd² at +3.5 s.</li><li><b>Pressure:</b> distance from the quarterback to the nearest defender; one is inside 3 yd at +2.4 s, two by +3.2 s.</li><li><b>Receiver separation:</b> yards from each receiver to the nearest defender, with the most open one marked at every instant.</li><li><b>Space control:</b> for every point of the field, which team gets there first.</li><li><b>Speed and formation:</b> fastest player (19.2 mph on a deep route); at the snap, shotgun 3×1, four in the box, a 1-high shell.</li></ul><p>The ball is not tracked, so the board says nothing about where the pass went. Everything else comes from the players.</p></div>
-<h2 class="rv">How it works</h2><div class="body rv"><ol class="pipeline"><li><b>Plays &amp; shots</b><span>cut detection; camera angle from the geometry of the painted lines</span></li><li><b>Detection</b><span>RF-DETR transformer fine-tuned to find players, not officials</span></li><li><b>Field registration</b><span>yard lines, hash marks and yard numbers read → homography per frame</span></li><li><b>Tracking</b><span>in field yards, team by jersey colour, smoothed at 10 Hz</span></li><li><b>Play context</b><span>snap, line of scrimmage, offense and the role of all 22</span></li><li><b>Analytics</b><span>pocket, pressure, separation, space, speed, formation</span></li></ol></div>
-<h2 class="rv">Training the detector</h2><div class="body rv"><p>The only neural network in the pipeline is the player detector: an RF-DETR transformer, pre-trained on everyday photos and fine-tuned to find football players from the high All-22 camera, including the ones buried in the line, while ignoring officials and the sideline.</p><ul class='facts'><li><b>Data:</b> ~4,000 frames of All-22 video and ~85,000 labelled player boxes, one class.</li><li><b>Schedule:</b> 10 epochs at 560 px, about two hours on a single consumer GPU (AMD, ROCm).</li><li><b>Validation:</b> mAP@50 from 0.715 after one epoch to 0.775; training and validation on separate stretches of footage.</li><li><b>Where it helps:</b> with three or more players around, detection goes from 57.8% to 89.9%.</li></ul></div>
-<h2 class="rv">Selected results</h2><div class="body rv"><p>Measured on held-out video against reference tracking, player by player and frame by frame:</p><ul class='facts'><li><b>Field registration</b> held through the whole play in 100% of plays.</li><li><b>Tracking:</b> median position error 0.56 yd, speed 0.20 yd/s, direction 4.8°; 98.5% of players covered by a track.</li><li><b>Team by jersey colour:</b> 97.2% correct. <b>Snap</b> within ±0.2 s: 92%. <b>Line of scrimmage</b> within 1 yd: 93%.</li><li><b>Roles at the snap</b> (QB, OL, WR, TE, RB, DL, LB, CB, S): 85.6%; quarterback 95%.</li><li><b>Clip to play matching</b> from yard numbers read on the field: 97.4%.</li></ul></div>
-<h2 class="rv">What is next</h2><div class="body rv"><p>Route classification (hitch, out, go, post…) and coverage on top of the tracks, and keeping a single identity for each lineman through a pile-up.</p></div>
-</div>
-<div class="gallery"><figure class="rv"><div class="frame"><img src="../assets/img/nfl-stage1-shots.jpg" alt="The two-minute public video split automatically into shots: four plays, each a sideline shot (terracotta) followed by an end-zone shot (blue)." loading="lazy" decoding="async"></div><figcaption>The two-minute public video split automatically into shots: four plays, each a sideline shot (terracotta) followed by an end-zone shot (blue).</figcaption></figure><figure class="rv"><div class="frame"><img src="../assets/img/nfl-stage2-detection.jpg" alt="One frame before the snap: 23 boxes, players only, split by team from jersey colour; the zoom shows the line of scrimmage." loading="lazy" decoding="async"></div><figcaption>One frame before the snap: 23 boxes, players only, split by team from jersey colour; the zoom shows the line of scrimmage.</figcaption></figure><figure class="rv"><div class="frame"><img src="../assets/img/nfl-stage3-field.jpg" alt="Field registration: yard lines, hash marks and the yard numbers read (left), and the same frame warped onto the field plane (right)." loading="lazy" decoding="async"></div><figcaption>Field registration: yard lines, hash marks and the yard numbers read (left), and the same frame warped onto the field plane (right).</figcaption></figure><figure class="rv"><div class="frame"><img src="../assets/img/nfl-stage4-tracks.jpg" alt="Three seconds into the play: every route and rush, drawn on the video from tracks that live in field yards." loading="lazy" decoding="async"></div><figcaption>Three seconds into the play: every route and rush, drawn on the video from tracks that live in field yards.</figcaption></figure><figure class="rv"><div class="frame"><img src="../assets/img/nfl-stage5-roles.png" alt="The formation at the snap exactly as the pipeline labelled it: shotgun, 3×1, four down linemen, a 1-high shell." loading="lazy" decoding="async"></div><figcaption>The formation at the snap exactly as the pipeline labelled it: shotgun, 3×1, four down linemen, a 1-high shell.</figcaption></figure><figure class="rv"><div class="frame"><img src="../assets/img/nfl-training-recall.png" alt="Fine-tuning the detector: players detected before and after, by how crowded the player is." loading="lazy" decoding="async"></div><figcaption>Fine-tuning the detector: players detected before and after, by how crowded the player is.</figcaption></figure></div>
-<div class="note"><b>About the data.</b> Only permissively licensed components are used. Source code, training data and model weights are not published. Game footage belongs to the NFL; the frames and the short clip come from a public YouTube upload and are shown small, for illustration only.</div>
-<div class="case-links"><a href="https://github.com/mtorreslanda/nflvision">Repository: architecture, results and sample tracking data →</a></div>
-<nav class="next"><a href="tennisvision.html"><small>Next →</small><span>TennisVision</span></a></nav>
-</main>
-<footer><div class="wrap">
-  <span>© 2026 Miguel Ángel Castro Torreslanda</span>
-</div></footer>
-<script src="../assets/js/site.js?v=6"></script>
-<script>if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.querySelectorAll('video[data-autoplay]').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });</script>
+
+<section class="p-exhibit" id="board">
+  <figure class="p-mount">
+    <video src="../assets/img/nfl-board.mp4" poster="../assets/img/nfl-board-poster.jpg" muted loop playsinline autoplay data-autoplay
+           aria-label="Live board of a Kansas City pass play"></video>
+    <figcaption class="p-plate"><span><b>Fig. 1</b> &nbsp;Live board, pass play</span><span>KC vs BAL · 2024 · public video, never seen by the model</span></figcaption>
+  </figure>
+</section>
+
+<section class="p-numbers" aria-label="Key results">
+  <div><b data-count="93.4" data-suffix="%">93.4%</b><span>players detected; 89.9% in crowds of three or more</span></div>
+  <div><b data-count="0.838" data-dec="3">0.838</b><span>IDF1: how consistently each player keeps one identity</span></div>
+  <div><b data-count="0.56" data-dec="2" data-suffix=" yd">0.56 yd</b><span>median position error against reference tracking</span></div>
+  <div><b data-count="85.6" data-suffix="%">85.6%</b><span>correct role for all 22 players at the snap</span></div>
+</section>
+
+<section class="p-beats">
+  <div><i>01 · The problem</i><h3>Tracking data exists only for some games.</h3>
+    <p>Player tracking is the raw material of modern football analytics, but it is released for the games and seasons someone chooses. Video exists for every game.</p></div>
+  <div><i>02 · What it does</i><h3>Video in, every player out.</h3>
+    <p>NFLVision finds all 22 players, places them on the field in yards ten times a second and tells you their team, role, speed and direction.</p></div>
+  <div><i>03 · The proof</i><h3>On a video it had never seen.</h3>
+    <p>The play above comes from a public upload with no tracking data behind it. The pipeline found the formation, the snap and the role of every player on its own.</p></div>
+</section>
+
+<section class="p-explore" id="explore">
+  <div class="p-sechead"><i>Try it</i><h2>Scrub the play</h2>
+    <p>This is the tracking NFLVision produced for the play, the same file that is published on GitHub. Drag the timeline, switch layers on and off, point at a player.</p></div>
+  <div class="px" data-csv="../assets/data/nfl-play.csv" data-los="60.64" data-dir="1">
+    <figure class="p-mount px-board"><canvas aria-label="The play from above: O for Kansas City, X for Baltimore"></canvas>
+      <figcaption class="p-plate"><span><b>Fig. 2</b> &nbsp;The play from above</span><span>O KC · X BAL</span></figcaption></figure>
+    <div class="px-side">
+      <div class="px-clock" data-out="clock">-1.0 s</div>
+      <dl class="px-read">
+        <div><dt>Pocket</dt><dd><b data-out="pocket">–</b> yd²</dd></div>
+        <div><dt>Nearest rusher</dt><dd><b data-out="rush">–</b> yd</dd></div>
+        <div><dt>Fastest now</dt><dd><b data-out="fast">–</b> mph <small data-out="fastwho"></small></dd></div>
+      </dl>
+      <div class="px-card" data-out="card">Point at a player</div>
+      <fieldset class="px-layers"><legend>Layers</legend>
+        <label><input type="checkbox" name="pocket" checked> Pocket</label>
+        <label><input type="checkbox" name="pressure" checked> Pressure</label>
+        <label><input type="checkbox" name="routes" checked> Routes</label>
+        <label><input type="checkbox" name="space"> Space control</label>
+      </fieldset>
+      <div class="px-jumps"><span>Jump to</span>
+        <button type="button" data-jump="0">Snap</button><button type="button" data-jump="2.4">Pressure</button><button type="button" data-jump="3.5">Pocket smallest</button></div>
+    </div>
+    <div class="px-time"><button type="button" class="px-play">▶ Play</button><input type="range" aria-label="Time in the play"></div>
+  </div>
+</section>
+
+<section class="p-how" id="how">
+  <div class="p-sechead"><i>How it works</i><h2>Six stages, one measurement each</h2></div>
+  <div class="p-how-grid">
+    <figure class="p-mount p-how-fig"><img src="../assets/img/nfl-stage1-shots.jpg" alt="" data-how-img><figcaption class="p-plate"><span><b data-how-n>Fig. 3</b> &nbsp;<span data-how-cap>Plays and camera angles</span></span></figcaption></figure>
+    <ol class="p-steps">
+      <li data-img="nfl-stage1-shots.jpg"><i>01</i><h3>Plays and camera angles</h3><p>The game is cut into shots; the angle of the painted lines tells the sideline camera from the end-zone camera.</p></li>
+      <li data-img="nfl-stage2-detection.jpg"><i>02</i><h3>Detection</h3><p>An RF-DETR transformer, fine-tuned for football, finds every player, even inside the line, and ignores officials.</p></li>
+      <li data-img="nfl-stage3-field.jpg"><i>03</i><h3>Field registration</h3><p>Yard lines, hash marks and the yard numbers it reads give a homography for every frame: pixels become yards.</p></li>
+      <li data-img="nfl-stage4-tracks.jpg"><i>04</i><h3>Tracking</h3><p>Players are followed on the field, not in the image, so the camera can pan without breaking the tracks.</p></li>
+      <li data-img="nfl-stage5-roles.png"><i>05</i><h3>Snap, line and roles</h3><p>The snap from the motion of the tracks, the line of scrimmage, and the role of all 22 from a formation model.</p></li>
+      <li data-img="nfl-board-poster.jpg"><i>06</i><h3>Analytics</h3><p>Pocket, pressure, separation, space and speed, computed from the tracks as the play unfolds.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="p-proof">
+  <div class="p-sechead"><i>Results</i><h2>Measured stage by stage</h2>
+    <p>On held-out video against reference tracking, player by player and frame by frame.</p></div>
+  <dl class="p-results">
+    <div><dt>Detection</dt><dd>93.4% of players found; 89.9% in crowds of three or more</dd></div>
+    <div><dt>Field registration</dt><dd>held through the whole play in 100% of plays</dd></div>
+    <div><dt>Tracking</dt><dd>median error 0.56 yd · speed 0.20 yd/s · direction 4.8°</dd></div>
+    <div><dt>Identity</dt><dd>IDF1 0.838; 98.5% of players covered by a track</dd></div>
+    <div><dt>Teams · snap · line</dt><dd>97.2% right team · snap within 0.2 s in 92% · line within 1 yd in 93%</dd></div>
+    <div><dt>Roles at the snap</dt><dd>85.6% of all 22; quarterback 95%</dd></div>
+  </dl>
+  <a class="p-writeup" href="https://github.com/mtorreslanda/nflvision">Read the technical write-up on GitHub <span>↗</span></a>
+</section>
+
+<footer class="p-foot">
+  <a class="p-next" href="tennisvision.html"><i>Next project</i><b>TennisVision →</b></a>
+  <p>© 2026 Miguel Ángel Castro Torreslanda · Game footage belongs to the NFL; shown small and short, for illustration. Only permissively licensed components are used; code, data and weights are not published.</p>
+</footer>
+
+<script>
+/* the printed playbook sheet */
+(function () {
+  var NS = 'http://www.w3.org/2000/svg', y = document.getElementById('yards'), h = document.getElementById('hash'), n = document.getElementById('nums');
+  function el(t, a, p) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); p.appendChild(e); return e; }
+  for (var x = 40, k = 0; x < 1600; x += 80, k++) {
+    el('line', { x1: x, y1: 64, x2: x, y2: 836, 'stroke-width': k % 2 ? 1 : 2 }, y);
+    if (k % 2 === 0) { var yl = 10 + ((k / 2) % 9) * 10; yl = yl > 50 ? 100 - yl : yl;
+      el('text', { x: x - 34, y: 790 }, n).textContent = String(yl).split('').join(''); }
+  }
+  for (var hx = 40; hx < 1600; hx += 16) { el('line', { x1: hx, y1: 352, x2: hx, y2: 364 }, h); el('line', { x1: hx, y1: 536, x2: hx, y2: 548 }, h);
+    el('line', { x1: hx, y1: 64, x2: hx, y2: 74 }, h); el('line', { x1: hx, y1: 826, x2: hx, y2: 836 }, h); }
+})();
+/* numbers that count up when they come into view */
+(function () {
+  var els = document.querySelectorAll('[data-count]');
+  if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (!e.isIntersecting) return; io.unobserve(e.target);
+      var b = e.target, to = parseFloat(b.dataset.count), dec = +(b.dataset.dec || 1), suf = b.dataset.suffix || '', t0 = performance.now();
+      (function tick(now) { var f = Math.min(1, (now - t0) / 1400), v = to * (1 - Math.pow(1 - f, 3));
+        b.textContent = v.toFixed(dec) + suf; if (f < 1) requestAnimationFrame(tick); })(t0);
+    });
+  }, { threshold: .6 });
+  els.forEach(function (b) { b.textContent = (0).toFixed(+(b.dataset.dec || 1)) + (b.dataset.suffix || ''); io.observe(b); });
+})();
+/* nav shrinks on scroll; the board does not autoplay with reduced motion */
+window.addEventListener('scroll', function () { document.querySelector('.nav').classList.toggle('scrolled', scrollY > 50); }, { passive: true });
+if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.querySelectorAll('video[data-autoplay]').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
+</script>
+<script src="../assets/js/robot.js?v=3"></script>
+<script src="../assets/js/robot-side.js?v=3"></script>
+<script src="../assets/js/pencil-name.js?v=3"></script>
+<script src="../assets/js/costume.js?v=3"></script>
+<script src="../assets/js/play-explorer.js?v=3"></script>
+<script src="../assets/js/project.js?v=3"></script>
 </body>
 </html>

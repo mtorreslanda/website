@@ -4,7 +4,8 @@
    unchanged. Outlines come from Playfair Display Bold (SIL Open Font License). */
 (function () {
   'use strict';
-  var title = document.querySelector('.hero-title');
+  // the front-page name, or any title marked with data-pencil (project pages), with its own outline file
+  var title = document.querySelector('.hero-title, [data-pencil]');
   if (!title) return;
   if (!window.fetch) { title.classList.add('pencil-fail'); return; }
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -155,7 +156,7 @@
   }
 
   var lastW = 0;
-  Promise.all([fetch('assets/data/name-glyphs.json').then(function (r) { return r.json(); }), document.fonts.load('700 100px "Playfair Display"')])
+  Promise.all([fetch(title.getAttribute('data-pencil-glyphs') || 'assets/data/name-glyphs.json').then(function (r) { return r.json(); }), document.fonts.load('700 100px "Playfair Display"')])
     .then(function (res) {
       GL = res[0];
       lastW = innerWidth;
