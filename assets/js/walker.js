@@ -568,14 +568,18 @@
       setState('print', now);
       return;
     }
+    portalExit(now, null);
+  }
+  // goes into a portal where it stands, attached to the page (it scrolls with everything else).
+  // If it is already off screen there is nothing to show: it is simply in transit.
+  function portalExit(now, toId) {
     var cells0 = currentForm(now), c = formCentre(cells0);
-    // where it is on screen; if the page has already carried it off, it leaves from just inside the edge
-    var vl = clamp(place.left - scrollX, -c.x * S + 40, innerWidth - c.x * S - 40);
-    var vt = clamp(place.top - scrollY, -c.y * S + 110, innerHeight - c.y * S - 110);
-    place.left = vl + scrollX; place.top = vt + scrollY;
-    W.po = { cells: cells0, c: c, vl: vl, vt: vt };
-    W.po.portal = openPortal(place.left + c.x * S, place.top + c.y * S, Math.max(24, c.r * S * 0.75), 80);
     lightCone = null; clearLit();
+    W.transitTo = toId;
+    var cy = place.top + c.y * S - scrollY;
+    if (cy < -30 || cy > innerHeight + 30) { setState(toId ? 'transit' : 'portalin', now); W.pin = null; return; }
+    W.po = { cells: cells0, c: c, left: place.left, top: place.top };
+    W.po.portal = openPortal(place.left + c.x * S, place.top + c.y * S, Math.max(24, c.r * S * 0.75), 80);
     setState('portalout', now);
   }
 
@@ -601,7 +605,7 @@
   function tick(now, dt) {
     var blink = now < Home.blinkUntil;
     var sc = sceneNow();
-    var busy = W.state === 'morph' || W.state === 'crouch' || W.state === 'ignite' || W.state === 'flight' || W.state === 'hopoff' || W.state === 'land' || W.state === 'ride' || W.state === 'portalin' || W.state === 'portalout' || W.state === 'print' || W.state === 'intro' || W.state === 'regrab';
+    var busy = W.state === 'morph' || W.state === 'crouch' || W.state === 'ignite' || W.state === 'flight' || W.state === 'hopoff' || W.state === 'land' || W.state === 'ride' || W.state === 'portalin' || W.state === 'portalout' || W.state === 'transit' || W.state === 'print' || W.state === 'intro' || W.state === 'regrab';
     if (W.rodeLast && W.rodeLast.section.getBoundingClientRect().top > innerHeight) W.rodeLast = null;
     if (!busy || W.state === 'land') {
       var inc = incoming();
@@ -968,8 +972,7 @@
 
       case 'portalout': {                                  // a portal opens behind it and it swirls in, as bits
         var po = W.po, ot = el;
-        place.left = po.vl + scrollX; place.top = po.vt + scrollY;
-        po.portal.x = place.left + po.c.x * S; po.portal.y = place.top + po.c.y * S;   // the portal stays behind it
+        place.left = po.left; place.top = po.top;               // stays where it was on the page
         if (ot < 40) cells = po.cells;
         else {
           var tt = clamp((ot - 40) / 190, 0, 1);
@@ -981,7 +984,20 @@
           }
           if (tt >= 1 && po.portal.closeT == null) po.portal.closeT = now;
         }
-        if (ot > 300) { W.pin = null; setState('portalin', now); }
+        if (ot > 300) { W.pin = null; setState(W.transitTo ? 'transit' : 'portalin', now); }
+        break;
+      }
+
+      case 'transit': {                                    // between two portals; comes out where it should be
+        cells = [];
+        var tsc = sceneNow(), origin = W.scene;
+        if (tsc.id === W.transitTo) { W.scene = tsc; W.travel = null; W.pin = null; setState('portalin', now); }
+        else if (tsc === origin) {
+          var back = origin.mode === 'drone' ? origin.section.getBoundingClientRect().bottom > innerHeight + 100 || scrollDir < 0
+                                             : origin.section.getBoundingClientRect().top < innerHeight * 0.35 || scrollDir > 0;
+          if (now - lastScrollT > 450) back = true;              // the page stopped short of the goal: come back out
+          if (back && now - W.t0 > 250) { W.travel = null; W.pin = null; setState('portalin', now); }   // changed its mind: back where it was
+        } else { W.scene = tsc; W.travel = null; W.printDelay = 60; setState('print', now); }          // jumped somewhere else
         break;
       }
 
@@ -1066,6 +1082,11 @@
       }
 
       case 'drone': {
+        // the cards are done and Work starts to leave: into the portal now, while it can still be seen
+        var wr = W.scene.section.getBoundingClientRect();
+        if (scrollDir > 0 && now - lastScrollT < 400 && wr.bottom < innerHeight - 30) {
+          cells = droneCells(now, 0.1, false); W.prevState = 'drone'; portalExit(now, 'coursework'); break;
+        }
         var D = W.drone, spot = droneSpot(W.scene);
         var tx2 = spot.x;
         // spring with a little overshoot: it leans into the move and settles when the scroll stops
@@ -1084,6 +1105,11 @@
       }
 
       case 'lamp': {
+        // scrolling back up and Coursework starts to go down: into the portal, back to Work
+        var crr = W.scene.section.getBoundingClientRect();
+        if (scrollDir < 0 && now - lastScrollT < 400 && crr.top > innerHeight * 0.5) {
+          cells = lampCells(W.lamp.angle, false, false, false); W.prevState = 'lamp'; portalExit(now, 'work'); break;
+        }
         var Lm = W.lamp, lt2 = landing(W.scene);
         atFeet(lt2.x, lt2.y); W.x = lt2.x; W.y = lt2.y;
         var row = rowForMouse();
