@@ -136,7 +136,7 @@
       var hp = P.filter(function (p) { return p.id === hover; })[0];
       out.card.innerHTML = hp ? '<b>' + hp.role + '</b> ' + (hp.side === 'offense' ? 'Kansas City' : 'Baltimore') +
         '<br>' + (hp.v * 2.0455).toFixed(1) + ' mph now · top ' + (players[hp.id].top * 2.0455).toFixed(1) + ' mph' : '';
-    } else out.card.textContent = 'Point at a player';
+    } else out.card.textContent = window.matchMedia('(hover: none)').matches ? 'Tap a player' : 'Point at a player';
     slider.value = t;
     var pct = (t - T0) / (T1 - T0) * 100;
     slider.style.setProperty('--p', pct + '%');
@@ -167,13 +167,15 @@
   root.querySelectorAll('[data-jump]').forEach(function (b) {
     b.addEventListener('click', function () { playing = false; playBtn.textContent = '▶ Play'; t = parseFloat(b.dataset.jump); draw(); });
   });
-  cv.addEventListener('mousemove', function (e) {
-    var r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top, best = null;
-    at(t).forEach(function (p) { var c = toPx(p.x, p.y), d = Math.hypot(c[0] - mx, c[1] - my); if (d < 16 && (!best || d < best.d)) best = { id: p.id, d: d }; });
+  function pick(e) {
+    var r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top, best = null, reach = e.pointerType === 'mouse' ? 16 : 26;
+    at(t).forEach(function (p) { var c = toPx(p.x, p.y), d = Math.hypot(c[0] - mx, c[1] - my); if (d < reach && (!best || d < best.d)) best = { id: p.id, d: d }; });
     var h = best ? best.id : null;
     if (h !== hover) { hover = h; cv.style.cursor = h ? 'pointer' : 'default'; if (!playing) draw(); }
-  });
-  cv.addEventListener('mouseleave', function () { hover = null; if (!playing) draw(); });
+  }
+  cv.addEventListener('pointermove', function (e) { if (e.pointerType === 'mouse') pick(e); });
+  cv.addEventListener('pointerdown', pick);                       // a tap on a phone
+  cv.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') { hover = null; if (!playing) draw(); } });
 
   fetch(root.dataset.csv).then(function (r) { return r.text(); }).then(function (txt) {
     parse(txt); resize();
