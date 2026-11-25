@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#F5F3EE">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=2">
+<link rel="stylesheet" href="assets/css/site.css?v=3">
 </head>
 <body>
 <nav class="nav"><div class="wrap">
@@ -79,12 +79,12 @@
   </div>
 </a>
 <a class="case rv" href="work/pokemon-tcg-agent.html">
-  <div class="case-fig"><div class="plate"><span class="kicker">Game AI · Search · Kaggle</span><div><div class="big">53.4%</div><div class="lbl">win rate against a bank of 28 opponents</div></div></div></div>
+  <div class="case-fig contain"><img src="assets/img/pokemon-winrates.png" alt="Bar charts: submitted agent 53.4% vs best earlier agent 38.0%; after PPO 35.0% vs 15.9% before." loading="lazy" decoding="async"></div>
   <div class="case-txt">
     <div class="num">05 — Game AI · Search · Kaggle</div>
     <h3>A game-playing agent for Pokémon TCG</h3>
     <p>An AlphaGo-style agent for a card game with hidden information: learned policy, learned evaluation and search over the turn.</p>
-    <div class="mini-metrics"><div><b>38.0%</b><span>best previous agent on the same bank</span></div><div><b>15.9 → 35.0%</b><span>after PPO, against the strongest heuristic opponent</span></div></div>
+    <div class="mini-metrics"><div><b>53.4%</b><span>win rate against a bank of 28 opponents</span></div><div><b>38.0%</b><span>best previous agent on the same bank</span></div></div>
     <span class="more">Read the case →</span>
   </div>
 </a>
@@ -109,22 +109,22 @@
   </div>
 </a>
 <a class="case rv" href="work/signature-detection.html">
-  <div class="case-fig"><div class="plate"><span class="kicker">Computer vision · Document AI</span><div><div class="big">0.984</div><div class="lbl">AUC with detector + VLM verifier combined</div></div></div></div>
+  <div class="case-fig contain"><img src="assets/img/signature-fp.png" alt="Bar chart: share of unsigned pages flagged at 95% recall: detector 28%, with verifier 17%, with local VLM 6%, both 10%." loading="lazy" decoding="async"></div>
   <div class="case-txt">
     <div class="num">08 — Computer vision · Document AI</div>
     <h3>Signature detection in documents</h3>
     <p>Flags which PDFs in a folder carry a handwritten signature or initials, tuned for recall, with an optional local vision-language model as a second opinion.</p>
-    <div class="mini-metrics"><div><b>0.943</b><span>AUC of the detector alone</span></div><div><b>96.6%</b><span>of signatures caught on 400 hand-labelled real scans</span></div></div>
+    <div class="mini-metrics"><div><b>0.984</b><span>AUC with detector + VLM verifier combined</span></div><div><b>0.943</b><span>AUC of the detector alone</span></div></div>
     <span class="more">Read the case →</span>
   </div>
 </a>
 <a class="case rv" href="work/water-from-space.html">
-  <div class="case-fig"><div class="plate"><span class="kicker">Remote sensing · Epidemiology</span><div><div class="big">42,500</div><div class="lbl">satellite–lab matchups after cleaning</div></div></div></div>
+  <div class="case-fig contain"><img src="assets/img/water-clean-pixels.png" alt="Dumbbell chart: estimation error for each country and variable falls when only clean water pixels are used." loading="lazy" decoding="async"></div>
   <div class="case-txt">
     <div class="num">09 — Remote sensing · Epidemiology</div>
     <h3>Water quality from space</h3>
     <p>Estimating turbidity and chlorophyll from Sentinel-2 where there are no labs, and testing whether it says anything about waterborne disease.</p>
-    <div class="mini-metrics"><div><b>25</b><span>countries for out-of-domain validation</span></div><div><b>115 → 85%</b><span>turbidity error in Argentina with clean pixels</span></div></div>
+    <div class="mini-metrics"><div><b>42,500</b><span>satellite–lab matchups after cleaning</span></div><div><b>25</b><span>countries for out-of-domain validation</span></div></div>
     <span class="more">Read the case →</span>
   </div>
 </a>
@@ -238,11 +238,11 @@
   <a class="mail" href="mailto:mtorreslanda@gmail.com">mtorreslanda@gmail.com</a>
   <div class="links"><a href="https://www.linkedin.com/in/miguel-angel-castro-torreslanda/">LinkedIn</a><a href="https://github.com/mtorreslanda">GitHub</a></div>
 </div></section>
-<script src="assets/js/hero.js?v=2"></script>
+<script src="assets/js/hero.js?v=3"></script>
 <footer><div class="wrap">
   <span>© 2026 Miguel Ángel Castro Torreslanda</span>
   <span>The lines on the front page are real trajectories from my projects.</span>
 </div></footer>
-<script src="assets/js/site.js?v=2"></script>
+<script src="assets/js/site.js?v=3"></script>
 </body>
 </html>

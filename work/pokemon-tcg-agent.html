@@ -7,11 +7,11 @@
 <meta name="description" content="An AlphaGo-style agent for a card game with hidden information: learned policy, learned evaluation and search over the turn.">
 <meta property="og:title" content="A game-playing agent for Pokémon TCG — Miguel Ángel Castro Torreslanda">
 <meta property="og:description" content="An AlphaGo-style agent for a card game with hidden information: learned policy, learned evaluation and search over the turn.">
-<meta property="og:image" content="https://mtorreslanda.com/assets/img/nfl-play-trails.jpg">
+<meta property="og:image" content="https://mtorreslanda.com/assets/img/pokemon-winrates.png">
 <meta name="theme-color" content="#F5F3EE">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/site.css?v=2">
+<link rel="stylesheet" href="../assets/css/site.css?v=3">
 </head>
 <body>
 <nav class="nav"><div class="wrap">
@@ -31,6 +31,7 @@
   <p class="oneliner">An AlphaGo-style agent for a card game with hidden information: learned policy, learned evaluation and search over the turn.</p>
   <div class="tags"><span>Beam search</span><span>Policy networks</span><span>PPO</span><span>Self-play</span><span>Evaluation design</span></div>
 </header>
+<figure class="cover"><div class="frame"><img src="../assets/img/pokemon-winrates.png" alt="Bar charts: submitted agent 53.4% vs best earlier agent 38.0%; after PPO 35.0% vs 15.9% before." loading="lazy" decoding="async"></div><figcaption>Win rates measured in the competition simulator. Left: the submitted agent against a fixed bank of 28 opponents. Right: the policy before and after PPO against the strongest heuristic agent.</figcaption></figure>
 <div class="metrics"><div><b>53.4%</b><span>win rate against a bank of 28 opponents</span></div><div><b>38.0%</b><span>best previous agent on the same bank</span></div><div><b>15.9 → 35.0%</b><span>after PPO, against the strongest heuristic opponent</span></div><div><b>z = 7.75</b><span>significance of that jump</span></div></div>
 <div class="prose">
 <h2 class="rv">The problem</h2><div class="body rv"><p>A Kaggle competition by The Pokémon Company: build an agent that plays full games of the trading card game in a simulator. Unlike Go, most information is hidden and one turn can contain dozens of chained decisions.</p></div>
@@ -44,6 +45,6 @@
   <span>© 2026 Miguel Ángel Castro Torreslanda</span>
   <span>The lines on the front page are real trajectories from my projects.</span>
 </div></footer>
-<script src="../assets/js/site.js?v=2"></script>
+<script src="../assets/js/site.js?v=3"></script>
 </body>
 </html>

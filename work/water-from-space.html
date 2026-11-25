@@ -7,11 +7,11 @@
 <meta name="description" content="Estimating turbidity and chlorophyll from Sentinel-2 where there are no labs, and testing whether it says anything about waterborne disease.">
 <meta property="og:title" content="Water quality from space — Miguel Ángel Castro Torreslanda">
 <meta property="og:description" content="Estimating turbidity and chlorophyll from Sentinel-2 where there are no labs, and testing whether it says anything about waterborne disease.">
-<meta property="og:image" content="https://mtorreslanda.com/assets/img/nfl-play-trails.jpg">
+<meta property="og:image" content="https://mtorreslanda.com/assets/img/water-clean-pixels.png">
 <meta name="theme-color" content="#F5F3EE">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/site.css?v=2">
+<link rel="stylesheet" href="../assets/css/site.css?v=3">
 </head>
 <body>
 <nav class="nav"><div class="wrap">
@@ -31,6 +31,7 @@
   <p class="oneliner">Estimating turbidity and chlorophyll from Sentinel-2 where there are no labs, and testing whether it says anything about waterborne disease.</p>
   <div class="tags"><span>Google Earth Engine</span><span>Sentinel-2</span><span>Mixture density networks</span><span>Poisson regression</span><span>Survey data</span></div>
 </header>
+<figure class="cover"><div class="frame"><img src="../assets/img/water-clean-pixels.png" alt="Dumbbell chart: estimation error for each country and variable falls when only clean water pixels are used." loading="lazy" decoding="async"></div><figcaption>Same samples, two pixel selections. Restricting to clean water pixels lowers the error everywhere it was tested.</figcaption></figure>
 <div class="metrics"><div><b>42,500</b><span>satellite–lab matchups after cleaning</span></div><div><b>25</b><span>countries for out-of-domain validation</span></div><div><b>115 → 85%</b><span>turbidity error in Argentina with clean pixels</span></div><div><b>28%</b><span>of children drinking surface water have visible water nearby</span></div></div>
 <div class="prose">
 <h2 class="rv">The question</h2><div class="body rv"><p>Humanitarian settings rarely have water labs. Can a satellite estimate water quality there, and does that estimate help anticipate diarrhoea or cholera?</p></div>
@@ -44,6 +45,6 @@
   <span>© 2026 Miguel Ángel Castro Torreslanda</span>
   <span>The lines on the front page are real trajectories from my projects.</span>
 </div></footer>
-<script src="../assets/js/site.js?v=2"></script>
+<script src="../assets/js/site.js?v=3"></script>
 </body>
 </html>
