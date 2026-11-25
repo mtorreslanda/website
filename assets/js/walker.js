@@ -377,9 +377,9 @@
   }
   // portals: a round hole of pixels with a turning ring, centred where the robot leaves or arrives
   var portals = [];
-  function openPortal(x, y, R) { var pt = { x: x, y: y, R: R, t0: performance.now(), closeT: null }; portals.push(pt); return pt; }
+  function openPortal(x, y, R, openMs) { var pt = { x: x, y: y, R: R, t0: performance.now(), closeT: null, open: openMs || 180 }; portals.push(pt); return pt; }
   function portalR(pt, now) {
-    var o = clamp((now - pt.t0) / 180, 0, 1), r = pt.R * (1 - Math.pow(1 - o, 3));
+    var o = clamp((now - pt.t0) / pt.open, 0, 1), r = pt.R * (1 - Math.pow(1 - o, 3));
     if (pt.closeT != null) r *= 1 - clamp((now - pt.closeT) / 170, 0, 1);
     return r;
   }
@@ -517,7 +517,8 @@
       return;
     }
     var ids = W.scene.id + '>' + sceneNow().id;
-    if (ids === 'work>coursework' || ids === 'coursework>work') W.tempo = 'teleport';   // the long way between them: always beamed
+    W.portalMode = ids === 'work>coursework' || ids === 'coursework>work';
+    if (W.portalMode) W.tempo = 'teleport';                // the long way between them: always through a portal
     rope.style.opacity = 0; lightCone = null; clearLit();
     if (W.tempo !== 'teleport' && (W.state === 'drone' || W.state === 'lamp' || W.state === 'plane')) {
       var from = W.state === 'drone' ? droneCells(now, 0, false) : W.state === 'lamp' ? lampCells(W.lamp.angle, false, false, false) : planeCells(false);
@@ -559,13 +560,21 @@
     return out;
   }
   function startTeleport(now) {
+    if (!W.portalMode) {                                    // the plain way: a burst of pixels, then printed row by row
+      var bx = W.x, by = W.y;
+      for (var i = 0; i < 18; i++) parts.push({ x: bx + (Math.random() - 0.5) * 30, y: by - Math.random() * 50, vx: (Math.random() - 0.5) * 0.25,
+        vy: -Math.random() * 0.2, life: 0, max: 380, col: Math.random() < 0.5 ? Home.bot.accent : '#1A1A1A', g: 0.0006 });
+      lightCone = null; clearLit();
+      setState('print', now);
+      return;
+    }
     var cells0 = currentForm(now), c = formCentre(cells0);
     // where it is on screen; if the page has already carried it off, it leaves from just inside the edge
     var vl = clamp(place.left - scrollX, -c.x * S + 40, innerWidth - c.x * S - 40);
     var vt = clamp(place.top - scrollY, -c.y * S + 110, innerHeight - c.y * S - 110);
     place.left = vl + scrollX; place.top = vt + scrollY;
     W.po = { cells: cells0, c: c, vl: vl, vt: vt };
-    W.po.portal = openPortal(place.left + c.x * S, place.top + c.y * S, Math.max(24, c.r * S * 0.75));
+    W.po.portal = openPortal(place.left + c.x * S, place.top + c.y * S, Math.max(24, c.r * S * 0.75), 80);
     lightCone = null; clearLit();
     setState('portalout', now);
   }
@@ -592,7 +601,7 @@
   function tick(now, dt) {
     var blink = now < Home.blinkUntil;
     var sc = sceneNow();
-    var busy = W.state === 'morph' || W.state === 'crouch' || W.state === 'ignite' || W.state === 'flight' || W.state === 'hopoff' || W.state === 'land' || W.state === 'ride' || W.state === 'portalin' || W.state === 'portalout' || W.state === 'intro' || W.state === 'regrab';
+    var busy = W.state === 'morph' || W.state === 'crouch' || W.state === 'ignite' || W.state === 'flight' || W.state === 'hopoff' || W.state === 'land' || W.state === 'ride' || W.state === 'portalin' || W.state === 'portalout' || W.state === 'print' || W.state === 'intro' || W.state === 'regrab';
     if (W.rodeLast && W.rodeLast.section.getBoundingClientRect().top > innerHeight) W.rodeLast = null;
     if (!busy || W.state === 'land') {
       var inc = incoming();
@@ -927,9 +936,33 @@
         if (el > 1500) {
           var gx = gLetterX();
           if (gx != null) { W.x = gx; W.y = skyY(gx); }
-          W.travel = { pi: 'sky' }; W.dir = 1; W.pin = null; setState('portalin', now);
+          W.travel = { pi: 'sky' }; W.dir = 1; W.printDelay = 60; setState('print', now);
         }
         atFeet(W.x, W.y);
+        break;
+      }
+
+      case 'print': {                                      // gone for a moment, then printed row by row where it goes
+        var pg = landing(W.scene, W.travel && W.travel.pi), pd = W.printDelay || 120;
+        W.x = pg.x; W.y = pg.y; atFeet(pg.x, pg.y);
+        var pmode = W.scene.mode;
+        var pform = pmode === 'lamp' ? lampCells(1.15, false, blink, false)
+                  : pmode === 'drone' ? droneCells(now, 0.1, false)
+                  : robotCells({ blink: blink }, W.dir, dark);
+        var pa = Infinity, pb = -Infinity;
+        pform.forEach(function (c) { if (c.y < pa) pa = c.y; if (c.y > pb) pb = c.y; });
+        var prow = pa + Math.floor(clamp((el - pd) / 300, 0, 1) * (pb - pa + 1));
+        cells = el < pd ? [] : pform.filter(function (c) { return c.y < prow; });
+        if (el >= pd && el < pd + 300) {
+          var pxs = pform.map(function (c) { return c.x; }), pxa = Math.min.apply(null, pxs), pxb = Math.max.apply(null, pxs);
+          cells.push({ x: pxa + Math.floor(Math.random() * (pxb - pxa + 1)), y: prow, col: Home.bot.accent });
+        }
+        if (el > pd + 320) {
+          W.landT = now; W.printDelay = 0;
+          if (pmode === 'lamp') { W.lamp = { angle: 1.15, av: 0 }; setState('lamp', now); }
+          else if (pmode === 'drone') { W.drone = { x: W.x - scrollX, v: 0, wob: 1 }; setState('drone', now); }
+          else { arrive(now); if (W.scene.mode === 'hero') W.hello = now; }
+        }
         break;
       }
 
@@ -937,9 +970,9 @@
         var po = W.po, ot = el;
         place.left = po.vl + scrollX; place.top = po.vt + scrollY;
         po.portal.x = place.left + po.c.x * S; po.portal.y = place.top + po.c.y * S;   // the portal stays behind it
-        if (ot < 180) cells = po.cells;
+        if (ot < 40) cells = po.cells;
         else {
-          var tt = clamp((ot - 180) / 440, 0, 1);
+          var tt = clamp((ot - 40) / 190, 0, 1);
           cells = swirl(po.cells, po.c, tt, true);
           if (Math.random() < 0.6) {
             var q2 = po.cells[Math.floor(Math.random() * po.cells.length)], px2 = place.left + q2.x * S, py2 = place.top + q2.y * S;
@@ -948,7 +981,7 @@
           }
           if (tt >= 1 && po.portal.closeT == null) po.portal.closeT = now;
         }
-        if (ot > 820) { W.pin = null; setState('portalin', now); }
+        if (ot > 300) { W.pin = null; setState('portalin', now); }
         break;
       }
 
@@ -1170,8 +1203,8 @@
     if (dy > 0) {                                            // the letters drop away under the feet
       var outX = nx + dir * (FOOT_HALF + 6), lowY = skyY(outX);
       if (lowY === Infinity) return 'edge';
-      if (lowY - W.y <= 40) { hz.act = { type: 'skyhop', t0: now, sx: W.x, sy: W.y, x: outX, dur: 260, arc: 10 }; return 'busy'; }
-      hz.act = { type: 'wall', down: true, t0: now, x0: W.x, y0: W.y, x: outX, y1: lowY, face: -dir };
+      var drop = lowY - W.y;
+      hz.act = { type: 'skyhop', t0: now, sx: W.x, sy: W.y, x: outX + (drop > 40 ? dir * 6 : 0), dur: drop > 40 ? 300 + drop * 1.4 : 260, arc: drop > 40 ? 18 : 10 };
       return 'busy';
     }
     var up = -dy;                                            // a wall rises in front
