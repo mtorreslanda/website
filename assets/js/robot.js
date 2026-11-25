@@ -76,6 +76,16 @@
     if (b.mouth === 'smile') { set(5, 6, A); set(10, 6, A); for (var s = 6; s <= 9; s++) set(s, 7, A); }
     if (b.bolts) { set(hb[2][0] - 1, 5, A); set(hb[2][1] + 1, 5, A); }
 
+    // gaze: move the eye cells by (look.x, look.y), staying inside the head
+    if (pose.look && (pose.look.x || pose.look.y) && !pose.blink) {
+      var eyes = [];
+      for (var ey = 3; ey <= 7; ey++) for (var ex = 0; ex < W; ex++) if (g[ey][ex] === E) { eyes.push([ex, ey]); g[ey][ex] = X; }
+      eyes.forEach(function (c) {
+        var nx = c[0] + pose.look.x, ny = c[1] + pose.look.y, row = hb[ny - 3];
+        if (row && nx >= row[0] + 1 && nx <= row[1] - 1) set(nx, ny, E); else set(c[0], c[1], E);
+      });
+    }
+
     // neck row 8
     set(7, 8, X); set(8, 8, X);
 
@@ -87,13 +97,30 @@
     if (b.chest === 'screen') { for (var q = 5; q <= 10; q++) { set(q, 10, E); set(q, 11, E); } set(6, 11, A); set(7, 10, A); set(8, 11, A); set(9, 10, A); }
     if (b.chest === 'heart') { set(6, 10, A); set(9, 10, A); set(6, 11, A); set(7, 11, A); set(8, 11, A); set(9, 11, A); set(7, 12, A); set(8, 12, A); set(7, 10, E); set(8, 10, E); }
 
-    // arms, outside the body's row-10 bounds
+    // arms, outside the body's row-10 bounds. Each arm has a pose:
+    // down | up | wave | reach | visor | climb (half up). The right arm is drawn on the
+    // right; the whole sprite is mirrored when the robot faces left.
     var L = bb[1][0] - 1, R = bb[1][1] + 1;
     var len = b.arms === 'long' ? 4 : 3;
-    for (var k = 0; k < len; k++) set(L, 10 + k, X);
-    if (pose.wave) { for (var w = 0; w < 3; w++) set(R + (w === 0 ? 0 : 1), 9 - w, X); if (b.arms === 'claw') set(R + 1, 6, A); }
-    else { for (var k2 = 0; k2 < len; k2++) set(R, 10 + k2, X); }
-    if (b.arms === 'claw') { set(L - 1, 12, A); set(L, 13, A); if (!pose.wave) { set(R + 1, 12, A); set(R, 13, A); } }
+    var claw = b.arms === 'claw';
+    function arm(x, side, kind) {          // side: -1 left, +1 right
+      var o = x + side;                    // one column further out
+      if (kind === 'up') { set(x, 9, X); for (var u = 5; u <= 8; u++) set(o, u, X); set(o, 4, A); }
+      else if (kind === 'climb') { set(x, 9, X); set(o, 8, X); set(o, 7, X); set(o, 6, claw ? A : X); }
+      else if (kind === 'wave') { set(x, 9, X); set(o, 8, X); set(o, 7, X); if (claw) set(o, 6, A); }
+      else if (kind === 'reach') { set(x, 10, X); set(o, 10, X); set(o + side, 10, X); set(o + side, 9, claw ? A : X); }
+      else if (kind === 'visor') {
+        set(x, 9, X); set(o, 8, X); set(o, 7, X); set(o, 6, X); set(o, 5, X); set(x, 4, A);
+        var hx = hb[1][side > 0 ? 1 : 0];  // hand across the forehead, over the eyes
+        for (var v2 = hx; side > 0 ? v2 >= 8 : v2 <= 7; v2 -= side) set(v2, 4, A);
+      }
+      else {                               // down
+        for (var k = 0; k < len; k++) set(x, 10 + k, X);
+        if (claw) { set(o, 12, A); set(x, 13, A); }
+      }
+    }
+    arm(L, -1, pose.armL || 'down');
+    arm(R, 1, pose.armR || (pose.wave ? 'wave' : 'down'));
 
     // legs rows 14-16
     var st = pose.step || 0;
@@ -154,6 +181,13 @@
   };
   var COMBOS = Object.keys(OPTIONS).reduce(function (n, k) { return n * OPTIONS[k].length; }, 1);
 
+  // columns of the lowest cells (where rocket flames come out) and the highest row (where a hook holds it)
+  function feet(b) {
+    var c = cells(b, {}), bottom = 0, top = H;
+    c.forEach(function (p) { if (p.y > bottom) bottom = p.y; if (p.y < top) top = p.y; });
+    return { xs: c.filter(function (p) { return p.y === bottom; }).map(function (p) { return p.x; }), bottom: bottom, top: top };
+  }
+
   window.Robot = { W: W, H: H, make: make, cells: cells, draw: draw, color: color, describe: describe,
-                   OPTIONS: OPTIONS, COMBOS: COMBOS };
+                   OPTIONS: OPTIONS, COMBOS: COMBOS, feet: feet };
 })();

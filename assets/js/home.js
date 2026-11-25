@@ -175,7 +175,7 @@
     bot = next;
     setFavicon(bot);
     renderSpec(animate ? changedKey || 'all' : null);
-    if (walker && animate) walker.jumpReq = true;
+    if (window.Walker && animate) window.Walker.onRebuild();
     hero.build = (animate && !reduce) ? { t0: performance.now(), old: old } : null;
     drawHero(performance.now());
   }
@@ -261,210 +261,60 @@
     if (heroVisible && !document.hidden && performance.now() - lastEdit > 30000) newRandom();
   }, 14000);
 
-  /* ================================================================ the walker: a platformer
-     The small robot lives in page coordinates. Lines of text are platforms (their top edge);
-     the bottom of the screen is always a floor. It follows the mouse, jumping up to lines
-     above it and dropping off edges to reach lines below. */
-  var wc = document.getElementById('walker');
-  var S = 3, SW = R.W * S, SH = R.H * S;                // sprite size in CSS px
-  var G = 0.0024, JUMP_H = 170, VJ = Math.sqrt(2 * G * JUMP_H), RUN = 0.22, WALK = 0.08;
-  var PLATFORM_SEL_FULL = ['.hero-title > span', '.hero-roles', '.hero-areas', '.counter', '.about-name',
-    '.about-meta', '.about-bio', '.edu div', '.sec-title', '.sec-lead', '.card', '.row-name', '.row-desc',
-    '.sub-head', '.contact-email', '.contact-links'].join(',');
-  var PLATFORM_SEL = '.none-yet';   // interim: floor only until the per-section route is built
-  var BOX_SEL = '.card, .hero-areas, .contact-links, .edu div';
-  var platforms = [];
-
-  // distance from the top of a text box to the top of its capital letters, per font
-  var capCache = {};
-  var mctx = document.createElement('canvas').getContext('2d');
-  function capInset(cs) {
-    var font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
-    if (capCache[font] == null) {
-      mctx.font = font;
-      var m = mctx.measureText('H');
-      capCache[font] = (m.fontBoundingBoxAscent != null) ? m.fontBoundingBoxAscent - m.actualBoundingBoxAscent
-                                                         : parseFloat(cs.fontSize) * 0.3;
-    }
-    return capCache[font];
+  /* ================================================================ sections and the soft snap (decision SH24)
+     When the scroll stops with a boundary between two sections on screen, the page settles on
+     one side of it, following the direction the reader was going. No stacking: SH23 was dropped. */
+  var panels = Array.prototype.slice.call(document.querySelectorAll(
+    '.section-hero, .section-about, .section-work, .section-course, .section-skills, .section-contact'));
+  var snapOn = false, statics = [];
+  function layoutPanels() {
+    snapOn = !reduce && window.innerWidth >= 900;
+    var y = 0;
+    panels.forEach(function (el, i) { statics[i] = y; y += el.offsetHeight; });
   }
-
-  function linePlatforms() {
-    var out = [];
-    var top = window.scrollY, h = window.innerHeight, sx = window.scrollX;
-    document.querySelectorAll(PLATFORM_SEL).forEach(function (el) {
-      var r0 = el.getBoundingClientRect();
-      if (r0.bottom < -300 || r0.top > h + 300 || r0.width < 30) return;
-      if (el.matches(BOX_SEL)) { out.push({ x1: r0.left + sx, x2: r0.right + sx, y: r0.top + top }); return; }
-      // text: one platform per line, standing on the capitals
-      var lines = [];
-      var tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-      var node, rg = document.createRange();
-      while ((node = tw.nextNode())) {
-        if (!node.nodeValue.trim()) continue;
-        var cs = getComputedStyle(node.parentElement);
-        if (cs.visibility === 'hidden') continue;
-        var inset = capInset(cs);
-        rg.selectNodeContents(node);
-        Array.prototype.forEach.call(rg.getClientRects(), function (r) {
-          if (r.width < 4) return;
-          var y = r.top + inset, l = null;
-          for (var i = 0; i < lines.length; i++) if (Math.abs(lines[i].y - y) < 6) l = lines[i];
-          if (l) { l.x1 = Math.min(l.x1, r.left); l.x2 = Math.max(l.x2, r.right); l.y = Math.min(l.y, y); }
-          else lines.push({ y: y, x1: r.left, x2: r.right });
-        });
-      }
-      lines.forEach(function (l) {
-        if (l.x2 - l.x1 >= 30) out.push({ x1: l.x1 + sx, x2: l.x2 + sx, y: l.y + top });
-      });
+  // anchors: go to where each section starts in the flow (a pinned section reports where it is stuck)
+  document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      var id = a.getAttribute('href').slice(1), el = document.getElementById(id);
+      var i = panels.indexOf(el);
+      if (i < 0) return;
+      e.preventDefault();
+      window.scrollTo({ top: statics[i], behavior: reduce ? 'auto' : 'smooth' });
+      history.replaceState(null, '', '#' + id);
     });
-    return out;
-  }
-
-  function floorY() { return window.scrollY + window.innerHeight - 6; }
-
-  if (wc && !reduce) {
-    var dpr = window.devicePixelRatio || 1;
-    wc.width = Math.round(SW * dpr); wc.height = Math.round((SH + 4 * S) * dpr);
-    wc.style.width = SW + 'px'; wc.style.height = (SH + 4 * S) + 'px';
-    walker = { x: 80, y: floorY(), vx: 0, vy: 0, ground: true, dir: 1, step: 0, lastStep: 0,
-               cooldown: 0, wave: false, jumpReq: false, landT: 0 };
-    wc.addEventListener('click', newRandom);
-    platforms = linePlatforms();
-    setInterval(function () { platforms = linePlatforms(); }, 180);
-    window.addEventListener('scroll', function () { platforms = linePlatforms(); }, { passive: true });
-  }
-
-  var mouse = { cx: -1, cy: -1, t: -1e9 };
-  window.addEventListener('mousemove', function (e) { mouse.cx = e.clientX; mouse.cy = e.clientY; mouse.t = performance.now(); });
-  document.addEventListener('mouseleave', function () { mouse.t = -1e9; });
-  var wander = { x: 200, y: 0, until: 0 };
-
-  function supportAt(x, y, tol) {
-    var best = null;
-    platforms.forEach(function (p) {
-      if (x >= p.x1 - 4 && x <= p.x2 + 4 && Math.abs(p.y - y) <= tol && (!best || p.y < best.y)) best = p;
-    });
-    return best;
-  }
-
-  // jump to platform p; if it is higher than one jump, plan a second jump at the apex
-  function jumpTo(p, now, tx) {
-    var w = walker;
-    var xl = Math.min(Math.max(tx, p.x1 + 14), p.x2 - 14);
-    var dy = p.y - w.y;                                    // negative = above
-    var dbl = -dy > JUMP_H - 10;
-    var tUp = VJ / G;                                      // time to the apex of one jump
-    var rise = dbl ? JUMP_H : 0;                           // height already gained when the 2nd jump starts
-    var disc = VJ * VJ + 2 * G * (dy + rise);
-    if (disc < 0) return false;
-    var t = (dbl ? tUp : 0) + (VJ + Math.sqrt(disc)) / G;  // total time until landing on the way down
-    var vx = (xl - w.x) / t;
-    if (Math.abs(vx) > 0.42) return false;
-    w.vx = vx; w.vy = -VJ; w.ground = false; w.cooldown = now + 350;
-    w.second = dbl ? now + tUp : 0;
-    if (vx) w.dir = vx > 0 ? 1 : -1;
-    return true;
-  }
-
-  function walkerTick(now, dt) {
-    var w = walker;
-    var vw = window.innerWidth, top = window.scrollY, fy = floorY();
-
-    // out of view (the page scrolled away): drop back in from the top
-    if (w.y < top - 40 || w.y > fy + 80) {
-      w.x = Math.min(Math.max(mouse.t > 0 ? mouse.cx : vw * 0.3, 30), vw - 30);
-      w.y = top - 10; w.vx = 0; w.vy = 0; w.ground = false;
+  });
+  // soft snap
+  var snapT = null, snapping = false;
+  function settle() {
+    if (!snapOn || snapping) return;
+    var y = window.scrollY, vh = window.innerHeight, goal = null;
+    for (var i = 3; i < panels.length; i++) {             // only Work|Coursework, Coursework|Skills, Skills|Contact
+      var d = statics[i] - y;                              // where section i starts, relative to the top of the screen
+      if (d <= -vh * 0.18 || d >= vh * 0.97) continue;
+      var q = 1 - d / vh;                                  // how much of the new section has slid in (0..1)
+      var forward = scrollDir > 0 ? q > 0.22 : q > 0.78;   // follow the direction the reader was going
+      goal = forward ? statics[i] : Math.max(statics[i - 1], statics[i] - vh);
+      break;
     }
-
-    // target: the mouse if it moved recently, otherwise wander between visible lines
-    var active = now - mouse.t < 6000;
-    var tx, ty;
-    if (active) { tx = mouse.cx + window.scrollX; ty = mouse.cy + top; }
-    else {
-      if (now > wander.until) {
-        var vis = platforms.filter(function (p) { return p.y > top + 80 && p.y < fy; });
-        var pick = vis.length && Math.random() < 0.6 ? vis[Math.floor(Math.random() * vis.length)] : null;
-        wander.x = pick ? pick.x1 + Math.random() * (pick.x2 - pick.x1) : 40 + Math.random() * (vw - 80);
-        wander.y = pick ? pick.y : fy;
-        wander.until = now + 3500 + Math.random() * 3000;
-      }
-      tx = wander.x; ty = wander.y;
-    }
-
-    w.wave = active && Math.abs(tx - w.x) < 34 && Math.abs(ty - (w.y - SH / 2)) < 40;
-
-    if (w.ground) {
-      var under = w.y >= fy - 1 ? { x1: 0, x2: vw, y: fy, floor: true } : supportAt(w.x, w.y, 3);
-      if (!under) { w.ground = false; w.vy = 0; w.vx *= 0.3; }   // walked off an edge: drop almost straight down
-      else {
-        w.y = under.y;
-        // target below this line and over it: walk past the nearer edge and drop
-        if (ty > w.y + 30 && !under.floor && tx > under.x1 - 30 && tx < under.x2 + 30) {
-          // where would each edge drop us? prefer the landing closest to the target
-          var score = function (ex) {
-            var land = fy;
-            platforms.forEach(function (q) { if (q.y > w.y + 4 && q.y < land && ex >= q.x1 && ex <= q.x2) land = q.y; });
-            return Math.abs(land - ty) + Math.abs(ex - tx) * 0.3;
-          };
-          var eL = under.x1 - 20, eR = under.x2 + 20;
-          tx = score(eL) <= score(eR) ? eL : eR;
-        }
-        var dx = tx - w.x;
-        var speed = active ? RUN : WALK;
-        if (w.jumpReq) { w.jumpReq = false; w.vy = -VJ * 0.6; w.vx = 0; w.ground = false; }
-        else if (w.wave) { w.vx = 0; w.step = 0; }
-        else {
-          if (ty < w.y - 30 && now > w.cooldown) {          // the target is higher: find a line to jump to
-            var cands = platforms.filter(function (p) {
-              return p.y < w.y - 18 && p.y > w.y - 2 * JUMP_H + 20 && p.x2 > w.x - 220 && p.x1 < w.x + 220;
-            });
-            cands.sort(function (a, b) {
-              var da = Math.abs(a.y - ty) + Math.abs(Math.min(Math.max(tx, a.x1), a.x2) - tx) * 0.5;
-              var db = Math.abs(b.y - ty) + Math.abs(Math.min(Math.max(tx, b.x1), b.x2) - tx) * 0.5;
-              return da - db;
-            });
-            for (var i = 0; i < cands.length && i < 4; i++) if (jumpTo(cands[i], now, tx)) break;
-          }
-          if (w.ground) {
-            if (Math.abs(dx) > 10) { w.vx = (dx > 0 ? 1 : -1) * speed; w.dir = dx > 0 ? 1 : -1; }
-            else w.vx = 0;
-            w.x += w.vx * dt;
-            if (w.vx && now - w.lastStep > 150) { w.step ^= 1; w.lastStep = now; }
-            if (!w.vx) w.step = 0;
-          }
-        }
-      }
-    }
-    if (!w.ground) {
-      if (w.second && now >= w.second) { w.second = 0; w.vy = -VJ; w.flip = now; }
-      var prevY = w.y;
-      w.vy += G * dt;
-      w.x += w.vx * dt; w.y += w.vy * dt;
-      if (w.vy > 0) {
-        var land = null;
-        platforms.forEach(function (p) {
-          if (w.x >= p.x1 - 4 && w.x <= p.x2 + 4 && p.y >= prevY - 1 && p.y <= w.y + 1 && (!land || p.y < land.y)) land = p;
-        });
-        if (land) { w.y = land.y; w.vy = 0; w.vx = 0; w.ground = true; w.landT = now; }
-        else if (w.y >= fy) { w.y = fy; w.vy = 0; w.vx = 0; w.ground = true; w.landT = now; }
-      }
-      w.step = 1;
-    }
-    w.x = Math.min(Math.max(w.x, SW / 2 + 4), vw - SW / 2 - 4);
-
-    // draw: a fixed canvas placed at the robot's page position
-    var squash = now - w.landT < 90 ? S : 0;
-    wc.style.transform = 'translate(' + Math.round(w.x - SW / 2 - window.scrollX) + 'px,' +
-                         Math.round(w.y - SH - 4 * S - top + squash) + 'px)';
-    var r = contact.getBoundingClientRect();
-    var onDark = (w.y - top) > r.top && (w.y - top) < r.bottom + 20;
-    var ctx = wc.getContext('2d');
-    var s = wc.width / R.W;
-    ctx.clearRect(0, 0, wc.width, wc.height);
-    R.draw(ctx, bot, { step: w.step, blink: now < blinkUntil, wave: w.wave }, 0, s * 4, s,
-           onDark ? THEME_DARK : THEME, w.dir < 0);
+    if (goal === null || Math.abs(goal - y) < 3) return;
+    snapping = true;
+    window.scrollTo({ top: goal, behavior: 'smooth' });
+    setTimeout(function () { snapping = false; settle(); }, 900);   // check again: the wheel may have cut it short
   }
+  var lastY = window.scrollY, scrollDir = 1;
+  window.addEventListener('scroll', function () {
+    var y = window.scrollY;
+    if (!snapping && y !== lastY) scrollDir = y > lastY ? 1 : -1;
+    lastY = y;
+    clearTimeout(snapT); snapT = setTimeout(settle, 180);
+  }, { passive: true });
+
+  /* ================================================================ shared with walker.js */
+  window.Home = {
+    get bot() { return bot; },
+    get blinkUntil() { return blinkUntil; },
+    newRandom: newRandom, THEME: THEME, THEME_DARK: THEME_DARK, contact: contact, reduce: reduce
+  };
 
   /* ================================================================ work: horizontal track */
   var section = document.querySelector('.section-work');
@@ -478,6 +328,7 @@
     var extra = track.scrollWidth - window.innerWidth + 128;
     section.style.height = (window.innerHeight + Math.max(0, extra)) + 'px';
   }
+  function layoutAll() { layoutWork(); layoutPanels(); }
   function worksTick() {
     if (!horizontal) return;
     var rect = section.getBoundingClientRect();
@@ -488,9 +339,9 @@
     track.style.transform = 'translate3d(' + trackX.toFixed(1) + 'px,0,0)';
     if (bar) bar.style.transform = 'scaleX(' + p.toFixed(3) + ')';
   }
-  layoutWork();
-  window.addEventListener('resize', layoutWork);
-  window.addEventListener('load', layoutWork);
+  layoutAll();
+  window.addEventListener('resize', layoutAll);
+  window.addEventListener('load', layoutAll);
 
   /* ================================================================ one loop */
   var last = performance.now();
@@ -499,7 +350,7 @@
     var dt = Math.min(40, now - last);
     if (now > nextBlink) { blinkUntil = now + 140; nextBlink = now + 2500 + Math.random() * 3000; }
     if (heroVisible || hero.build) drawHero(now);
-    if (walker) walkerTick(now, dt);
+    if (window.Walker) window.Walker.tick(now, dt);
     worksTick();
     last = now;
     requestAnimationFrame(loop);
