@@ -84,7 +84,7 @@
     { id: 'about', mode: 'rope' },
     { id: 'work', mode: 'drone', sel: '.section-work .sec-title' },
     { id: 'coursework', mode: 'lamp', sel: '#coursework .sec-title' },
-    { id: 'skills', mode: 'hook', sel: '#skills .sec-title' },
+    { id: 'skills', mode: 'tricks', sel: '#skills .sec-title' },
     { id: 'contact', mode: 'show', sel: '.contact-label' }
   ];
   SCENES.forEach(function (sc) { sc.section = document.getElementById(sc.id); sc.el = sc.sel ? document.querySelector(sc.sel) : null; });
@@ -249,6 +249,7 @@
       var k = lastLetter(sc.el);
       return { x: k.left + (k.right - k.left) * 0.32 + scrollX, y: k.top + scrollY };
     }
+    if (sc.mode === 'tricks') return { x: tricksX(), y: sc.section.getBoundingClientRect().bottom + scrollY };   // the edge with Contact is the floor
     if (sc.mode === 'hook') {                       // under the last letter (the s)
       var s2 = lastLetter(sc.el);
       var ax = (s2.left + s2.right) / 2 + scrollX, ay = s2.base + scrollY + 2;
@@ -414,6 +415,15 @@
     fctx.clearRect(0, 0, innerWidth, innerHeight);
     portals = portals.filter(function (pt) { return pt.closeT == null || now - pt.closeT < 180; });
     portals.forEach(function (pt) { drawPortal(pt, now); });
+    drawParkedLamp();
+    drawGrass(now);
+    propDraw.forEach(function (pr) {                         // the toys of the Skills scene
+      pr.cells.forEach(function (c) {
+        fctx.fillStyle = c.col;
+        fctx.fillRect(Math.round(pr.x - scrollX + c.x * S), Math.round(pr.y - scrollY + c.y * S), S, S);
+      });
+    });
+    propDraw = [];
     if (lightCone) {
       var c = lightCone;
       var g = fctx.createLinearGradient(c.m.x, c.m.y, c.r.x, c.r.y + c.r.h / 2);
@@ -509,6 +519,19 @@
   function leaveScene(now) {               // transformed? turn back into a robot first
     W.prevState = W.state;
     W.tempo = tempoNow(now);
+    var toS = sceneNow();
+    if (W.state === 'tricks') {                                 // the toys burst first
+      if (W.tk.phase === 'out') return;
+      if (W.tk.last) poofAt(W.tk.last.x, W.tk.last.y, 12);
+      W.tk.phase = 'out'; W.tk.t0 = now; W.tk.to = toS; grass.target = 0;
+      return;
+    }
+    if (toS.mode === 'tricks') {
+      if (W.state === 'lamp') { W.parkLamp = true; lightCone = null; clearLit(); }   // the lamp stays on the k
+      else poofAt(W.x, W.y - 25, 12);                           // anything else: a burst where it was
+      enterTricks(now, toS, true);
+      return;
+    }
     if (W.state === 'workline' && sceneNow().id === 'work' && W.tempo !== 'teleport') {
       var to = sceneNow();
       startMorph(robotCells({}, W.dir, false), function (n) { return droneCells(n, 0.1, false); }, now, function (n) {
@@ -967,7 +990,7 @@
         }
         if (el > pd + 320) {
           W.landT = now; W.printDelay = 0;
-          if (pmode === 'lamp') { W.lamp = { angle: 1.15, av: 0 }; setState('lamp', now); }
+          if (pmode === 'lamp') { W.parkLamp = false; W.lamp = { angle: 1.15, av: 0 }; setState('lamp', now); }
           else if (pmode === 'drone') { W.drone = { x: W.x - scrollX, v: 0, wob: 1 }; setState('drone', now); }
           else { arrive(now); if (W.scene.mode === 'hero') W.hello = now; }
         }
@@ -989,6 +1012,95 @@
           if (tt >= 1 && po.portal.closeT == null) po.portal.closeT = now;
         }
         if (ot > 300) { W.pin = null; setState(W.transitTo ? 'transit' : 'portalin', now); }
+        break;
+      }
+
+      case 'tricks': {
+        var tk = W.tk, lyS = W.scene.section.getBoundingClientRect().bottom + scrollY, spotX = tricksX();
+        W.y = lyS;
+        grass.x = spotX; grass.y = lyS;
+        var pt2 = { blink: blink }, u = now - tk.trickT;
+        var lookM = mouseActive(now) ? { x: Math.abs(mouse.cx + scrollX - W.x) > 30 ? (mouse.cx + scrollX > W.x ? 1 : -1) * W.dir : 0,
+                                         y: Math.abs(mouse.cy + scrollY - (W.y - 40)) > 60 ? (mouse.cy + scrollY > W.y - 40 ? 1 : -1) : 0 } : null;
+        if (tk.phase === 'wait') {                               // waits until its floor is on screen
+          cells = []; W.x = scrollX - 30; atFeet(W.x, W.y);
+          if (lyS < scrollY + innerHeight + 4) { tk.phase = 'run'; tk.t0 = now; }
+          break;
+        }
+        if (tk.phase === 'run') {                                // runs in from the left, kicking up dust
+          W.x += 0.5 * dt;
+          if (now - W.lastStep > 80) { W.step ^= 1; W.lastStep = now; if (Math.random() < 0.6) puff(W.x - 10, W.y, 1, '#B9B2A6', 0.06, 0.03); }
+          pt2.step = W.step; pt2.armL = W.step ? 'climb' : 'down'; pt2.armR = W.step ? 'down' : 'climb';
+          if (W.x >= spotX - 10) { tk.phase = 'skid'; tk.t0 = now; }
+          atFeet(W.x, W.y); cells = robotCells(pt2, 1, false); break;
+        }
+        if (tk.phase === 'skid') {                               // brakes, then the grass grows under it
+          var sk = clamp((now - tk.t0) / 240, 0, 1);
+          W.x += 0.25 * (1 - sk) * dt;
+          if (Math.random() < 0.5) puff(W.x + 8, W.y, 1, '#B9B2A6', 0.08, 0.04);
+          place.rot = -8 * (1 - sk);
+          pt2.armL = 'up'; pt2.armR = 'reach';
+          if (sk >= 1) { tk.phase = 'play'; tk.trickT = now; grass.target = 1; }
+          atFeet(W.x, W.y); cells = robotCells(pt2, 1, false); break;
+        }
+        if (tk.phase === 'out') {                                // leaving: the toys burst, the grass goes down
+          grass.target = 0;
+          pt2.look = lookM;
+          atFeet(W.x, W.y); cells = robotCells(pt2, W.dir, false);
+          if (now - tk.t0 > (W.tempo === 'teleport' ? 120 : 300)) {
+            var to2 = tk.to;
+            if (to2.mode === 'lamp') {                           // back up to Coursework: it is the lamp again
+              poofAt(W.x, W.y - 25, 14);
+              W.parkLamp = false; W.scene = to2; W.lamp = { angle: 1.15, av: 0 }; setState('lamp', now);
+            } else startTravel(to2, now);
+          }
+          break;
+        }
+        // play: one trick after another
+        W.x += (spotX - W.x) * 0.1;
+        var name = TRICKS[tk.trick];
+        if (u > 5600) {                                          // next trick: the old toy bursts
+          if (tk.last) poofAt(tk.last.x, tk.last.y, 10);
+          tk.trick = (tk.trick + 1) % TRICKS.length; tk.trickT = now; u = 0; name = TRICKS[tk.trick];
+        }
+        var hx = W.x + 9 * S, hy = W.y - 9 * S;                  // the right hand when the arm is out
+        pt2.look = lookM;
+        if (name === 'soccer') {                                 // keepie-uppie
+          var per = 520, k5 = (u % per) / per, foot = Math.floor(u / per) % 2;
+          var bx = W.x + (foot ? 5 : -5), by = W.y - 3 * S - Math.sin(k5 * Math.PI) * 52;
+          pt2.step = k5 < 0.15 ? 1 : 0; W.dir = foot ? 1 : -1;
+          if (k5 < 0.05) grass.kick = now;
+          propDraw.push({ x: bx, y: by, cells: BALL }); tk.last = { x: bx, y: by };
+        } else if (name === 'football') {                        // throws a spiral up and catches it
+          var per2 = 1700, k6 = (u % per2) / per2, fx2, fy2;
+          W.dir = 1;
+          if (k6 < 0.15) { pt2.armR = 'up'; fx2 = W.x + 6; fy2 = W.y - 17 * S; }
+          else {
+            var tt2 = (k6 - 0.15) / 0.8; tt2 = Math.min(tt2, 1);
+            fx2 = W.x + 6; fy2 = W.y - 17 * S - Math.sin(tt2 * Math.PI) * 150;
+            pt2.armR = tt2 > 0.8 ? 'up' : 'down'; pt2.armL = tt2 > 0.8 ? 'up' : 'down';
+          }
+          var spin = Math.floor(now / 90) % 2;
+          propDraw.push({ x: fx2, y: fy2, cells: k6 < 0.15 ? FOOT_H : (spin ? FOOT_H : FOOT_V) }); tk.last = { x: fx2, y: fy2 };
+        } else if (name === 'tennis') {                          // bounces a ball on a racket
+          W.dir = 1; pt2.armR = 'reach';
+          var per3 = 470, k7 = (u % per3) / per3;
+          var rx3 = hx + 4 * S, ry3 = hy - 3 * S;
+          propDraw.push({ x: rx3, y: ry3, cells: RACKET });
+          var tbY = ry3 - 4 * S - Math.sin(k7 * Math.PI) * 46;
+          propDraw.push({ x: rx3, y: tbY, cells: TBALL }); tk.last = { x: rx3, y: tbY };
+        } else {                                                 // the controller, and a small drone that flies in
+          W.dir = 1; pt2.armL = 'climb'; pt2.armR = 'climb';
+          propDraw.push({ x: W.x, y: W.y - 8 * S, cells: PAD });
+          var enter = clamp(u / 1100, 0, 1), ph = u / 900;
+          var ox = W.x + Math.sin(ph) * 80, oy = W.y - 95 + Math.sin(ph * 2) * 22;
+          var dxp = innerWidth + scrollX + 40;
+          var mdx = dxp + (ox - dxp) * (1 - Math.pow(1 - enter, 3)), mdy = oy;
+          propDraw.push({ x: mdx, y: mdy, cells: miniDrone(now) }); tk.last = { x: mdx, y: mdy };
+          pt2.look = { x: Math.abs(mdx - W.x) > 30 ? (mdx > W.x ? 1 : -1) : 0, y: -1 };   // watches the drone
+        }
+        atFeet(W.x, W.y);
+        cells = robotCells(pt2, W.dir, false);
         break;
       }
 
@@ -1027,7 +1139,7 @@
         }
         if (el > 820) {
           W.landT = now; W.pin = null;
-          if (mode === 'lamp') { W.lamp = { angle: 1.15, av: 0 }; setState('lamp', now); }
+          if (mode === 'lamp') { W.parkLamp = false; W.lamp = { angle: 1.15, av: 0 }; setState('lamp', now); }
           else if (mode === 'drone') { W.drone = { x: W.x - scrollX, v: 0, wob: 1 }; setState('drone', now); }
           else { arrive(now); if (W.scene.mode === 'hero') W.hello = now; }
         }
@@ -1258,6 +1370,68 @@
     if (W.gesture.kind === 'stretch') { pz.armL = 'up'; pz.armR = 'up'; }
   }
 
+
+  /* ---------------------------------------------------------------- Skills: tricks on the floor (decision SH28)
+     It runs in from the left onto the edge between Coursework and Skills, a small patch of grass
+     grows under it, and it goes through a few tricks tied to the projects. Its eyes follow the
+     cursor. When it leaves, the toys burst into pixels and the grass goes back down. */
+  var propDraw = [];
+  function sprite(rows, map) {                                // ascii rows -> cells centred on the sprite
+    var out = [], h = rows.length, w = rows[0].length;
+    rows.forEach(function (r, y) { for (var x = 0; x < w; x++) { var col = map[r[x]]; if (col) out.push({ x: x - w / 2, y: y - h / 2, col: col }); } });
+    return out;
+  }
+  var INK = '#1A1A1A', WHITE = '#FFFFFF';
+  var BALL = sprite(['.kkk.', 'kwkwk', 'kkwkk', 'kwkwk', '.kkk.'], { k: INK, w: WHITE });
+  var FOOT_H = sprite(['.bbbb.', 'bbwwbb', 'bbbbbb', '.bbbb.'], { b: '#8B4A2B', w: WHITE });
+  var FOOT_V = sprite(['.bb.', 'bbbb', 'bwbb', 'bwbb', 'bbbb', '.bb.'], { b: '#8B4A2B', w: WHITE });
+  var TBALL = sprite(['yy', 'yy'], { y: '#C9E04A' });
+  var RACKET = sprite(['.kkk.', 'klllk', 'klllk', 'klllk', '.kkk.', '..k..', '..k..', '..k..'], { k: INK, l: '#D9D4CA' });
+  var PAD = sprite(['kkkkk', 'kakek', 'kkkkk'], { k: INK, a: '#C0522A', e: '#FFD66B' });
+  function miniDrone(now) {
+    var f = Math.floor(now / 40) % 2, bl = f ? '#8A8A8A' : INK;
+    return sprite([f ? '.bb.....bb.' : 'bbb.....bbb', '..k.....k..', '.kkkkkkkkk.', '...kkakk...', '....k.k....'],
+                  { b: bl, k: INK, a: Home.bot.accent });
+  }
+  function tricksX() { return scrollX + Math.min(Math.max(innerWidth * 0.2, 170), 330); }
+  var BLADES = [];
+  for (var bi = 0; bi < 46; bi++) BLADES.push({ dx: (bi - 23) * S, h: 1 + ((bi * 7) % 3), c: bi % 3 === 0 ? '#5DA66E' : '#3C8D5A' });
+  var grass = { x: 0, y: 0, g: 0, target: 0 };
+  function drawGrass(now) {
+    grass.g += (grass.target - grass.g) * 0.12;
+    if (grass.g < 0.03) return;
+    BLADES.forEach(function (b, i) {
+      var h = Math.round(b.h * grass.g + (grass.kick && now - grass.kick < 250 && i % 2 ? 1 : 0));
+      if (h <= 0) return;
+      var sway = Math.sin(now / 420 + i * 0.7) > 0.3 ? 1 : 0;
+      fctx.fillStyle = b.c;
+      for (var k = 0; k < h; k++) fctx.fillRect(Math.round(grass.x - scrollX + b.dx + (k === h - 1 ? sway : 0)), Math.round(grass.y - scrollY - (k + 1) * S), S, S);
+    });
+  }
+  function poofAt(x, y, n) { for (var i = 0; i < n; i++) parts.push({ x: x, y: y, vx: (Math.random() - 0.5) * 0.2, vy: -Math.random() * 0.16, life: 0, max: 360, col: Math.random() < 0.5 ? Home.bot.accent : '#FFD66B', g: 0.0004 }); }
+
+  // the lamp stays parked on the k (light off) while the robot is elsewhere
+  var courseScene = null;
+  function drawParkedLamp() {
+    if (!W.parkLamp || W.state === 'lamp') return;
+    if (!courseScene) courseScene = SCENES.filter(function (q) { return q.id === 'coursework'; })[0];
+    var lp = landing(courseScene), lft = lp.x - RC * S, tp = lp.y - FOOT * S;
+    if (tp - scrollY > innerHeight + 20 || tp - scrollY < -120) return;
+    lampCells(1.15, false, false, false).forEach(function (c) {
+      fctx.fillStyle = c.col; fctx.fillRect(Math.round(lft - scrollX + c.x * S), Math.round(tp - scrollY + c.y * S), S, S);
+    });
+  }
+  function enterTricks(now, sc, fromLeft) {
+    W.scene = sc;
+    var lx = landing(sc);
+    W.y = lx.y; W.dir = 1;
+    W.x = fromLeft ? scrollX - 30 : lx.x;
+    W.tk = { phase: fromLeft ? 'wait' : 'play', t0: now, trick: Math.floor(Math.random() * 4), trickT: now, last: null };
+    grass.target = fromLeft ? 0 : 1;
+    setState('tricks', now);
+  }
+  var TRICKS = ['soccer', 'football', 'tennis', 'drone'];
+
   function arrive(now) {
     var sc = W.scene;
     if (sc.mode === 'drone') {
@@ -1266,7 +1440,8 @@
     } else if (sc.mode === 'lamp') {
       W.lamp = { angle: 1.15, av: 0 };
       startMorph(robotCells({}, 1, false), function () { return lampCells(1.15, false, false, false); }, now, function (n) { setState('lamp', n); });
-    } else if (sc.mode === 'hook') setState('hookgrab', now);
+    } else if (sc.mode === 'tricks') enterTricks(now, sc, false);
+    else if (sc.mode === 'hook') setState('hookgrab', now);
     else if (sc.mode === 'show') { W.actT = now; W.act = 0; setState('show', now); }
     else if (sc.mode === 'hero') { W.h = { lv: (W.travel && typeof W.travel.pi === 'string') ? W.travel.pi : 'line', act: null }; setState('hero', now); }
     else if (sc.mode === 'rope') { W.rp = { ring: W.y - ropeHB() }; setState('rope', now); }
