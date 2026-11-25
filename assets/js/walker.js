@@ -796,10 +796,25 @@
         var bg2 = landing(W.scene, W.travel && W.travel.pi);
         var bt2 = clamp((el - 120) / 300, 0, 1);
         W.x = bg2.x; W.y = bg2.y; atFeet(bg2.x, bg2.y);
-        var rows = Math.floor(bt2 * R.H);
-        cells = el < 120 ? [] : robotCells({ blink: blink }, W.dir, dark).filter(function (c) { return c.y - TOPM < rows; });
-        if (el >= 120 && el < 420) cells.push({ x: OX + Math.floor(Math.random() * R.W), y: TOPM + rows, col: Home.bot.accent });
-        if (el > 440) { W.landT = now; arrive(now); }
+        // printed directly in the shape it takes there: a lamp in Coursework, a drone in Work
+        var mode = W.scene.mode;
+        var form = mode === 'lamp' ? lampCells(1.15, false, blink, false)
+                 : mode === 'drone' ? droneCells(now, 0.1, false)
+                 : robotCells({ blink: blink }, W.dir, dark);
+        var y0f = Infinity, y1f = -Infinity;
+        form.forEach(function (c) { if (c.y < y0f) y0f = c.y; if (c.y > y1f) y1f = c.y; });
+        var rowsTo = y0f + Math.floor(bt2 * (y1f - y0f + 1));
+        cells = el < 120 ? [] : form.filter(function (c) { return c.y < rowsTo; });
+        if (el >= 120 && el < 420) {
+          var xs = form.map(function (c) { return c.x; }), xa = Math.min.apply(null, xs), xb = Math.max.apply(null, xs);
+          cells.push({ x: xa + Math.floor(Math.random() * (xb - xa + 1)), y: rowsTo, col: Home.bot.accent });
+        }
+        if (el > 440) {
+          W.landT = now;
+          if (mode === 'lamp') { W.lamp = { angle: 1.15, av: 0 }; setState('lamp', now); }
+          else if (mode === 'drone') { W.drone = { x: W.x - scrollX, v: 0, wob: 1 }; setState('drone', now); }
+          else arrive(now);
+        }
         break;
       }
 
