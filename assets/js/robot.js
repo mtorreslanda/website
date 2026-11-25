@@ -139,5 +139,21 @@
     return b.head + ' head, ' + b.eyes + ' eyes, ' + b.body + ' body, ' + b.legs;
   }
 
-  window.Robot = { W: W, H: H, make: make, cells: cells, draw: draw, color: color, describe: describe };
+  // the choices for each slot, in display order (legs weighted 2:1:1 in make, listed once here)
+  var OPTIONS = {
+    antenna: ['none', 'single', 'double', 'dish'],
+    head: Object.keys(HEADS),
+    eyes: ['dots', 'big', 'visor', 'cyclops'],
+    mouth: ['line', 'grill', 'smile', 'none'],
+    bolts: [false, true],
+    body: Object.keys(BODIES),
+    chest: ['panel', 'buttons', 'screen', 'heart'],
+    arms: ['short', 'long', 'claw'],
+    legs: ['legs', 'wheel', 'tracks'],
+    accent: ACCENTS
+  };
+  var COMBOS = Object.keys(OPTIONS).reduce(function (n, k) { return n * OPTIONS[k].length; }, 1);
+
+  window.Robot = { W: W, H: H, make: make, cells: cells, draw: draw, color: color, describe: describe,
+                   OPTIONS: OPTIONS, COMBOS: COMBOS };
 })();

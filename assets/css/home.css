@@ -54,16 +54,40 @@ img { display: block; max-width: 100%; }
               line-height: .9; margin: 2.4rem 0 2.2rem; }
 .hero-title > span { display: block; white-space: nowrap; }
 .hero-title .l2 { padding-left: clamp(1.5rem, 5vw, 6rem); }
-.hero-sub { font-size: 1rem; letter-spacing: .16em; text-transform: uppercase; color: var(--grey); }
+.hero-roles { font-size: 1rem; letter-spacing: .16em; text-transform: uppercase; color: var(--grey);
+              display: flex; flex-wrap: wrap; gap: .2rem .9rem; align-items: baseline; }
+.hero-roles span { white-space: nowrap; }
+.hero-roles i { font-style: normal; color: var(--accent); }
 .hero-areas { margin-top: 1.4rem; display: flex; flex-wrap: wrap; gap: .6rem; }
 .hero-areas span { font-size: .74rem; letter-spacing: .1em; text-transform: uppercase; padding: .42rem .9rem;
                    border: 1px solid var(--ink); background: var(--paper); }
-.hero-bot { justify-self: end; width: min(100%, 250px); text-align: center; margin-right: 2vw; }
-#robot { width: 100%; aspect-ratio: 16 / 19; display: block; image-rendering: pixelated; cursor: pointer; }
-#robot-tag { margin-top: .9rem; font-family: var(--mono); font-size: .7rem; color: var(--grey); min-height: 2.4em;
-             line-height: 1.6; }
-.hero-hint { font-family: var(--mono); font-size: .66rem; letter-spacing: .14em; text-transform: uppercase;
-             color: var(--grey); opacity: .8; }
+
+/* the robot and its spec sheet */
+.hero-bot { display: grid; grid-template-columns: 230px minmax(0, 220px); gap: 1.6rem; align-items: start;
+            justify-self: start; }
+#robot { width: 100%; aspect-ratio: 20 / 24; display: block; image-rendering: pixelated; cursor: pointer; }
+.spec-wrap { padding-top: .4rem; font-family: var(--mono); font-size: .7rem; }
+.spec-head { display: flex; justify-content: space-between; gap: .6rem; padding-bottom: .5rem;
+             border-bottom: 1px solid var(--ink); color: var(--ink); letter-spacing: .04em; }
+.spec-head span:last-child { color: var(--grey); }
+.spec { display: grid; }
+.part { display: flex; justify-content: space-between; align-items: center; gap: .6rem; width: 100%;
+        background: none; border: 0; border-bottom: 1px dashed var(--line); padding: .32rem 0; cursor: pointer;
+        font: inherit; color: inherit; text-align: left; }
+.part span { color: var(--grey); text-transform: uppercase; letter-spacing: .1em; font-size: .62rem; }
+.part b { font-weight: 500; color: var(--ink); }
+.part b::after { content: ' ›'; color: var(--grey); opacity: 0; transition: opacity .2s ease; }
+.part:hover b::after, .part:focus-visible b::after { opacity: 1; }
+.part:hover b { color: var(--accent); }
+.part i { display: inline-block; width: .8rem; height: .8rem; vertical-align: -1px; }
+.spec-note { margin-top: .7rem; color: var(--grey); line-height: 1.5; font-size: .64rem; }
+.spec-how { margin-top: .7rem; }
+.spec-how summary { cursor: pointer; color: var(--ink); text-transform: uppercase; letter-spacing: .1em;
+                    font-size: .62rem; list-style: none; }
+.spec-how summary::-webkit-details-marker { display: none; }
+.spec-how summary::before { content: '+ '; color: var(--accent); }
+.spec-how[open] summary::before { content: '– '; }
+.spec-how p { margin-top: .5rem; font-family: var(--sans); font-size: .78rem; line-height: 1.6; color: #444; }
 .scroll-hint { position: absolute; left: 50%; bottom: 2.2rem; transform: translateX(-50%); font-size: .75rem;
                letter-spacing: .2em; text-transform: uppercase; text-decoration: none; color: var(--grey); }
 .js .scroll-hint { animation: bounce 2.2s ease-in-out infinite; }
@@ -175,7 +199,7 @@ a.row .row-side { color: var(--ink); }
                 color: rgba(255,255,255,.3); }
 
 /* ---------------------------------------------------------------- walker */
-#walker { position: fixed; left: 0; bottom: 6px; z-index: 90; cursor: pointer; image-rendering: pixelated; }
+#walker { position: fixed; left: 0; top: 0; z-index: 90; cursor: pointer; image-rendering: pixelated; }
 .no-walker #walker { display: none; }
 
 /* ---------------------------------------------------------------- reduced motion */
@@ -198,7 +222,7 @@ a.row .row-side { color: var(--ink); }
   .nav-links { gap: 1.1rem; }
   .nav-links .opt { display: none; }
   .section-hero { grid-template-columns: 1fr; padding-top: 8rem; }
-  .hero-bot { width: 180px; }
+  .hero-bot { grid-template-columns: 140px minmax(0, 220px); }
   .about-in, .split { grid-template-columns: 1fr; gap: 3rem; }
   .split-left { position: static; }
   .about-photo { width: min(100%, 320px); height: 400px; }

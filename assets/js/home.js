@@ -7,8 +7,9 @@
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var THEME = { ink: '#1A1A1A', eye: '#F5F3EE' };
   var THEME_DARK = { ink: '#F5F3EE', eye: '#2A2A2A' };
+  var R = window.Robot;
 
-  /* ---------------------------------------------------------------- nav */
+  /* ================================================================ nav */
   var nav = document.querySelector('.nav');
   var contact = document.querySelector('.section-contact');
   function onScroll() {
@@ -19,7 +20,7 @@
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  /* ---------------------------------------------------------------- text: letters rise */
+  /* ================================================================ text: letters rise */
   document.querySelectorAll('[data-letters]').forEach(function (el) {
     if (reduce) return;
     var text = el.textContent;
@@ -36,7 +37,7 @@
     });
   });
 
-  /* ---------------------------------------------------------------- text: decode on view */
+  /* ================================================================ text: decode */
   var GLYPHS = '▖▗▘▙▚▛▜▝▞▟░▒#/<>01';
   function scramble(el) {
     var final = el.getAttribute('data-final');
@@ -48,15 +49,26 @@
         else out += GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
       }
       el.textContent = out;
-      if (++frame <= total) requestAnimationFrame(function () { setTimeout(tick, 28); });
+      if (++frame <= total) setTimeout(tick, 28);
       else el.textContent = final;
     }
     tick();
   }
-  var scr = document.querySelectorAll('[data-scramble]');
-  scr.forEach(function (el) { el.setAttribute('data-final', el.textContent); el.setAttribute('aria-label', el.textContent); });
+  document.querySelectorAll('[data-scramble]').forEach(function (el) {
+    el.setAttribute('data-final', el.textContent); el.setAttribute('aria-label', el.textContent);
+  });
 
-  /* ---------------------------------------------------------------- reveal on view */
+  /* roles under the name: one after another, decoded */
+  var roles = document.querySelector('.hero-roles');
+  if (roles && !reduce) {
+    roles.querySelectorAll('span').forEach(function (sp, i) {
+      sp.setAttribute('data-final', sp.textContent);
+      sp.style.visibility = 'hidden';
+      setTimeout(function () { sp.style.visibility = ''; scramble(sp); }, 900 + i * 260);
+    });
+  }
+
+  /* ================================================================ reveal on view */
   var reveal = document.querySelectorAll('.rv, [data-scramble], .row');
   function show(el) {
     if (el.classList.contains('in')) return;
@@ -68,8 +80,8 @@
       entries.forEach(function (e) {
         if (!e.isIntersecting) return;
         var el = e.target;
-        var sibs = el.parentElement ? Array.prototype.indexOf.call(el.parentElement.children, el) : 0;
-        setTimeout(function () { show(el); }, el.classList.contains('row') ? Math.min(sibs, 10) * 70 : 0);
+        var k = el.parentElement ? Array.prototype.indexOf.call(el.parentElement.children, el) : 0;
+        setTimeout(function () { show(el); }, el.classList.contains('row') ? Math.min(k, 10) * 70 : 0);
         io.unobserve(el);
       });
     }, { rootMargin: '0px 0px -10% 0px' });
@@ -77,20 +89,24 @@
   }
   setTimeout(function () { reveal.forEach(show); }, 5000);   // never leave anything hidden
 
-  /* ---------------------------------------------------------------- nav links: decode on hover */
   if (!reduce) document.querySelectorAll('.nav-links a').forEach(function (a) {
     a.setAttribute('data-final', a.textContent);
     a.addEventListener('mouseenter', function () { scramble(a); });
   });
 
-  /* ---------------------------------------------------------------- robots */
-  var R = window.Robot;
-  var seed = Math.floor(Date.now() / 1000);
-  var bot = R.make(seed);
+  /* ================================================================ the robot (hero) */
   var heroCanvas = document.getElementById('robot');
-  var tag = document.getElementById('robot-tag');
-  var hero = { particles: null, t0: 0, dur: 900 };
+  var specEl = document.getElementById('robot-spec');
+  var idEl = document.getElementById('robot-id');
+  var seed = Math.floor(Date.now() / 1000) >>> 0;
+  var bot = R.make(seed);
+  var hero = { build: null };
   var heroVisible = true;
+  var blinkUntil = 0, nextBlink = performance.now() + 2500;
+  var walker = null;
+  var LABELS = { antenna: 'Antenna', head: 'Head', eyes: 'Eyes', mouth: 'Mouth', bolts: 'Bolts',
+                 body: 'Body', chest: 'Chest', arms: 'Arms', legs: 'Legs', accent: 'Colour' };
+  var KEYS = Object.keys(LABELS);
 
   function setFavicon(b) {
     var c = document.createElement('canvas'); c.width = c.height = 32;
@@ -101,144 +117,355 @@
     if (link) { link.type = 'image/png'; link.href = c.toDataURL('image/png'); }
   }
 
+  function valueText(k, v) {
+    if (k === 'bolts') return v ? 'yes' : 'no';
+    return String(v);
+  }
+
+  function renderSpec() {
+    if (!specEl) return;
+    specEl.innerHTML = '';
+    KEYS.forEach(function (k) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'part';
+      btn.setAttribute('aria-label', LABELS[k] + ': ' + valueText(k, bot[k]) + '. Change');
+      var name = document.createElement('span'); name.textContent = LABELS[k];
+      var val = document.createElement('b');
+      if (k === 'accent') { var sw = document.createElement('i'); sw.style.background = bot.accent; val.appendChild(sw); }
+      else val.textContent = valueText(k, bot[k]);
+      btn.appendChild(name); btn.appendChild(val);
+      btn.addEventListener('click', function () {
+        lastEdit = performance.now();
+        var opts = R.OPTIONS[k];
+        var next = Object.assign({}, bot);
+        next[k] = opts[(opts.indexOf(bot[k]) + 1) % opts.length];
+        setBot(next, true);
+        var again = specEl.querySelectorAll('.part')[KEYS.indexOf(k)];
+        if (again) again.focus();
+      });
+      specEl.appendChild(btn);
+    });
+    if (idEl) idEl.textContent = 'unit ' + String(bot.seed % 100000).padStart(5, '0');
+  }
+
+  /* The robot stands in a pixel teleporter: an emitter on top, a pad below, no glass.
+     Grid: 20 x 24 cells; the robot occupies columns 2-17 and rows 4-20. */
+  var CW = 20, CH = 24, RX = 2, RY = 3;
   function heroSize() {
     var dpr = window.devicePixelRatio || 1;
     var w = heroCanvas.clientWidth;
     heroCanvas.width = Math.round(w * dpr);
-    heroCanvas.height = Math.round(w * (R.H + 2) / R.W * dpr);
-    return heroCanvas.width / R.W;
+    heroCanvas.height = Math.round(w * CH / CW * dpr);
   }
 
-  function rebuild(newSeed) {
+  function setBot(next, animate) {
     var old = bot;
-    seed = newSeed >>> 0;
-    bot = R.make(seed);
+    bot = next;
     setFavicon(bot);
-    if (tag) tag.textContent = 'unit ' + String(seed % 100000).padStart(5, '0') + ' · ' + R.describe(bot);
-    if (walker) walker.bot = bot;
-    if (reduce) { hero.particles = null; drawHero(); return; }
-    var from = R.cells(old, {}), to = R.cells(bot, {});
-    hero.particles = to.map(function (p, i) {
-      var src = from[i % from.length];
-      var scatter = Math.random() < 0.35;
-      return {
-        x0: scatter ? Math.random() * R.W : src.x, y0: scatter ? -2 - Math.random() * 6 : src.y,
-        x1: p.x, y1: p.y, c: p.c, delay: (p.y / R.H) * 260 + Math.random() * 180
-      };
-    });
-    hero.t0 = performance.now();
+    renderSpec();
+    if (walker && animate) walker.jumpReq = true;
+    hero.build = (animate && !reduce) ? { t0: performance.now(), old: old } : null;
+    drawHero(performance.now());
+  }
+  function newRandom() { seed = (seed + 7919) >>> 0; setBot(R.make(seed), true); }
+
+  // rows of the machine: [y, x0, x1, colour] with 'l' = lights
+  function machine(ctx, s, now, active) {
+    var ink = THEME.ink;
+    function bar(y, x0, x1, c) { ctx.fillStyle = c; ctx.fillRect(Math.round(x0 * s), Math.round(y * s), Math.round((x1 - x0 + 1) * s), Math.ceil(s)); }
+    function px(x, y, c) { ctx.fillStyle = c; ctx.fillRect(Math.round(x * s), Math.round(y * s), Math.ceil(s), Math.ceil(s)); }
+    // emitter
+    bar(0, 4, 15, ink); bar(1, 2, 17, ink); bar(2, 6, 13, ink);
+    // pad
+    bar(21, 3, 16, ink); bar(22, 1, 18, ink); bar(23, 2, 4, ink); bar(23, 15, 17, ink);
+    // lights: a slow chase when idle, all on while building
+    var lightsTop = [4, 7, 10, 13, 15], lightsPad = [3, 6, 9, 12, 15];
+    var k = Math.floor(now / 380) % 5;
+    lightsTop.forEach(function (x, i) { px(x, 1, active || i === k ? bot.accent : '#3A3A3A'); });
+    lightsPad.forEach(function (x, i) { px(x + 1, 22, active || i === (4 - k) ? bot.accent : '#3A3A3A'); });
+    // nozzle glow
+    for (var x = 7; x <= 12; x++) px(x, 2, active ? THEME.eye : '#2E2E2E');
   }
 
-  function ease(t) { var c1 = 1.4, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
+  function drawRobotRows(ctx, b, s, y0, rowFrom, rowTo, pose) {
+    R.cells(b, pose || {}).forEach(function (p) {
+      if (p.y < rowFrom || p.y > rowTo) return;
+      ctx.fillStyle = R.color(p.c, b, THEME);
+      ctx.fillRect(Math.round((RX + p.x) * s), Math.round(y0 + p.y * s), Math.ceil(s), Math.ceil(s));
+    });
+  }
 
-  var blinkUntil = 0, nextBlink = performance.now() + 2500;
   function drawHero(now) {
-    now = now || performance.now();
-    var s = heroCanvas.width / R.W;
+    var s = heroCanvas.width / CW;
     var ctx = heroCanvas.getContext('2d');
     ctx.clearRect(0, 0, heroCanvas.width, heroCanvas.height);
-    var oy = s * 1.5;
-    if (hero.particles) {
-      var done = true;
-      hero.particles.forEach(function (p) {
-        var t = Math.min(1, Math.max(0, (now - hero.t0 - p.delay) / hero.dur));
-        if (t < 1) done = false;
-        var e = ease(t);
-        ctx.fillStyle = R.color(p.c, bot, THEME);
-        ctx.fillRect(Math.round((p.x0 + (p.x1 - p.x0) * e) * s), Math.round(oy + (p.y0 + (p.y1 - p.y0) * e) * s),
-                     Math.ceil(s), Math.ceil(s));
-      });
-      if (done) hero.particles = null;
-      return;
+    var bld = hero.build;
+    var y0 = (RY + 1) * s;                                  // robot top, resting on the pad
+    if (bld) {
+      var t = now - bld.t0, OUT = 420, IN = 900;
+      // beam between emitter and pad
+      ctx.fillStyle = bot.accent; ctx.globalAlpha = 0.10 + 0.05 * Math.sin(now / 40);
+      ctx.fillRect(Math.round(5 * s), Math.round(3 * s), Math.round(10 * s), Math.round(18 * s));
+      ctx.globalAlpha = 1;
+      var scan;
+      if (t < OUT) {                                        // the old robot is erased from the top down
+        scan = Math.floor(t / OUT * R.H);
+        drawRobotRows(ctx, bld.old, s, y0, scan + 1, R.H);
+      } else if (t < OUT + IN) {                            // the new one is printed row by row
+        scan = Math.floor((t - OUT) / IN * R.H);
+        drawRobotRows(ctx, bot, s, y0, 0, scan - 1);
+        // the row being printed flickers in the accent colour
+        R.cells(bot, {}).forEach(function (p) {
+          if (p.y !== scan) return;
+          ctx.fillStyle = Math.random() < 0.5 ? bot.accent : THEME.eye;
+          ctx.fillRect(Math.round((RX + p.x) * s), Math.round(y0 + p.y * s), Math.ceil(s), Math.ceil(s));
+        });
+      } else { hero.build = null; bld = null; }
+      if (bld) {
+        ctx.fillStyle = THEME.eye; ctx.globalAlpha = 0.9;     // scan line
+        ctx.fillRect(Math.round(4 * s), Math.round(y0 + scan * s), Math.round(12 * s), Math.max(1, Math.round(s * 0.25)));
+        ctx.globalAlpha = 1;
+        machine(ctx, s, now, true);
+        return;
+      }
     }
-    if (now > nextBlink) { blinkUntil = now + 140; nextBlink = now + 2500 + Math.random() * 3000; }
     var bob = reduce ? 0 : (Math.sin(now / 700) > 0 ? -s * 0.25 : 0);
-    // shadow on the ground, narrower when the robot is up
-    ctx.fillStyle = 'rgba(26,26,26,0.12)';
-    var sw = bob ? 6 : 8;
-    ctx.fillRect(Math.round((R.W - sw) / 2 * s), Math.round(oy + R.H * s + s * 0.3), Math.round(sw * s), Math.round(s * 0.6));
     var pulse = reduce ? false : (Math.floor(now / 900) % 3 === 0);
-    R.draw(ctx, bot, { blink: now < blinkUntil, pulse: pulse }, 0, oy + bob, s, THEME, false);
+    // soft glow on the pad under the feet
+    ctx.fillStyle = bot.accent; ctx.globalAlpha = 0.18;
+    ctx.fillRect(Math.round(5 * s), Math.round(20.4 * s), Math.round(10 * s), Math.round(0.6 * s));
+    ctx.globalAlpha = 1;
+    R.draw(ctx, bot, { blink: now < blinkUntil, pulse: pulse }, RX * s, y0 + bob, s, THEME, false);
+    machine(ctx, s, now, false);
   }
 
+  var lastEdit = 0;
   heroSize();
-  rebuild(seed);
-  hero.particles = null;          // first robot appears built
-  window.addEventListener('resize', function () { heroSize(); drawHero(); });
-  heroCanvas.addEventListener('click', function () { rebuild(seed + 7919); });
+  setBot(bot, false);
+  window.addEventListener('resize', function () { heroSize(); drawHero(performance.now()); });
+  heroCanvas.addEventListener('click', newRandom);
   heroCanvas.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); rebuild(seed + 7919); }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); newRandom(); }
   });
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(function (en) { heroVisible = en[0].isIntersecting; }).observe(heroCanvas);
   }
-  if (!reduce) setInterval(function () { if (heroVisible && !document.hidden) rebuild(seed + 7919); }, 12000);
+  // a new robot every 14 s while the hero is on screen, unless someone is building one
+  if (!reduce) setInterval(function () {
+    if (heroVisible && !document.hidden && performance.now() - lastEdit > 30000) newRandom();
+  }, 14000);
 
-  /* ---- the walker: a small copy of the same robot that lives at the bottom of the screen */
-  var walker = null;
+  /* ================================================================ the walker: a platformer
+     The small robot lives in page coordinates. Lines of text are platforms (their top edge);
+     the bottom of the screen is always a floor. It follows the mouse, jumping up to lines
+     above it and dropping off edges to reach lines below. */
   var wc = document.getElementById('walker');
-  if (wc && !reduce) {
-    var S = 3;
-    var dpr = window.devicePixelRatio || 1;
-    wc.width = Math.round(R.W * S * dpr); wc.height = Math.round((R.H + 4) * S * dpr);
-    wc.style.width = R.W * S + 'px'; wc.style.height = (R.H + 4) * S + 'px';
-    walker = { bot: bot, x: 40, dir: 1, state: 'walk', until: performance.now() + 4000, step: 0,
-               lastStep: 0, jumpT: -1, wave: false, lastY: window.scrollY };
-    wc.addEventListener('mouseenter', function () { walker.wave = true; });
-    wc.addEventListener('mouseleave', function () { walker.wave = false; });
-    wc.addEventListener('click', function () { rebuild(seed + 7919); walker.jumpT = performance.now(); });
-    window.addEventListener('scroll', function () {
-      var dy = Math.abs(window.scrollY - walker.lastY);
-      walker.lastY = window.scrollY;
-      if (dy > 120 && walker.jumpT < 0) walker.jumpT = performance.now();
-    }, { passive: true });
+  var S = 3, SW = R.W * S, SH = R.H * S;                // sprite size in CSS px
+  var G = 0.0024, JUMP_H = 170, VJ = Math.sqrt(2 * G * JUMP_H), RUN = 0.22, WALK = 0.08;
+  var PLATFORM_SEL_FULL = ['.hero-title > span', '.hero-roles', '.hero-areas', '.counter', '.about-name',
+    '.about-meta', '.about-bio', '.edu div', '.sec-title', '.sec-lead', '.card', '.row-name', '.row-desc',
+    '.sub-head', '.contact-email', '.contact-links'].join(',');
+  var PLATFORM_SEL = '.none-yet';   // interim: floor only until the per-section route is built
+  var BOX_SEL = '.card, .hero-areas, .contact-links, .edu div';
+  var platforms = [];
+
+  // distance from the top of a text box to the top of its capital letters, per font
+  var capCache = {};
+  var mctx = document.createElement('canvas').getContext('2d');
+  function capInset(cs) {
+    var font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    if (capCache[font] == null) {
+      mctx.font = font;
+      var m = mctx.measureText('H');
+      capCache[font] = (m.fontBoundingBoxAscent != null) ? m.fontBoundingBoxAscent - m.actualBoundingBoxAscent
+                                                         : parseFloat(cs.fontSize) * 0.3;
+    }
+    return capCache[font];
   }
 
-  var last = performance.now();
-  function walkerTick(now) {
-    var dt = Math.min(64, now - last);
-    if (now > walker.until) {
-      if (walker.state === 'walk') { walker.state = 'idle'; walker.until = now + 1500 + Math.random() * 2500; }
+  function linePlatforms() {
+    var out = [];
+    var top = window.scrollY, h = window.innerHeight, sx = window.scrollX;
+    document.querySelectorAll(PLATFORM_SEL).forEach(function (el) {
+      var r0 = el.getBoundingClientRect();
+      if (r0.bottom < -300 || r0.top > h + 300 || r0.width < 30) return;
+      if (el.matches(BOX_SEL)) { out.push({ x1: r0.left + sx, x2: r0.right + sx, y: r0.top + top }); return; }
+      // text: one platform per line, standing on the capitals
+      var lines = [];
+      var tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      var node, rg = document.createRange();
+      while ((node = tw.nextNode())) {
+        if (!node.nodeValue.trim()) continue;
+        var cs = getComputedStyle(node.parentElement);
+        if (cs.visibility === 'hidden') continue;
+        var inset = capInset(cs);
+        rg.selectNodeContents(node);
+        Array.prototype.forEach.call(rg.getClientRects(), function (r) {
+          if (r.width < 4) return;
+          var y = r.top + inset, l = null;
+          for (var i = 0; i < lines.length; i++) if (Math.abs(lines[i].y - y) < 6) l = lines[i];
+          if (l) { l.x1 = Math.min(l.x1, r.left); l.x2 = Math.max(l.x2, r.right); l.y = Math.min(l.y, y); }
+          else lines.push({ y: y, x1: r.left, x2: r.right });
+        });
+      }
+      lines.forEach(function (l) {
+        if (l.x2 - l.x1 >= 30) out.push({ x1: l.x1 + sx, x2: l.x2 + sx, y: l.y + top });
+      });
+    });
+    return out;
+  }
+
+  function floorY() { return window.scrollY + window.innerHeight - 6; }
+
+  if (wc && !reduce) {
+    var dpr = window.devicePixelRatio || 1;
+    wc.width = Math.round(SW * dpr); wc.height = Math.round((SH + 4 * S) * dpr);
+    wc.style.width = SW + 'px'; wc.style.height = (SH + 4 * S) + 'px';
+    walker = { x: 80, y: floorY(), vx: 0, vy: 0, ground: true, dir: 1, step: 0, lastStep: 0,
+               cooldown: 0, wave: false, jumpReq: false, landT: 0 };
+    wc.addEventListener('click', newRandom);
+    platforms = linePlatforms();
+    setInterval(function () { platforms = linePlatforms(); }, 180);
+    window.addEventListener('scroll', function () { platforms = linePlatforms(); }, { passive: true });
+  }
+
+  var mouse = { cx: -1, cy: -1, t: -1e9 };
+  window.addEventListener('mousemove', function (e) { mouse.cx = e.clientX; mouse.cy = e.clientY; mouse.t = performance.now(); });
+  document.addEventListener('mouseleave', function () { mouse.t = -1e9; });
+  var wander = { x: 200, y: 0, until: 0 };
+
+  function supportAt(x, y, tol) {
+    var best = null;
+    platforms.forEach(function (p) {
+      if (x >= p.x1 - 4 && x <= p.x2 + 4 && Math.abs(p.y - y) <= tol && (!best || p.y < best.y)) best = p;
+    });
+    return best;
+  }
+
+  // jump to platform p; if it is higher than one jump, plan a second jump at the apex
+  function jumpTo(p, now, tx) {
+    var w = walker;
+    var xl = Math.min(Math.max(tx, p.x1 + 14), p.x2 - 14);
+    var dy = p.y - w.y;                                    // negative = above
+    var dbl = -dy > JUMP_H - 10;
+    var tUp = VJ / G;                                      // time to the apex of one jump
+    var rise = dbl ? JUMP_H : 0;                           // height already gained when the 2nd jump starts
+    var disc = VJ * VJ + 2 * G * (dy + rise);
+    if (disc < 0) return false;
+    var t = (dbl ? tUp : 0) + (VJ + Math.sqrt(disc)) / G;  // total time until landing on the way down
+    var vx = (xl - w.x) / t;
+    if (Math.abs(vx) > 0.42) return false;
+    w.vx = vx; w.vy = -VJ; w.ground = false; w.cooldown = now + 350;
+    w.second = dbl ? now + tUp : 0;
+    if (vx) w.dir = vx > 0 ? 1 : -1;
+    return true;
+  }
+
+  function walkerTick(now, dt) {
+    var w = walker;
+    var vw = window.innerWidth, top = window.scrollY, fy = floorY();
+
+    // out of view (the page scrolled away): drop back in from the top
+    if (w.y < top - 40 || w.y > fy + 80) {
+      w.x = Math.min(Math.max(mouse.t > 0 ? mouse.cx : vw * 0.3, 30), vw - 30);
+      w.y = top - 10; w.vx = 0; w.vy = 0; w.ground = false;
+    }
+
+    // target: the mouse if it moved recently, otherwise wander between visible lines
+    var active = now - mouse.t < 6000;
+    var tx, ty;
+    if (active) { tx = mouse.cx + window.scrollX; ty = mouse.cy + top; }
+    else {
+      if (now > wander.until) {
+        var vis = platforms.filter(function (p) { return p.y > top + 80 && p.y < fy; });
+        var pick = vis.length && Math.random() < 0.6 ? vis[Math.floor(Math.random() * vis.length)] : null;
+        wander.x = pick ? pick.x1 + Math.random() * (pick.x2 - pick.x1) : 40 + Math.random() * (vw - 80);
+        wander.y = pick ? pick.y : fy;
+        wander.until = now + 3500 + Math.random() * 3000;
+      }
+      tx = wander.x; ty = wander.y;
+    }
+
+    w.wave = active && Math.abs(tx - w.x) < 34 && Math.abs(ty - (w.y - SH / 2)) < 40;
+
+    if (w.ground) {
+      var under = w.y >= fy - 1 ? { x1: 0, x2: vw, y: fy, floor: true } : supportAt(w.x, w.y, 3);
+      if (!under) { w.ground = false; w.vy = 0; w.vx *= 0.3; }   // walked off an edge: drop almost straight down
       else {
-        walker.state = 'walk'; walker.until = now + 3000 + Math.random() * 5000;
-        if (Math.random() < 0.4) walker.dir *= -1;
+        w.y = under.y;
+        // target below this line and over it: walk past the nearer edge and drop
+        if (ty > w.y + 30 && !under.floor && tx > under.x1 - 30 && tx < under.x2 + 30) {
+          // where would each edge drop us? prefer the landing closest to the target
+          var score = function (ex) {
+            var land = fy;
+            platforms.forEach(function (q) { if (q.y > w.y + 4 && q.y < land && ex >= q.x1 && ex <= q.x2) land = q.y; });
+            return Math.abs(land - ty) + Math.abs(ex - tx) * 0.3;
+          };
+          var eL = under.x1 - 20, eR = under.x2 + 20;
+          tx = score(eL) <= score(eR) ? eL : eR;
+        }
+        var dx = tx - w.x;
+        var speed = active ? RUN : WALK;
+        if (w.jumpReq) { w.jumpReq = false; w.vy = -VJ * 0.6; w.vx = 0; w.ground = false; }
+        else if (w.wave) { w.vx = 0; w.step = 0; }
+        else {
+          if (ty < w.y - 30 && now > w.cooldown) {          // the target is higher: find a line to jump to
+            var cands = platforms.filter(function (p) {
+              return p.y < w.y - 18 && p.y > w.y - 2 * JUMP_H + 20 && p.x2 > w.x - 220 && p.x1 < w.x + 220;
+            });
+            cands.sort(function (a, b) {
+              var da = Math.abs(a.y - ty) + Math.abs(Math.min(Math.max(tx, a.x1), a.x2) - tx) * 0.5;
+              var db = Math.abs(b.y - ty) + Math.abs(Math.min(Math.max(tx, b.x1), b.x2) - tx) * 0.5;
+              return da - db;
+            });
+            for (var i = 0; i < cands.length && i < 4; i++) if (jumpTo(cands[i], now, tx)) break;
+          }
+          if (w.ground) {
+            if (Math.abs(dx) > 10) { w.vx = (dx > 0 ? 1 : -1) * speed; w.dir = dx > 0 ? 1 : -1; }
+            else w.vx = 0;
+            w.x += w.vx * dt;
+            if (w.vx && now - w.lastStep > 150) { w.step ^= 1; w.lastStep = now; }
+            if (!w.vx) w.step = 0;
+          }
+        }
       }
     }
-    var maxX = window.innerWidth - R.W * 3 - 16;
-    if (walker.state === 'walk' && !walker.wave) {
-      walker.x += walker.dir * dt * 0.045;
-      if (walker.x > maxX) { walker.x = maxX; walker.dir = -1; }
-      if (walker.x < 16) { walker.x = 16; walker.dir = 1; }
-      if (now - walker.lastStep > 170) { walker.step ^= 1; walker.lastStep = now; }
-    } else walker.step = 0;
-    var jy = 0;
-    if (walker.jumpT >= 0) {
-      var t = (now - walker.jumpT) / 450;
-      if (t >= 1) walker.jumpT = -1; else jy = -Math.sin(t * Math.PI) * 9;
+    if (!w.ground) {
+      if (w.second && now >= w.second) { w.second = 0; w.vy = -VJ; w.flip = now; }
+      var prevY = w.y;
+      w.vy += G * dt;
+      w.x += w.vx * dt; w.y += w.vy * dt;
+      if (w.vy > 0) {
+        var land = null;
+        platforms.forEach(function (p) {
+          if (w.x >= p.x1 - 4 && w.x <= p.x2 + 4 && p.y >= prevY - 1 && p.y <= w.y + 1 && (!land || p.y < land.y)) land = p;
+        });
+        if (land) { w.y = land.y; w.vy = 0; w.vx = 0; w.ground = true; w.landT = now; }
+        else if (w.y >= fy) { w.y = fy; w.vy = 0; w.vx = 0; w.ground = true; w.landT = now; }
+      }
+      w.step = 1;
     }
-    wc.style.transform = 'translate(' + Math.round(walker.x) + 'px,' + Math.round(jy) + 'px)';
+    w.x = Math.min(Math.max(w.x, SW / 2 + 4), vw - SW / 2 - 4);
+
+    // draw: a fixed canvas placed at the robot's page position
+    var squash = now - w.landT < 90 ? S : 0;
+    wc.style.transform = 'translate(' + Math.round(w.x - SW / 2 - window.scrollX) + 'px,' +
+                         Math.round(w.y - SH - 4 * S - top + squash) + 'px)';
     var r = contact.getBoundingClientRect();
-    var onDark = r.top < window.innerHeight - 20;
+    var onDark = (w.y - top) > r.top && (w.y - top) < r.bottom + 20;
     var ctx = wc.getContext('2d');
     var s = wc.width / R.W;
     ctx.clearRect(0, 0, wc.width, wc.height);
-    R.draw(ctx, walker.bot, { step: walker.step, blink: now < blinkUntil, wave: walker.wave },
-           0, s * 3, s, onDark ? THEME_DARK : THEME, walker.dir < 0);
+    R.draw(ctx, bot, { step: w.step, blink: now < blinkUntil, wave: w.wave }, 0, s * 4, s,
+           onDark ? THEME_DARK : THEME, w.dir < 0);
   }
 
-  function loop() {
-    var now = performance.now();
-    if (heroVisible || hero.particles) drawHero(now);
-    if (walker) walkerTick(now);
-    worksTick();
-    last = now;
-    requestAnimationFrame(loop);
-  }
-
-  /* ---------------------------------------------------------------- work: horizontal track */
+  /* ================================================================ work: horizontal track */
   var section = document.querySelector('.section-work');
   var track = document.querySelector('.work-track');
-  var tx = 0, txTarget = 0, horizontal = false;
+  var bar = document.querySelector('.work-progress span');
+  var trackX = 0, horizontal = false;
   function layoutWork() {
     horizontal = window.innerWidth >= 900 && !reduce;
     section.classList.toggle('horizontal', horizontal);
@@ -252,15 +479,25 @@
     var max = section.offsetHeight - window.innerHeight;
     var extra = track.scrollWidth - window.innerWidth + 128;
     var p = Math.min(1, Math.max(0, -rect.top / Math.max(1, max)));
-    txTarget = -p * Math.max(0, extra);
-    tx += (txTarget - tx) * 0.12;
-    track.style.transform = 'translate3d(' + tx.toFixed(1) + 'px,0,0)';
-    var bar = document.querySelector('.work-progress span');
+    trackX += (-p * Math.max(0, extra) - trackX) * 0.12;
+    track.style.transform = 'translate3d(' + trackX.toFixed(1) + 'px,0,0)';
     if (bar) bar.style.transform = 'scaleX(' + p.toFixed(3) + ')';
   }
   layoutWork();
   window.addEventListener('resize', layoutWork);
   window.addEventListener('load', layoutWork);
 
+  /* ================================================================ one loop */
+  var last = performance.now();
+  function loop() {
+    var now = performance.now();
+    var dt = Math.min(40, now - last);
+    if (now > nextBlink) { blinkUntil = now + 140; nextBlink = now + 2500 + Math.random() * 3000; }
+    if (heroVisible || hero.build) drawHero(now);
+    if (walker) walkerTick(now, dt);
+    worksTick();
+    last = now;
+    requestAnimationFrame(loop);
+  }
   requestAnimationFrame(loop);
 })();
