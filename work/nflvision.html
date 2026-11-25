@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#F5F3EE">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/site.css?v=5">
+<link rel="stylesheet" href="../assets/css/site.css?v=6">
 </head>
 <body>
 <nav class="nav"><div class="wrap">
@@ -31,7 +31,7 @@
   <p class="oneliner">From football video to player-tracking data in yards: every player detected, followed and placed on the field, frame by frame.</p>
   <div class="tags"><span>PyTorch</span><span>RF-DETR</span><span>Multi-object tracking</span><span>Homography</span><span>OCR</span><span>ROCm</span></div>
 </header>
-<figure class="cover"><div class="frame"><img src="../assets/img/nfl-play.webp" alt="Top-down reconstruction of a passing play: offense in blue, defense in terracotta, with each player&#x27;s path after the snap." loading="lazy" decoding="async"></div><figcaption>One passing play rebuilt by the pipeline from video alone. Every line is a player track in field yards produced by our model; labels are the roles it assigns at the snap.</figcaption></figure>
+<figure class="cover"><div class="frame"><picture><source srcset="../assets/img/nfl-play-trails.jpg" media="(prefers-reduced-motion: reduce)"><img src="../assets/img/nfl-play.webp" alt="Top-down reconstruction of a passing play: offense in blue, defense in terracotta, with each player&#x27;s path after the snap." loading="lazy" decoding="async"></picture></div><figcaption>One passing play rebuilt by the pipeline from video alone. Every line is a player track in field yards produced by our model; labels are the roles it assigns at the snap.</figcaption></figure>
 <div class="metrics"><div><b>93%</b><span>players detected, 87% inside crowded line play</span></div><div><b>0.838</b><span>IDF1 — how consistently each player keeps one identity</span></div><div><b>0.62 yd</b><span>position error against reference tracking</span></div><div><b>97.4%</b><span>video clips matched to the right play, without tracking data</span></div></div>
 <div class="prose">
 <h2 class="rv">The problem</h2><div class="body rv"><p>Player-tracking data is the raw material of modern football analytics, but it only exists for the games and seasons someone has chosen to release. Video exists for everything. NFLVision asks how close you can get to tracking data starting from video alone.</p></div>
@@ -48,6 +48,6 @@
   <span>© 2026 Miguel Ángel Castro Torreslanda</span>
   <span>The lines on the front page are real trajectories from my projects.</span>
 </div></footer>
-<script src="../assets/js/site.js?v=5"></script>
+<script src="../assets/js/site.js?v=6"></script>
 </body>
 </html>
