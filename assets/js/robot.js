@@ -109,6 +109,8 @@
       else if (kind === 'climb') { set(x, 9, X); set(o, 8, X); set(o, 7, X); set(o, 6, claw ? A : X); }
       else if (kind === 'wave') { set(x, 9, X); set(o, 8, X); set(o, 7, X); if (claw) set(o, 6, A); }
       else if (kind === 'reach') { set(x, 10, X); set(o, 10, X); set(o + side, 10, X); set(o + side, 9, claw ? A : X); }
+      else if (kind === 'reachUp') { set(x, 9, X); set(o, 8, X); set(o + side, 7, X); set(o + side, 6, A); }
+      else if (kind === 'reachDown') { set(x, 11, X); set(o, 12, X); set(o + side, 13, X); set(o + side, 14, A); }
       else if (kind === 'visor') {
         set(x, 9, X); set(o, 8, X); set(o, 7, X); set(o, 6, X); set(o, 5, X); set(x, 4, A);
         var hx = hb[1][side > 0 ? 1 : 0];  // hand across the forehead, over the eyes

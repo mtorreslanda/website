@@ -597,10 +597,16 @@
         place.rot = -ang * 180 / Math.PI * 0.6;
         W.x = rx; W.y = ry + (R.H - (feet().top - 3)) * S;
         showRope(h2.ax, h2.ay, rx, ry);
-        if (mouseActive(now) && Math.abs(mouse.cx + scrollX - rx) > 40) W.dir = mouse.cx + scrollX > rx ? 1 : -1;
-        var dy2 = mouse.cy + scrollY - (ry + 30);
-        cells = robotCells({ blink: blink, look: mouseActive(now) ? { x: 1, y: Math.abs(dy2) > 60 ? (dy2 > 0 ? 1 : -1) : 0 } : null,
-                             armL: since < 900 ? 'up' : 'down', armR: 'down' }, W.dir, dark).concat(ring(dark));
+        // it points at the row of the table that sits at the height of the cursor
+        var row = skillRowAt(mouse.cy), armR = 'down', look = null;
+        if (row && since > 900) {
+          var rb = row.getBoundingClientRect(), hand = ry - scrollY + (R.H - (feet().top - 3) - 7) * S;
+          var dyr = (rb.top + rb.height / 2) - hand;
+          W.dir = 1;                                         // the table is to its right
+          armR = dyr < -45 ? 'reachUp' : dyr > 45 ? 'reachDown' : 'reach';
+          look = { x: 1, y: dyr < -45 ? -1 : dyr > 45 ? 1 : 0 };
+        } else if (mouseActive(now) && Math.abs(mouse.cx + scrollX - rx) > 40) W.dir = mouse.cx + scrollX > rx ? 1 : -1;
+        cells = robotCells({ blink: blink, look: look, armL: since < 900 ? 'up' : 'down', armR: armR }, W.dir, dark).concat(ring(dark));
         break;
       }
 
@@ -634,7 +640,7 @@
     }
 
     if (W.state !== 'hook' && W.state !== 'hookgrab') rope.style.opacity = 0;
-    paint(cells, W.state === 'lamp' || W.state === 'drone' || W.state === 'morph' ? halo : halo);
+    paint(cells, null);                                     // no outline: it may blend with dark letters (MA prefers it)
     commit();
     drawFx(now, dt);
   }
@@ -679,6 +685,15 @@
     rope.style.opacity = 1;
     rope.style.height = len + 'px';
     rope.style.transform = 'translate(' + Math.round(x0 - scrollX) + 'px,' + Math.round(y0 - scrollY) + 'px) rotate(' + (-ang).toFixed(2) + 'deg)';
+  }
+  var skillRows = Array.prototype.slice.call(document.querySelectorAll('#skills .row'));
+  function skillRowAt(cy) {                                  // the table row at this screen height, if the cursor is around
+    if (!mouseActive(performance.now())) return null;
+    for (var i = 0; i < skillRows.length; i++) {
+      var b = skillRows[i].getBoundingClientRect();
+      if (cy >= b.top && cy <= b.bottom) return skillRows[i];
+    }
+    return null;
   }
   var email = document.querySelector('.contact-email');
   function overEmail() {

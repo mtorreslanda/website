@@ -258,7 +258,7 @@ a.row .row-side { color: var(--ink); }
         z-index: 89; opacity: 0; pointer-events: none; }
 @media (max-width: 820px) { #walker, #rope { display: none; } }
 /* skills: the lead stays short so nothing sits under the last letter, where the robot hangs */
-.skills-lead { max-width: 9.5rem; }
+.skills-lead { max-width: none; }
 /* contact: a small stage above the label for the robot */
 .contact-label { position: relative; }
 .contact-label::before { content: ''; position: absolute; left: 50%; top: -16px; width: 64px; height: 2px;
@@ -271,4 +271,6 @@ a.row .row-side { color: var(--ink); }
 .section-course .row { transition: opacity .5s ease, transform .5s ease, background .35s ease; }
 .section-course .row.lit { background: rgba(255, 214, 107, .16); }
 @media (max-width: 820px) { #fx { display: none; } }
-.section-hero { background: var(--paper); }
+
+/* coursework intro: justified block */
+.section-course .sec-lead { text-align: justify; text-align-last: left; hyphens: auto; -webkit-hyphens: auto; max-width: 32ch; }
