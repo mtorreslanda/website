@@ -366,9 +366,20 @@
     for (var i = 0; i < n; i++) parts.push({ x: x, y: y, vx: (Math.random() - 0.5) * spread, vy: -Math.random() * (up || 0.05),
       life: 0, max: 380 + Math.random() * 300, col: col, g: 0.0002 });
   }
+  var beams = [];                                            // columns of light: {x, top, bottom, w, t0, dur}
+  function beamAt(x, top, bottom, w, dur) { beams.push({ x: x, top: top, bottom: bottom, w: w, t0: performance.now(), dur: dur }); }
   function drawFx(now, dt) {
     fctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     fctx.clearRect(0, 0, innerWidth, innerHeight);
+    beams = beams.filter(function (b) { return now - b.t0 < b.dur; });
+    beams.forEach(function (b) {
+      var k = (now - b.t0) / b.dur, a = Math.sin(k * Math.PI);           // fades in and out
+      var x = b.x - scrollX, w = b.w * (0.6 + 0.4 * a);
+      var g = fctx.createLinearGradient(x - w / 2, 0, x + w / 2, 0);
+      g.addColorStop(0, 'rgba(255,214,107,0)'); g.addColorStop(0.5, 'rgba(255,214,107,' + (0.42 * a).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,214,107,0)');
+      fctx.fillStyle = g;
+      fctx.fillRect(x - w / 2, b.top - scrollY, w, b.bottom - b.top);
+    });
     if (lightCone) {
       var c = lightCone;
       var g = fctx.createLinearGradient(c.m.x, c.m.y, c.r.x, c.r.y + c.r.h / 2);
@@ -410,7 +421,7 @@
     if (!sky) return;
     W.x = sky.xl + 70; W.y = skyY(W.x);
     W.h = { lv: 'sky', act: null };
-    W.state = 'hero';
+    W.state = 'intro'; W.t0 = performance.now();
   })();
 
   function setState(s, now) { W.state = s; W.t0 = now; }
@@ -457,6 +468,7 @@
   }
 
   function leaveScene(now) {               // transformed? turn back into a robot first
+    W.prevState = W.state;
     W.tempo = tempoNow(now);
     if (W.state === 'workline' && sceneNow().id === 'work' && W.tempo !== 'teleport') {
       var to = sceneNow();
@@ -481,11 +493,19 @@
   }
 
   // very fast scroll: it bursts into pixels and is printed again at its next place
+  // very fast scroll (and always between Work and Coursework): scanned away in a column of light,
+  // a stream of pixels runs to the goal, and it is printed there in another column of light
+  function currentForm(now) {
+    if (W.prevState === 'drone') return droneCells(now, 0.1, false);
+    if (W.prevState === 'lamp' && W.lamp) return lampCells(W.lamp.angle, false, false, false);
+    return robotCells({}, W.dir, false);
+  }
   function startTeleport(now) {
-    var c = W.x, y = W.y;
-    for (var i = 0; i < 18; i++) parts.push({ x: c + (Math.random() - 0.5) * 30, y: y - Math.random() * 50, vx: (Math.random() - 0.5) * 0.25,
-      vy: -Math.random() * 0.2, life: 0, max: 380, col: Math.random() < 0.5 ? Home.bot.accent : '#1A1A1A', g: 0.0006 });
-    setState('beam', now);
+    W.bo = { cells: currentForm(now), vl: place.left - scrollX, vt: place.top - scrollY };
+    lightCone = null; clearLit();
+    var cx = place.left + RC * S;
+    beamAt(cx, scrollY, place.top + FOOT * S + 6, 46, 520);
+    setState('beamout', now);
   }
 
   /* ---------------------------------------------------------------- lamp light */
@@ -510,7 +530,7 @@
   function tick(now, dt) {
     var blink = now < Home.blinkUntil;
     var sc = sceneNow();
-    var busy = W.state === 'morph' || W.state === 'crouch' || W.state === 'ignite' || W.state === 'flight' || W.state === 'hopoff' || W.state === 'land' || W.state === 'ride' || W.state === 'beam' || W.state === 'climbout';
+    var busy = W.state === 'morph' || W.state === 'crouch' || W.state === 'ignite' || W.state === 'flight' || W.state === 'hopoff' || W.state === 'land' || W.state === 'ride' || W.state === 'beam' || W.state === 'beamout' || W.state === 'intro' || W.state === 'regrab';
     if (W.rodeLast && W.rodeLast.section.getBoundingClientRect().top > innerHeight) W.rodeLast = null;
     if (!busy || W.state === 'land') {
       var inc = incoming();
@@ -757,6 +777,7 @@
         }
         var hy3 = 0;
         if (W.hop >= 0) { var hh = (now - W.hop) / 420; if (hh >= 1) W.hop = -1; else hy3 = -Math.sin(hh * Math.PI) * 12; }
+        if (W.hello && now - W.hello < 1300) pz.armR = Math.floor((now - W.hello) / 260) % 2 ? 'wave' : 'up';   // hello after arriving
         atFeet(W.x, W.y + hy3);
         cells = robotCells(pz, W.dir, false);
         break;
@@ -791,11 +812,33 @@
         if (W.y >= floorW) { W.y = floorW; W.landT = now; puff(W.x, W.y, 6, '#B9B2A6', 0.1, 0.02); setState('workline', now); }
         break;
       }
+      case 'regrab': {                                                  // the rope comes down; it runs to it and hops up to grab it
+        var an4 = ropeAnchor(), ringY = ropeWant(an4), hb4 = ropeHB(), rgs = W.rg;
+        var lineY4 = an4.bottom;
+        showRope(an4.x, an4.y, an4.x + Math.sin(now / 300) * 3, ringY + 10);
+        if (!rgs.t1) {                                                    // run along the edge to the rope
+          var dxr = an4.x - W.x, spr = 0.32 * dt;
+          W.y = lineY4;
+          if (Math.abs(dxr) <= spr) { W.x = an4.x; rgs.t1 = now; rgs.sy = W.y; }
+          else { W.dir = dxr > 0 ? 1 : -1; W.x += W.dir * spr; if (now - W.lastStep > 110) { W.step ^= 1; W.lastStep = now; } }
+          atFeet(W.x, W.y);
+          cells = robotCells({ blink: blink, step: W.step }, W.dir, false);
+          break;
+        }
+        var gt3 = clamp((now - rgs.t1) / 460, 0, 1), ge = easeIO(gt3);
+        var gy3 = ringY + hb4;
+        W.x = an4.x; W.y = rgs.sy + (gy3 - rgs.sy) * ge - Math.sin(gt3 * Math.PI) * 24;
+        atFeet(W.x, W.y);
+        cells = robotCells({ blink: blink, armL: 'up', armR: 'up', step: 1 }, W.dir, false).concat(gt3 < 0.8 ? flames(now, 2) : []);
+        if (gt3 >= 1) { W.rp = { ring: W.y - hb4 }; setState('rope', now); cells = cells.concat(ring(false)); }
+        break;
+      }
+
       case 'workline': {                                                // walking on the edge where Work starts
         var an3 = ropeAnchor(), onW = mouseActive(now);
         W.y = an3.bottom;
         if (an3.bottom - scrollY > innerHeight * 0.97) {                // scrolled back up: back on the rope
-          W.x = an3.x; W.rp = { ring: ropeWant(an3) }; setState('rope', now); cells = robotCells({ blink: blink }, W.dir, false); atFeet(W.x, W.y); break;
+          W.rg = { sx: W.x, sy: W.y }; setState('regrab', now); cells = robotCells({ blink: blink }, W.dir, false); atFeet(W.x, W.y); break;
         }
         var pw = { blink: blink };
         if (!onW && (!W.wlT || now > W.wlT)) { W.wlX = 40 + Math.random() * (innerWidth - 80); W.wlT = now + 3500 + Math.random() * 3500; }
@@ -807,9 +850,43 @@
         break;
       }
 
+      case 'intro': {                                      // waits for the name to rise, then is beamed onto it
+        cells = [];
+        atFeet(W.x, W.y);
+        if (el > 1500) { W.travel = { pi: 'sky' }; W.beamDelay = 260; W.dir = 1; setState('beam', now); }
+        break;
+      }
+
+      case 'beamout': {                                    // scanned away from the top down; the pixels rise
+        var bo = W.bo, ot = clamp(el / 340, 0, 1);
+        place.left = bo.vl + scrollX; place.top = bo.vt + scrollY;
+        var ya = Infinity, yb = -Infinity;
+        bo.cells.forEach(function (c) { if (c.y < ya) ya = c.y; if (c.y > yb) yb = c.y; });
+        var scanR = ya + Math.floor(ot * (yb - ya + 1));
+        cells = bo.cells.filter(function (c) { return c.y >= scanR; });
+        bo.cells.forEach(function (c) {
+          if (c.y === scanR) { cells.push({ x: c.x, y: c.y, col: '#FFD66B' });
+            if (Math.random() < 0.25) parts.push({ x: place.left + c.x * S, y: place.top + c.y * S, vx: (Math.random() - 0.5) * 0.04, vy: -0.08 - Math.random() * 0.1, life: 0, max: 520, col: Math.random() < 0.5 ? Home.bot.accent : '#FFD66B', g: 0 }); }
+        });
+        if (ot >= 1) {
+          // a stream of pixels runs to where it is going
+          var goal = landing(W.scene, W.travel && W.travel.pi), fx0 = place.left + RC * S, fy0 = place.top + 12 * S;
+          var gx2 = goal.x, gy2 = goal.y - 9 * S;
+          for (var q = 0; q < 26; q++) {
+            var life = 200 + Math.random() * 60;
+            parts.push({ x: fx0 + (Math.random() - 0.5) * 20, y: fy0 + (Math.random() - 0.5) * 20, vx: (gx2 - fx0) / life, vy: (gy2 - fy0) / life,
+                         life: 0, max: life, col: q % 3 ? Home.bot.accent : '#FFD66B', g: 0 });
+          }
+          W.beamDelay = 240; setState('beam', now);
+        }
+        break;
+      }
+
       case 'beam': {                                       // gone for a moment, then printed row by row at its goal
         var bg2 = landing(W.scene, W.travel && W.travel.pi);
-        var bt2 = clamp((el - 120) / 300, 0, 1);
+        var bd = W.beamDelay || 120;
+        if (!W.beamLit) { W.beamLit = true; beamAt(bg2.x, scrollY, bg2.y + 6, 46, bd + 520); }
+        var bt2 = clamp((el - bd) / 300, 0, 1);
         W.x = bg2.x; W.y = bg2.y; atFeet(bg2.x, bg2.y);
         // printed directly in the shape it takes there: a lamp in Coursework, a drone in Work
         var mode = W.scene.mode;
@@ -819,16 +896,17 @@
         var y0f = Infinity, y1f = -Infinity;
         form.forEach(function (c) { if (c.y < y0f) y0f = c.y; if (c.y > y1f) y1f = c.y; });
         var rowsTo = y0f + Math.floor(bt2 * (y1f - y0f + 1));
-        cells = el < 120 ? [] : form.filter(function (c) { return c.y < rowsTo; });
-        if (el >= 120 && el < 420) {
+        cells = el < bd ? [] : form.filter(function (c) { return c.y < rowsTo; });
+        if (el >= bd && el < bd + 300) {
           var xs = form.map(function (c) { return c.x; }), xa = Math.min.apply(null, xs), xb = Math.max.apply(null, xs);
           cells.push({ x: xa + Math.floor(Math.random() * (xb - xa + 1)), y: rowsTo, col: Home.bot.accent });
         }
-        if (el > 440) {
-          W.landT = now;
+        if (el > bd + 320) {
+          W.landT = now; W.beamLit = false; W.beamDelay = 0;
+          puff(bg2.x, bg2.y - 9 * S, 10, '#FFD66B', 0.18, 0.06);          // a small flash
           if (mode === 'lamp') { W.lamp = { angle: 1.15, av: 0 }; setState('lamp', now); }
           else if (mode === 'drone') { W.drone = { x: W.x - scrollX, v: 0, wob: 1 }; setState('drone', now); }
-          else arrive(now);
+          else { arrive(now); if (W.scene.mode === 'hero') W.hello = now; }
         }
         break;
       }
@@ -993,7 +1071,7 @@
       }
     }
 
-    if (W.state !== 'hook' && W.state !== 'hookgrab' && W.state !== 'rope') rope.style.opacity = 0;
+    if (W.state !== 'hook' && W.state !== 'hookgrab' && W.state !== 'rope' && W.state !== 'regrab') rope.style.opacity = 0;
     paint(cells, null);                                     // no outline: it may blend with dark letters (MA prefers it)
     commit();
     drawFx(now, dt);
