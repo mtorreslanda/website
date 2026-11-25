@@ -463,9 +463,9 @@
 
   /* morph: pixels of one sprite fly into the places of another */
   function startMorph(fromCells, toFn, now, then) {
-    // anchored to the screen while it transforms: the section under it may be pinned
+    // it transforms where it stands on the page, moving with the page like everything else
     W.morph = { from: fromCells, toFn: toFn, t0: now, then: then, delays: null, dur: W.tempo === 'express' ? 260 : 420,
-                vl: place.left - scrollX, vt: place.top - scrollY };
+                left: place.left, top: place.top };
     setState('morph', now);
   }
   function morphCells(now, halo) {
@@ -626,7 +626,7 @@
     switch (W.state) {
 
       case 'morph': {
-        place.left = W.morph.vl + scrollX; place.top = W.morph.vt + scrollY;
+        place.left = W.morph.left; place.top = W.morph.top;
         W.x = place.left + RC * S; W.y = place.top + FOOT * S;
         var m = morphCells(now, halo);
         cells = m.cells;
