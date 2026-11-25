@@ -11,11 +11,36 @@
 <meta name="theme-color" content="#F5F3EE">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/home.css?v=37">
+<link rel="stylesheet" href="assets/css/home.css?v=50">
 </head>
 <body>
 <nav class="nav" aria-label="Main">
-  <a href="#top" class="nav-logo" aria-label="Back to top">MT—</a>
+  <a href="#top" class="nav-logo" aria-label="Miguel Ángel Castro Torreslanda, back to top">
+    <svg viewBox="0 0 170 100" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <defs>
+        <filter id="pencil" x="-10%" y="-10%" width="120%" height="120%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G" result="d"/>
+          <feComposite in="d" in2="n" operator="in" result="grain"/>
+          <feMerge><feMergeNode in="d"/><feMergeNode in="grain"/></feMerge>
+        </filter>
+      </defs>
+      <g class="guides" stroke="#A0A0A0" stroke-width=".6">
+        <line x1="2" y1="12" x2="168" y2="12" style="--len:170"/><line x1="2" y1="88" x2="168" y2="88" style="--len:170"/>
+        <line x1="12" y1="2" x2="12" y2="98" style="--len:100"/><line x1="158" y1="2" x2="158" y2="98" style="--len:100"/>
+        <line x1="12" y1="50" x2="158" y2="50" style="--len:150"/>
+      </g>
+      <g class="strokes" filter="url(#pencil)" stroke="#2A2A2A" stroke-width="2.4">
+        <rect x="12" y="12" width="146" height="76" style="--len:450"/>
+        <path d="M30 74 L30 26 L57 58 L84 26 L84 74" style="--len:220"/>
+        <path d="M100 26 L142 26 M121 26 L121 74" style="--len:100"/>
+      </g>
+      <g class="hatch" stroke="#2A2A2A" stroke-width=".8" opacity=".55" filter="url(#pencil)">
+        <path d="M32 72 L37 67 M32 65 L37 60 M32 58 L37 53 M32 51 L37 46" style="--len:60"/>
+        <path d="M123 72 L128 67 M123 65 L128 60 M123 58 L128 53" style="--len:50"/>
+      </g>
+    </svg>
+  </a>
   <div class="nav-links">
     <a href="#about">About</a>
     <a href="#work">Work</a>
@@ -28,16 +53,37 @@
 <header class="section-hero" id="top">
   <div class="hero-text">
     <div class="counter">01 / 06</div>
-    <h1 class="hero-title"><span class="l1" data-letters="0.1">MIGUEL</span><span class="l2" data-letters="0.4">A. CASTRO</span></h1>
-    <p class="hero-roles"><span>Data Scientist</span><i aria-hidden="true">·</i><span>Lawyer</span><i aria-hidden="true">·</i><span>PhD candidate</span><i aria-hidden="true">·</i><span>Lecturer</span></p>
+    <h1 class="hero-title"><span class="l1">MIGUEL</span><span class="l2">A. CASTRO</span></h1>
+    <p class="hero-roles"><span>Lawyer</span><i aria-hidden="true">·</i><span>Data &amp; AI</span></p>
     <div class="hero-areas"><span>Computer vision</span><span>Reinforcement learning</span><span>NLP</span><span>Sports analytics</span></div>
   </div>
   <div class="hero-bot">
-    <canvas id="robot" role="img" tabindex="0" aria-label="A pixel robot assembled from random parts. Click to build a new one."></canvas>
+    <div class="capsule">
+      <canvas id="robot" role="img" tabindex="-1" aria-label="A pixel robot assembled from random parts."></canvas>
+      <svg class="capsule-sketch" viewBox="0 0 24 28" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <defs><filter id="pencil-cap" filterUnits="userSpaceOnUse" x="-2" y="-2" width="28" height="32">
+          <feTurbulence type="fractalNoise" baseFrequency="9" numOctaves="1" seed="2" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale=".18" xChannelSelector="R" yChannelSelector="G"/></filter></defs>
+        <g class="cs-guides" stroke="#9A9A9A" stroke-width=".06">
+          <line x1="3" y1="0.5" x2="21" y2="0.5" style="--len:18"/><line x1="4" y1="0" x2="4" y2="28" style="--len:28"/><line x1="20" y1="0" x2="20" y2="28" style="--len:28"/>
+          <line x1="12" y1="20" x2="12" y2="2" stroke-dasharray=".4 .4" style="--len:18"/>
+          <path d="M11.4 2.8 L12 2 L12.6 2.8" style="--len:2"/>
+        </g>
+        <g class="cs-lines" stroke="#2A2A2A" stroke-width=".13" filter="url(#pencil-cap)">
+          <path d="M6 21 H18 V22 H20 V23 H16 V24 H8 V23 H4 V22 H6 Z" style="--len:40"/>
+          <path d="M5 24 H19 V25 H21 V26 H20 V27 H17 V26 H7 V27 H4 V26 H3 V25 H5 Z" style="--len:50"/>
+          <path d="M6.6 22.5 h.6 M9.6 22.5 h.6 M12.6 22.5 h.6 M15.6 22.5 h.6 M6.6 25.5 h.6 M9.6 25.5 h.6 M12.6 25.5 h.6 M15.6 25.5 h.6" style="--len:6"/>
+        </g>
+        <g class="cs-notes" fill="#6B6B6B" stroke="none" font-family="JetBrains Mono, monospace" font-size=".95">
+          <text x="4" y="-0.4">fig. 1</text><text x="12.8" y="11.5">open</text><text x="21.2" y="25.6">pad</text>
+        </g>
+      </svg>
+      <button type="button" class="build-btn"><svg viewBox="0 0 120 44" aria-hidden="true" fill="none"><rect x="3" y="3" width="114" height="38" stroke="#2A2A2A" stroke-width="1.6" style="--len:310"/><path d="M1 3 H6 M114 3 H119 M1 41 H6 M114 41 H119" stroke="#9A9A9A" stroke-width=".7" style="--len:20"/></svg><span><i aria-hidden="true">▶</i> BUILD</span></button>
+    </div>
     <div class="spec-wrap">
       <div class="spec-head"><span id="robot-id">unit</span><span>one of 368,640</span></div>
       <div class="spec" id="robot-spec" aria-live="polite"></div>
-      <p class="spec-note">Click the robot for a new one, or a part to change it.</p>
+      <p class="spec-note">Press BUILD to make one. Then click the robot for a new one, or a part to change it.</p>
       <details class="spec-how"><summary>How it is made</summary>
         <p>Each robot is drawn on a 16&nbsp;×&nbsp;17 grid, one cell at a time, with no images. A seeded random
         generator (mulberry32) picks one option for each of ten slots, from antenna to colour, which gives
@@ -55,9 +101,10 @@
     <div class="about-photo rv"><img src="assets/img/profile.jpg" alt="Portrait of Miguel Ángel Castro Torreslanda"></div>
     <div class="about-text">
       <h2 class="about-name rv">Miguel Ángel Castro Torreslanda</h2>
-      <div class="about-meta rv"><span>Mexico City — Madrid</span><span>Data Scientist</span></div>
-      <div class="rv"><p class="about-bio">I came to data science from law and economics. I studied both at ITAM, then a Master's in Human Rights (ITAM – University of Genoa, double degree) and a PhD at Universidad Panamericana, currently in the final stage. Today I am doing the Master's in Data Science, Big Data &amp; Business Analytics at Universidad Complutense de Madrid.</p><p class="about-bio">My recent work covers computer vision for sports video, reinforcement learning in simulation, retrieval over legal documents and multimodal models for video. Each project below describes the approach, the architecture and how it was evaluated.</p></div>
-      <div class="edu rv"><div><b>MSc Data Science, Big Data &amp; Business Analytics</b><span>Universidad Complutense de Madrid · in progress</span></div><div><b>PhD</b><span>Universidad Panamericana · final stage</span></div><div><b>Master&#x27;s in Human Rights</b><span>ITAM – Università di Genova · double degree</span></div><div><b>Law · Economics</b><span>ITAM</span></div></div>
+      <div class="about-meta rv"><span>Mexico City — Madrid</span><span>Lawyer · Data &amp; AI</span></div>
+      <div class="rv"><p class="about-bio"><span class="about-tag">Law</span>Lawyer with 14 years of experience in constitutional and administrative litigation and regulatory advisory in Mexico's energy and financial sectors. As a lawyer at Reyes Orona y Asociados, I handled more than 100 amparo proceedings, including landmark injunctions against major reforms in the energy sector.</p><p class="about-bio"><span class="about-tag">Academia</span>I studied Law and Economics at ITAM, where I graduated summa cum laude at the top of my class, went on to complete a Master's in Human Rights and Guarantees at ITAM and the University of Genoa, and finished a PhD in Law at Universidad Panamericana. For seven years I taught at ITAM and the Barra Nacional de Abogados, where my courses included Law of Obligations, Property Law, Contracts, and workshops in Legal Writing and Research.</p><p class="about-bio"><span class="about-tag">Data &amp; AI</span>I am completing an MSc in Data Science, Big Data &amp; Business Analytics at Universidad Complutense de Madrid. My work spans machine learning, reinforcement learning, computer vision and generative AI: from systems that turn sports video into structured data to a RAG system over court rulings.</p></div>
+      <div class="comp-head rv">Competitions</div>
+      <div class="edu comps rv"><div><b>6th of 8,000+</b><span>Pump It Up · DrivenData</span></div><div><b>Top 5% · 37th of 759</b><span>More than a Hack 2027 · Barça Innovation Hub, Mobile World Capital Barcelona (Talent Arena) and Metrica Sports</span></div></div>
     </div>
   </div>
 </section>
@@ -208,9 +255,11 @@
 
 <canvas id="fx" aria-hidden="true"></canvas>
 <canvas id="walker" aria-hidden="true"></canvas>
+<canvas id="fxtop" aria-hidden="true"></canvas>
 <div id="rope" aria-hidden="true"></div>
-<script src="assets/js/robot.js?v=37"></script>
-<script src="assets/js/home.js?v=37"></script>
-<script src="assets/js/walker.js?v=37"></script>
+<script src="assets/js/robot.js?v=50"></script>
+<script src="assets/js/home.js?v=50"></script>
+<script src="assets/js/walker.js?v=50"></script>
+<script src="assets/js/pencil-name.js?v=50"></script>
 </body>
 </html>

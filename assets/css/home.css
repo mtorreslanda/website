@@ -27,7 +27,7 @@ img { display: block; max-width: 100%; }
 /* ---------------------------------------------------------------- nav */
 .nav { position: fixed; inset: 0 0 auto 0; z-index: 100; display: flex; justify-content: space-between;
        align-items: center; padding: 2rem var(--pad); transition: padding .4s ease, background .4s ease; }
-.nav-logo { font-family: var(--serif); font-weight: 700; font-size: 4rem; letter-spacing: .05em;
+.nav-logo { display: block; line-height: 0;
             text-decoration: none; line-height: 1; transition: font-size .4s ease, letter-spacing .4s ease; }
 .nav-links { display: flex; gap: 2.6rem; }
 .nav-links a { text-decoration: none; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase;
@@ -37,7 +37,7 @@ img { display: block; max-width: 100%; }
 .nav-links a:hover::after { transform: scaleX(1); }
 .nav.scrolled { padding: 1.1rem var(--pad); background: rgba(245, 243, 238, .88);
                 backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-.nav.scrolled .nav-logo { font-family: var(--sans); font-weight: 500; font-size: 1rem; letter-spacing: .12em; }
+.nav.scrolled .nav-logo svg { height: 34px; }
 .nav.on-dark { background: rgba(42, 42, 42, .9); color: var(--paper); }
 
 /* ---------------------------------------------------------------- hero */
@@ -284,3 +284,63 @@ a.row .row-side { color: var(--ink); }
 .scroll-hint .arr { display: inline-block; }
 .js .scroll-hint .arr { animation: arrow 2.2s ease-in-out infinite; }
 @keyframes arrow { 50% { transform: translateY(3px); } }
+
+#fxtop { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 91; pointer-events: none; }
+@media (max-width: 820px) { #fxtop { display: none; } }
+
+/* a row number hit by the robot's tennis ball */
+.row-i { display: inline-block; transition: color .25s ease, transform .25s ease; }
+.row-i.hit { transform: translate(4px, -2px) rotate(-6deg); transition: none; }
+
+/* About: three labelled blocks and the competitions */
+.about-tag { display: block; font-family: var(--mono); font-size: .68rem; letter-spacing: .16em; text-transform: uppercase;
+             color: var(--accent); margin-bottom: .35rem; }
+.comp-head { margin-top: 2.4rem; font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; color: var(--grey); }
+.edu.comps { margin-top: .8rem; }
+.edu.comps div { grid-template-columns: 11rem minmax(0, 1fr); align-items: baseline; }
+.edu.comps b { font-family: var(--mono); font-size: .8rem; }
+.edu.comps span { text-align: left; font-size: .85rem; color: #444; letter-spacing: 0; }
+
+/* the logo: an M and a T in a pencil-drawn frame; it draws itself, and sheds its guides when the menu shrinks */
+.nav-logo svg { height: 74px; width: auto; display: block; transition: height .4s ease; overflow: visible; }
+.nav-logo .guides, .nav-logo .hatch { transition: opacity .4s ease; }
+.nav.scrolled .nav-logo .guides, .nav.scrolled .nav-logo .hatch { opacity: 0; }
+.nav.scrolled .nav-logo .strokes { stroke-width: 3.4; }
+.js .nav-logo line, .js .nav-logo path, .js .nav-logo rect {
+  stroke-dasharray: var(--len, 400); stroke-dashoffset: var(--len, 400); animation: logo-draw 1.4s cubic-bezier(.4, .1, .2, 1) .2s forwards; }
+.js .nav-logo .guides line { animation-duration: .8s; animation-delay: 0s; }
+.js .nav-logo .hatch path { animation-delay: .9s; animation-duration: .7s; }
+@keyframes logo-draw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .nav-logo line, .nav-logo path, .nav-logo rect { stroke-dasharray: none; stroke-dashoffset: 0; } }
+@media (max-width: 820px) { .nav-logo svg { height: 48px; } }
+
+/* the name drawn in pencil over the real (now transparent) text */
+.hero-title { position: relative; }
+.hero-title.pencil-on > span { color: transparent; }
+.pencil-layer { position: absolute; left: -40px; top: -40px; pointer-events: none; }
+.pencil-layer canvas, .pencil-layer svg { position: absolute; left: 0; top: 0; }
+
+/* the capsule before BUILD: a pencil sketch with a button; after it, pixels */
+.capsule { position: relative; }
+.capsule-sketch { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; transition: opacity .55s ease; pointer-events: none; }
+.js .capsule-sketch line, .js .capsule-sketch path, .build-btn rect, .build-btn path {
+  stroke-dasharray: var(--len, 50); stroke-dashoffset: var(--len, 50); animation: logo-draw 1.3s cubic-bezier(.4, .1, .2, 1) .4s forwards; }
+.capsule-sketch .cs-notes { opacity: 0; animation: fade-in .6s ease 1.4s forwards; }
+@keyframes fade-in { to { opacity: 1; } }
+.booting .capsule-sketch, .built .capsule-sketch { opacity: 0; }
+.build-btn { position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%); width: 132px; height: 48px; padding: 0;
+             border: 0; background: rgba(245, 243, 238, .85); cursor: pointer; font-family: var(--mono); font-size: .8rem;
+             letter-spacing: .22em; color: var(--ink); }
+.build-btn svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.build-btn span { position: relative; }
+.build-btn i { font-style: normal; color: var(--accent); margin-right: .25em; display: inline-block; transition: transform .2s ease; }
+.build-btn:hover rect { stroke-width: 2.4; }
+.build-btn:hover i { transform: translateX(3px); }
+.build-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.booting .build-btn, .built .build-btn { animation: btn-out .35s steps(5) forwards; pointer-events: none; }
+@keyframes btn-out { 0% { opacity: 1; clip-path: inset(0 0 0 0); } 100% { opacity: 0; clip-path: inset(40% 0 60% 0); } }
+.part.empty b { color: var(--grey); opacity: .6; }
+.part.empty { cursor: default; }
+@media (prefers-reduced-motion: reduce) { .capsule-sketch line, .capsule-sketch path, .build-btn rect, .build-btn path { stroke-dasharray: none; stroke-dashoffset: 0; } }
+/* phones: no capsule, no spec sheet, no robot */
+@media (max-width: 820px) { .hero-bot { display: none; } }

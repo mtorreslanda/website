@@ -190,6 +190,16 @@
     return { xs: c.filter(function (p) { return p.y === bottom; }).map(function (p) { return p.x; }), bottom: bottom, top: top };
   }
 
-  window.Robot = { W: W, H: H, make: make, cells: cells, draw: draw, color: color, describe: describe,
+  // the cell of the right hand for an arm pose (before any mirroring)
+  function hand(b, kind) {
+    var R = BODIES[b.body][1][1] + 1, o = R + 1;
+    if (kind === 'reach') return { x: o + 1, y: 9 };
+    if (kind === 'reachUp') return { x: o + 1, y: 6 };
+    if (kind === 'up') return { x: o, y: 4 };
+    if (kind === 'climb') return { x: o, y: 6 };
+    return { x: R, y: 12 };
+  }
+
+  window.Robot = { W: W, H: H, make: make, cells: cells, draw: draw, color: color, describe: describe, hand: hand,
                    OPTIONS: OPTIONS, COMBOS: COMBOS, feet: feet };
 })();

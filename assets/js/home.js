@@ -100,7 +100,9 @@
   var idEl = document.getElementById('robot-id');
   var seed = Math.floor(Date.now() / 1000) >>> 0;
   var bot = R.make(seed);
-  var hero = { build: null };
+  var hero = { build: null, boot: null };
+  var built = false;                                       // nothing exists until someone presses BUILD
+  window.__robotBuilt = false;
   var heroVisible = true;
   var blinkUntil = 0, nextBlink = performance.now() + 2500;
   var walker = null;
@@ -124,6 +126,17 @@
 
   function renderSpec(changed) {
     if (!specEl) return;
+    if (!built) {                                          // an empty form, waiting
+      specEl.innerHTML = '';
+      KEYS.forEach(function (k) {
+        var row = document.createElement('div'); row.className = 'part empty';
+        var name = document.createElement('span'); name.textContent = LABELS[k];
+        var val = document.createElement('b'); val.textContent = '—';
+        row.appendChild(name); row.appendChild(val); specEl.appendChild(row);
+      });
+      if (idEl) idEl.textContent = 'unit —';
+      return;
+    }
     var prev = {};
     specEl.querySelectorAll('.part').forEach(function (el) { prev[el.dataset.k] = el.dataset.v; });
     specEl.innerHTML = '';
@@ -139,7 +152,7 @@
       else val.textContent = valueText(k, bot[k]);
       btn.appendChild(name); btn.appendChild(val);
       btn.dataset.k = k; btn.dataset.v = String(bot[k]);
-      if (changed && !reduce && prev[k] !== undefined && prev[k] !== String(bot[k])) {
+      if (changed && !reduce && ((prev[k] !== undefined && prev[k] !== String(bot[k])) || (prev[k] === undefined && changed === 'all'))) {
         btn.classList.add('flash');
         if (k !== 'accent') { val.setAttribute('data-final', val.textContent); scramble(val); }
       }
@@ -171,6 +184,7 @@
   }
 
   function setBot(next, animate, changedKey) {
+    if (!built) return;
     var old = bot;
     bot = next;
     setFavicon(bot);
@@ -179,23 +193,50 @@
     hero.build = (animate && !reduce) ? { t0: performance.now(), old: old } : null;
     drawHero(performance.now());
   }
-  function newRandom() { seed = (seed + 7919) >>> 0; setBot(R.make(seed), true); }
+  function newRandom() { if (!built) { startBoot(); return; } seed = (seed + 7919) >>> 0; setBot(R.make(seed), true); }
 
-  function machine(ctx, s, now, active) {
-    var ink = THEME.ink;
+  function machine(ctx, s, now, active, ey, dark) {
+    var ink = THEME.ink; ey = ey || 0;
+    var off = dark ? '#3A3A3A' : null;
     function bar(y, x0, x1, c) { ctx.fillStyle = c; ctx.fillRect(Math.round(x0 * s), Math.round(y * s), Math.round((x1 - x0 + 1) * s), Math.ceil(s)); }
     function px(x, y, c) { ctx.fillStyle = c; ctx.fillRect(Math.round(x * s), Math.round(y * s), Math.ceil(s), Math.ceil(s)); }
-    // emitter
-    bar(0, 6, 17, ink); bar(1, 4, 19, ink); bar(2, 8, 15, ink);
+    // emitter (ey lowers it onto the pad when the capsule is closed)
+    bar(ey, 6, 17, ink); bar(ey + 1, 4, 19, ink); bar(ey + 2, 8, 15, ink);
     // pad
     bar(PAD, 5, 18, ink); bar(PAD + 1, 3, 20, ink); bar(PAD + 2, 4, 6, ink); bar(PAD + 2, 17, 19, ink);
     // lights: a slow chase when idle, all on while building
     var lightsTop = [6, 9, 12, 15, 17], lightsPad = [5, 8, 11, 14, 17];
     var k = Math.floor(now / 380) % 5;
-    lightsTop.forEach(function (x, i) { px(x, 1, active || i === k ? bot.accent : '#3A3A3A'); });
-    lightsPad.forEach(function (x, i) { px(x + 1, PAD + 1, active || i === (4 - k) ? bot.accent : '#3A3A3A'); });
-    for (var x = 9; x <= 14; x++) px(x, 2, active ? THEME.eye : '#2E2E2E');   // nozzle
+    lightsTop.forEach(function (x, i) { px(x, ey + 1, dark ? off : active || i === k ? bot.accent : '#3A3A3A'); });
+    lightsPad.forEach(function (x, i) { px(x + 1, PAD + 1, dark ? off : active || i === (4 - k) ? bot.accent : '#3A3A3A'); });
+    for (var x = 9; x <= 14; x++) px(x, ey + 2, active ? THEME.eye : '#2E2E2E');   // nozzle
   }
+  // the closed capsule as a list of cells, for the moment it turns from pencil into pixels
+  var BOOT_CELLS = null;
+  function bootCells() {
+    if (BOOT_CELLS) return BOOT_CELLS;
+    var out = [], ey = PAD - 3;
+    function bar(y, x0, x1) { for (var x = x0; x <= x1; x++) out.push({ x: x, y: y, r: Math.random() }); }
+    bar(ey, 6, 17); bar(ey + 1, 4, 19); bar(ey + 2, 8, 15);
+    bar(PAD, 5, 18); bar(PAD + 1, 3, 20); bar(PAD + 2, 4, 6); bar(PAD + 2, 17, 19);
+    return (BOOT_CELLS = out);
+  }
+  var sketchEl = document.querySelector('.capsule-sketch'), buildBtn = document.querySelector('.build-btn');
+  function startBoot() {
+    if (built || hero.boot) return;
+    hero.boot = { t0: performance.now() };
+    document.documentElement.classList.add('booting');       // the pencil sketch and the button go
+    if (reduce) finishBoot(performance.now());
+  }
+  function finishBoot(now) {
+    hero.boot = null; built = true;
+    document.documentElement.classList.add('built');
+    renderSpec('all');
+    setFavicon(bot);
+    hero.build = reduce ? null : { t0: now, old: null };
+    setTimeout(function () { window.__robotBuilt = true; }, reduce ? 0 : 1000);
+  }
+  if (buildBtn) buildBtn.addEventListener('click', startBoot);
 
   function drawRobotRows(ctx, b, s, y0, rowFrom, rowTo) {
     R.cells(b, {}).forEach(function (p) {
@@ -209,6 +250,24 @@
     var s = heroCanvas.width / CW;
     var ctx = heroCanvas.getContext('2d');
     ctx.clearRect(0, 0, heroCanvas.width, heroCanvas.height);
+    if (!built) {
+      if (!hero.boot) return;                               // only the pencil sketch is showing
+      var bt = now - hero.boot.t0, PIX = 650, RISE = 750;
+      if (bt < PIX) {                                       // pencil turns into pixels, cell by cell
+        var pr = bt / PIX;
+        bootCells().forEach(function (c) {
+          if (c.r > pr) return;
+          ctx.fillStyle = c.r > pr - .12 ? bot.accent : THEME.ink;
+          ctx.fillRect(Math.round(c.x * s), Math.round(c.y * s), Math.ceil(s), Math.ceil(s));
+        });
+        return;
+      }
+      var rt = Math.min(1, (bt - PIX) / RISE), e = 1 - Math.pow(1 - rt, 3);
+      var ey = Math.round((PAD - 3) * (1 - e));            // the emitter rises from the pad to the top
+      machine(ctx, s, now, rt > .6, ey, rt < .6);
+      if (rt >= 1) finishBoot(now);
+      return;
+    }
     var bld = hero.build;
     var y0 = RT * s;
     if (bld) {
@@ -218,7 +277,7 @@
       ctx.globalAlpha = 1;
       if (t < OUT) {                                        // the old robot is erased from the top down
         scan = Math.floor(t / OUT * R.H);
-        drawRobotRows(ctx, bld.old, s, y0, scan + 1, R.H);
+        if (bld.old) drawRobotRows(ctx, bld.old, s, y0, scan + 1, R.H);
       } else if (t < OUT + IN) {                            // the new one is printed row by row
         scan = Math.floor((t - OUT) / IN * R.H);
         drawRobotRows(ctx, bot, s, y0, 0, scan - 1);
@@ -247,7 +306,7 @@
 
   var lastEdit = 0;
   heroSize();
-  setBot(bot, false);
+  renderSpec(null);
   window.addEventListener('resize', function () { heroSize(); drawHero(performance.now()); });
   heroCanvas.addEventListener('click', newRandom);
   heroCanvas.addEventListener('keydown', function (e) {
@@ -258,7 +317,7 @@
   }
   // a new robot every 14 s while the hero is on screen, unless someone is building one
   if (!reduce) setInterval(function () {
-    if (heroVisible && !document.hidden && performance.now() - lastEdit > 30000) newRandom();
+    if (built && heroVisible && !document.hidden && performance.now() - lastEdit > 30000) newRandom();
   }, 14000);
 
   /* ================================================================ sections and the soft snap (decision SH24)
@@ -349,7 +408,7 @@
     var now = performance.now();
     var dt = Math.min(40, now - last);
     if (now > nextBlink) { blinkUntil = now + 140; nextBlink = now + 2500 + Math.random() * 3000; }
-    if (heroVisible || hero.build) drawHero(now);
+    if (heroVisible || hero.build || hero.boot) drawHero(now);
     if (window.Walker) window.Walker.tick(now, dt);
     worksTick();
     last = now;

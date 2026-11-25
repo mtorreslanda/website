@@ -23,7 +23,11 @@
   wc.style.width = CC * S + 'px'; wc.style.height = CR * S + 'px';
   var ctx = wc.getContext('2d'), K = wc.width / CC;
   var fctx = fx.getContext('2d');
-  function sizeFx() { fx.width = Math.round(innerWidth * dpr); fx.height = Math.round(innerHeight * dpr); }
+  var fxTop = document.getElementById('fxtop'), tctx = fxTop ? fxTop.getContext('2d') : fctx;   // in front of the robot
+  function sizeFx() {
+    fx.width = Math.round(innerWidth * dpr); fx.height = Math.round(innerHeight * dpr);
+    if (fxTop) { fxTop.width = fx.width; fxTop.height = fx.height; }
+  }
   sizeFx(); window.addEventListener('resize', sizeFx);
 
   /* ---------------------------------------------------------------- helpers */
@@ -417,11 +421,15 @@
     portals.forEach(function (pt) { drawPortal(pt, now); });
     drawParkedLamp();
     drawGrass(now);
-    propDraw.forEach(function (pr) {                         // the toys of the Skills scene
+    if (fxTop) { tctx.setTransform(dpr, 0, 0, dpr, 0, 0); tctx.clearRect(0, 0, innerWidth, innerHeight); }
+    propDraw.forEach(function (pr) {                         // the toys of the Skills scene, in front of the robot
+      var k = S * (pr.scale || 1);
+      tctx.globalAlpha = pr.alpha == null ? 1 : pr.alpha;
       pr.cells.forEach(function (c) {
-        fctx.fillStyle = c.col;
-        fctx.fillRect(Math.round(pr.x - scrollX + c.x * S), Math.round(pr.y - scrollY + c.y * S), S, S);
+        tctx.fillStyle = c.col;
+        tctx.fillRect(Math.round(pr.x - scrollX + c.x * k), Math.round(pr.y - scrollY + c.y * k), Math.ceil(k), Math.ceil(k));
       });
+      tctx.globalAlpha = 1;
     });
     propDraw = [];
     if (lightCone) {
@@ -527,8 +535,9 @@
       return;
     }
     if (toS.mode === 'tricks') {
-      if (W.state === 'lamp') { W.parkLamp = true; lightCone = null; clearLit(); }   // the lamp stays on the k
-      else poofAt(W.x, W.y - 25, 12);                           // anything else: a burst where it was
+      if (W.state === 'lamp') { W.parkLamp = true; lightCone = null; clearLit(); enterTricks(now, toS, true); return; }   // the lamp stays on the k
+      if (SCENES.indexOf(toS) < SCENES.indexOf(W.scene)) { W.tempo = 'normal'; startTravel(toS, now); return; }        // from below: a rocket jump up
+      poofAt(W.x, W.y - 25, 12);
       enterTricks(now, toS, true);
       return;
     }
@@ -964,7 +973,7 @@
 
       case 'intro': {                                      // waits for the name to rise, then comes out of a portal over the G
         cells = [];
-        if (el > 1500) {
+        if (window.__robotBuilt && (window.__nameDone || el > 9000)) {   // once someone has built the robot
           var gx = gLetterX();
           if (gx != null) { W.x = gx; W.y = skyY(gx); }
           W.travel = { pi: 'sky' }; W.dir = 1; W.printDelay = 60; setState('print', now);
@@ -1018,7 +1027,7 @@
       case 'tricks': {
         var tk = W.tk, lyS = W.scene.section.getBoundingClientRect().bottom + scrollY, spotX = tricksX();
         W.y = lyS;
-        grass.x = spotX; grass.y = lyS;
+        grass.x = spotX + 70; grass.y = lyS;                    // wide enough for everywhere it runs during the tricks
         var pt2 = { blink: blink }, u = now - tk.trickT;
         var lookM = mouseActive(now) ? { x: Math.abs(mouse.cx + scrollX - W.x) > 30 ? (mouse.cx + scrollX > W.x ? 1 : -1) * W.dir : 0,
                                          y: Math.abs(mouse.cy + scrollY - (W.y - 40)) > 60 ? (mouse.cy + scrollY > W.y - 40 ? 1 : -1) : 0 } : null;
@@ -1029,7 +1038,7 @@
         }
         if (tk.phase === 'run') {                                // runs in from the left, kicking up dust
           W.x += 0.5 * dt;
-          if (now - W.lastStep > 80) { W.step ^= 1; W.lastStep = now; if (Math.random() < 0.6) puff(W.x - 10, W.y, 1, '#B9B2A6', 0.06, 0.03); }
+          if (now - W.lastStep > 80) { W.step ^= 1; W.lastStep = now; tuft(W.x, W.y); if (Math.random() < 0.6) puff(W.x - 10, W.y, 1, '#B9B2A6', 0.06, 0.03); }
           pt2.step = W.step; pt2.armL = W.step ? 'climb' : 'down'; pt2.armR = W.step ? 'down' : 'climb';
           if (W.x >= spotX - 10) { tk.phase = 'skid'; tk.t0 = now; }
           atFeet(W.x, W.y); cells = robotCells(pt2, 1, false); break;
@@ -1049,65 +1058,175 @@
           atFeet(W.x, W.y); cells = robotCells(pt2, W.dir, false);
           if (now - tk.t0 > (W.tempo === 'teleport' ? 120 : 300)) {
             var to2 = tk.to;
-            if (to2.mode === 'lamp') {                           // back up to Coursework: it is the lamp again
-              poofAt(W.x, W.y - 25, 14);
-              W.parkLamp = false; W.scene = to2; W.lamp = { angle: 1.15, av: 0 }; setState('lamp', now);
+            if (to2.mode === 'lamp') {                           // back up to Coursework: through a portal
+              W.prevState = 'tricks'; W.portalMode = true;
+              W.parkLamp = false;                                 // Coursework is empty until it arrives
+              portalExit(now, 'coursework');
             } else startTravel(to2, now);
           }
           break;
         }
-        // play: one trick after another
-        W.x += (spotX - W.x) * 0.1;
+        // play: one trick after another, in random order
         var name = TRICKS[tk.trick];
-        if (u > 5600) {                                          // next trick: the old toy bursts
+        if (u > TRICK_MS[name]) {                                // next trick: the old toy bursts
           if (tk.last) poofAt(tk.last.x, tk.last.y, 10);
-          tk.trick = (tk.trick + 1) % TRICKS.length; tk.trickT = now; u = 0; name = TRICKS[tk.trick];
+          tk.trick = nextTrick(tk.trick); tk.trickT = now; u = 0; name = TRICKS[tk.trick]; tk.last = null; tk.sb = null; tk.tn = null; tk.caught = false;
         }
-        var hx = W.x + 9 * S, hy = W.y - 9 * S;                  // the right hand when the arm is out
-        pt2.look = lookM;
-        if (name === 'soccer') {                                 // keepie-uppie
-          var per = 520, k5 = (u % per) / per, foot = Math.floor(u / per) % 2;
-          var bx = W.x + (foot ? 5 : -5), by = W.y - 3 * S - Math.sin(k5 * Math.PI) * 52;
-          pt2.step = k5 < 0.15 ? 1 : 0; W.dir = foot ? 1 : -1;
-          if (k5 < 0.05) grass.kick = now;
-          propDraw.push({ x: bx, y: by, cells: BALL }); tk.last = { x: bx, y: by };
-        } else if (name === 'football') {                        // throws a spiral up and catches it
-          var per2 = 1700, k6 = (u % per2) / per2, fx2, fy2;
-          W.dir = 1;
-          if (k6 < 0.15) { pt2.armR = 'up'; fx2 = W.x + 6; fy2 = W.y - 17 * S; }
-          else {
-            var tt2 = (k6 - 0.15) / 0.8; tt2 = Math.min(tt2, 1);
-            fx2 = W.x + 6; fy2 = W.y - 17 * S - Math.sin(tt2 * Math.PI) * 150;
-            pt2.armR = tt2 > 0.8 ? 'up' : 'down'; pt2.armL = tt2 > 0.8 ? 'up' : 'down';
+        var x0 = spotX, wall = tableX(), goalX = x0, pt3 = pt2;
+        pt3.look = lookM;
+        function walkTo(gx, speed) {                              // a few steps to the side, with the feet moving
+          var d = gx - W.x;
+          if (Math.abs(d) > 2) {
+            W.x += clamp(d, -speed * dt, speed * dt);
+            if (now - W.lastStep > (speed > 0.12 ? 95 : 130)) { W.step ^= 1; W.lastStep = now; tuft(W.x + (W.step ? 4 : -4), W.y); }
+            pt3.step = W.step; return false;
           }
-          var spin = Math.floor(now / 90) % 2;
-          propDraw.push({ x: fx2, y: fy2, cells: k6 < 0.15 ? FOOT_H : (spin ? FOOT_H : FOOT_V) }); tk.last = { x: fx2, y: fy2 };
-        } else if (name === 'tennis') {                          // bounces a ball on a racket
-          W.dir = 1; pt2.armR = 'reach';
-          var per3 = 470, k7 = (u % per3) / per3;
-          var rx3 = hx + 4 * S, ry3 = hy - 3 * S;
-          propDraw.push({ x: rx3, y: ry3, cells: RACKET });
-          var tbY = ry3 - 4 * S - Math.sin(k7 * Math.PI) * 46;
-          propDraw.push({ x: rx3, y: tbY, cells: TBALL }); tk.last = { x: rx3, y: tbY };
-        } else {                                                 // the controller, and a small drone that flies in
-          W.dir = 1; pt2.armL = 'climb'; pt2.armR = 'climb';
-          propDraw.push({ x: W.x, y: W.y - 8 * S, cells: PAD });
-          var enter = clamp(u / 1100, 0, 1), ph = u / 900;
-          var ox = W.x + Math.sin(ph) * 80, oy = W.y - 95 + Math.sin(ph * 2) * 22;
-          var dxp = innerWidth + scrollX + 40;
-          var mdx = dxp + (ox - dxp) * (1 - Math.pow(1 - enter, 3)), mdy = oy;
-          propDraw.push({ x: mdx, y: mdy, cells: miniDrone(now) }); tk.last = { x: mdx, y: mdy };
-          pt2.look = { x: Math.abs(mdx - W.x) > 30 ? (mdx > W.x ? 1 : -1) : 0, y: -1 };   // watches the drone
+          return true;
         }
-        atFeet(W.x, W.y);
-        cells = robotCells(pt2, W.dir, false);
+        function handAt(kind) {                                  // page position of the right hand for this pose
+          var hc = R.hand(Home.bot, kind), hx = W.dir < 0 ? R.W - 1 - hc.x : hc.x;
+          atFeet(W.x, W.y);
+          return { x: place.left + (OX + hx + 0.5) * S, y: place.top + (TOPM + hc.y + 0.5) * S };
+        }
+        var footY = W.y - 3 * S;
+        if (name === 'soccer') {
+          // keepie-uppie with real gravity: feet, knee and head, running under the ball
+          var G2 = 0.0016, headY = W.y - 18 * S, kneeY = W.y - 6 * S;
+          if (!tk.sb) tk.sb = { x: W.x + 6, y: footY, vx: 0, vy: -Math.sqrt(2 * G2 * 70), next: 'foot', t: now };
+          var sb = tk.sb;
+          sb.vy += G2 * dt; sb.x += sb.vx * dt; sb.y += sb.vy * dt;
+          var touchY = sb.next === 'head' ? headY : sb.next === 'knee' ? kneeY : footY;
+          // where will it come down? the robot goes there
+          var tFall = (-sb.vy + Math.sqrt(Math.max(0, sb.vy * sb.vy + 2 * G2 * (touchY - sb.y)))) / G2;
+          var landX = sb.x + sb.vx * tFall;
+          var offX = sb.next === 'head' ? 0 : sb.next === 'knee' ? 5 : (sb.foot ? 7 : -7);
+          walkTo(landX - offX, 0.24);
+          pt3.look = { x: 0, y: sb.y < W.y - 22 * S ? -1 : sb.y > W.y - 8 * S ? 1 : 0 };
+          if (sb.next === 'head' && sb.y > W.y - 34 * S) pt3.look = { x: 0, y: -1 };
+          if (sb.vy > 0 && sb.y >= touchY) {                    // the touch
+            sb.y = touchY;
+            var r3 = Math.random(), h = 60 + Math.random() * 60;
+            if (sb.next === 'head') { W.hop = now; h += 20; }
+            if (sb.next === 'foot') { sb.foot = !sb.foot; tuft(W.x + (sb.foot ? 6 : -6), W.y); }
+            tk.touch = { kind: sb.next, t: now };
+            sb.next = r3 < 0.5 ? 'foot' : r3 < 0.75 ? 'knee' : 'head';
+            var up = Math.sqrt(2 * G2 * (h + (sb.next === 'head' ? 0 : 0)));
+            var air = 2 * up / G2, target = x0 + (Math.random() - 0.5) * 140;
+            sb.vy = -up; sb.vx = clamp((target - sb.x) / air, -0.14, 0.14);
+          }
+          if (tk.touch && now - tk.touch.t < 140) {
+            if (tk.touch.kind === 'foot') pt3.step = 1;
+            if (tk.touch.kind === 'knee') { pt3.step = 1; pt3.armL = 'up'; }
+            if (tk.touch.kind === 'head') { pt3.armL = 'reach'; pt3.armR = 'reach'; }
+          }
+          W.dir = sb.x >= W.x ? 1 : -1;
+          propDraw.push({ x: sb.x, y: sb.y - 2 * S, cells: BALL }); tk.last = { x: sb.x, y: sb.y };
+        } else if (name === 'tennis') {
+          // it walks up to the table and plays against the row numbers, which flash when hit
+          if (!tk.tn) tk.tn = { x: wall - 150, k: -1 };
+          var tn = tk.tn;
+          W.dir = 1;
+          var there = walkTo(tn.x + Math.sin(u / 1300) * 10, 0.18);
+          var hk = 'reach';
+          var per3 = 1200, k7 = (u % per3) / per3, rally = Math.floor(u / per3);
+          if (rally !== tn.k) {                                   // a new shot: pick a number to aim at
+            tn.k = rally;
+            var vis = rowNums.slice(3, 5).filter(function (n) { var r = n.getBoundingClientRect(); return r.top > 60 && r.bottom < innerHeight - 20; });
+            tn.el = vis.length ? vis[Math.floor(Math.random() * vis.length)] : null;
+            tn.hit = false;
+          }
+          if (k7 < 0.08 || k7 > 0.95) hk = 'reachUp';           // the swing
+          pt3.armR = hk;
+          var hp = handAt(hk);
+          propDraw.push({ x: hp.x, y: hp.y, cells: RACKET });
+          var headX2 = hp.x, headY2 = hp.y - 5 * S;
+          var aim = { x: wall, y: headY2 - 40 };
+          if (tn.el) { var rb = tn.el.getBoundingClientRect(); aim = { x: rb.left + rb.width / 2 + scrollX, y: rb.top + rb.height / 2 + scrollY }; }
+          if (!there) aim = null;                                 // still walking up: the ball stays on the racket
+          var tbx, tby;
+          if (!aim) { tbx = headX2; tby = headY2 - 6; }
+          else {
+            var go = k7 < 0.5, f2 = go ? k7 * 2 : (1 - k7) * 2;
+            tbx = headX2 + (aim.x - headX2) * f2;
+            tby = headY2 + (aim.y - headY2) * f2 - Math.sin(f2 * Math.PI) * 26;
+            if (!go && !tn.hit && tn.el) {                        // it hit the number
+              tn.hit = true; puff(aim.x, aim.y, 5, '#C9E04A', 0.08, 0.02);
+              var el2 = tn.el; el2.classList.add('hit'); setTimeout(function () { el2.classList.remove('hit'); }, 260);
+            }
+          }
+          propDraw.push({ x: tbx, y: tby, cells: TBALL }); tk.last = { x: tbx, y: tby };
+        } else if (name === 'football') {
+          // walks to the left, throws long off the screen to the left, then runs right with its arms up,
+          // waving ("I'm open!") before the pass appears; it comes from the left, over its head
+          var spin = Math.floor(now / 80) % 2 ? FOOT_H : FOOT_V, fb2 = null;
+          var offL = scrollX - 120, throwX = Math.max(scrollX + 60, x0 - 130), catchX = Math.min(x0 + 200, scrollX + innerWidth * 0.42);
+          var hold = function () { var hh = handAt('climb'); return { x: hh.x - (W.dir > 0 ? 6 : -6), y: hh.y, c: FOOT_H }; };
+          if (u < 1100) {                                         // ball in hands, walking over to the left
+            W.dir = -1; pt3.armL = 'climb'; pt3.armR = 'climb'; fb2 = hold();
+            if (!walkTo(throwX, 0.14) && u > 900) { tk.trickT += dt; u = now - tk.trickT; }   // not there yet: the throw waits
+          }
+          else if (u < 1600) { W.dir = -1; pt3.armR = 'up'; var h1 = handAt('up'); fb2 = { x: h1.x, y: h1.y - 6, c: FOOT_H }; }
+          else if (u < 2600) {                                    // a long, high throw
+            W.dir = -1; var t3 = (u - 1600) / 1000, h2 = handAt('down');
+            fb2 = { x: h2.x + (offL - h2.x) * t3, y: h2.y - 40 - Math.sin(t3 * Math.PI * 0.9) * 230, c: spin };
+            pt3.look = { x: 1, y: -1 }; pt3.armR = t3 < 0.2 ? 'reach' : 'down';
+          }
+          else if (u < 3200) { W.dir = -1; pt3.look = { x: 1, y: 0 }; walkTo(throwX + Math.sin(u / 380) * 6, 0.05); }
+          else if (u < 5100) {
+            W.dir = 1;
+            walkTo(catchX, 0.17);
+            pt3.look = { x: -1, y: -1 };                          // looking back for the ball
+            var wv = Math.floor(u / 180) % 2;
+            pt3.armL = 'up'; pt3.armR = u < 4400 ? (wv ? 'wave' : 'up') : 'up';   // "I'm open!"
+            if (u > 3650) {
+              var t4 = clamp((u - 3650) / 1450, 0, 1), cy2 = W.y - 18 * S;
+              fb2 = { x: offL + (catchX - offL) * t4, y: cy2 - Math.sin(t4 * Math.PI) * 200, c: spin };
+            }
+          } else {
+            if (!tk.caught) { tk.caught = true; tk.catchT = now; W.hop = now; fireworks(W.x, W.y - 26 * S, now); }
+            var cel = now - tk.catchT;
+            if (cel < 1400) {                                     // touchdown: ball up high, two jumps, fireworks
+              if (cel > 600 && !tk.hop2) { tk.hop2 = true; W.hop = now; }
+              pt3.armL = 'up'; pt3.armR = 'up';
+              var hu = handAt('up'); fb2 = { x: hu.x - 4, y: hu.y - 8, c: Math.floor(now / 120) % 2 ? FOOT_H : FOOT_V };
+            } else {                                              // the celebration is the end of this trick
+              tk.trickT = now - TRICK_MS.football - 1;
+              pt3.armL = 'climb'; pt3.armR = 'climb';
+              fb2 = hold();
+            }
+          }
+          if (u < 5100) { tk.caught = false; tk.hop2 = false; }
+          if (fb2) { propDraw.push({ x: fb2.x, y: fb2.y, cells: fb2.c }); tk.last = { x: fb2.x, y: fb2.y }; }
+        } else {
+          // the drone comes in from close to the screen on the left (big), circles, and leaves the same way
+          pt3.armL = 'climb'; pt3.armR = 'climb';
+          var hc2 = handAt('climb');
+          propDraw.push({ x: W.x, y: hc2.y + 2, cells: PAD });
+          var gate = { x: scrollX + 60, y: scrollY + innerHeight * 0.55 };
+          var orbitX = x0 + Math.sin(u / 900) * 110, orbitY = W.y - 100 + Math.sin(u / 450) * 26, sc2, dx3, dy3, al = 1;
+          if (u < 1700) { var e5 = 1 - Math.pow(1 - u / 1700, 3); sc2 = 4 - 3 * e5; dx3 = gate.x + (orbitX - gate.x) * e5; dy3 = gate.y + (orbitY - gate.y) * e5; }
+          else if (u < 5700) { sc2 = 1; dx3 = orbitX; dy3 = orbitY; }
+          else { var e6 = Math.pow((u - 5700) / 1800, 2); sc2 = 1 + 3 * e6; dx3 = orbitX + (gate.x - orbitX) * e6; dy3 = orbitY + (gate.y - orbitY) * e6; al = e6 > 0.7 ? 1 - (e6 - 0.7) / 0.3 : 1; }
+          walkTo(dx3 + (dx3 > W.x ? -50 : 50), 0.07);            // it follows the drone around
+          propDraw.push({ x: dx3, y: dy3, cells: miniDrone(now), scale: sc2, alpha: al }); tk.last = { x: dx3, y: dy3 };
+          W.dir = dx3 > W.x ? 1 : -1;
+          pt3.look = { x: 1, y: dy3 < W.y - 60 ? -1 : 0 };
+          if (sc2 < 2.2 && al > 0.3) rays(W.x, W.y - 17 * S, dx3, dy3, now);   // it is flying it
+        }
+        var hy4 = 0;
+        if (W.hop >= 0) { var hh4 = (now - W.hop) / 320; if (hh4 >= 1) W.hop = -1; else hy4 = -Math.sin(hh4 * Math.PI) * 8; }
+        atFeet(W.x, W.y + hy4);
+        cells = robotCells(pt3, W.dir, false);
         break;
       }
 
       case 'transit': {                                    // between two portals; comes out where it should be
         cells = [];
         var tsc = sceneNow(), origin = W.scene;
-        if (tsc.id === W.transitTo) { W.scene = tsc; W.travel = null; W.pin = null; setState('portalin', now); }
+        if (tsc.id === W.transitTo) {
+          var lp2 = landing(tsc), vy2 = lp2.y - scrollY;
+          if (vy2 > 90 && vy2 < innerHeight - 20) { W.scene = tsc; W.travel = null; W.pin = null; setState('portalin', now); }   // only when its place can be seen
+        }
         else if (tsc === origin) {
           var back = origin.mode === 'drone' ? origin.section.getBoundingClientRect().bottom > innerHeight + 100 || scrollDir < 0
                                              : origin.section.getBoundingClientRect().top < innerHeight * 0.35 || scrollDir > 0;
@@ -1125,7 +1244,7 @@
                  : mode === 'drone' ? droneCells(now, 0.1, false)
                  : robotCells({ blink: blink }, W.dir, dark);
         var fc = formCentre(form);
-        if (!W.pin) W.pin = openPortal(place.left + fc.x * S, place.top + fc.y * S, Math.max(24, fc.r * S * 0.75));
+        if (!W.pin) { W.pin = openPortal(place.left + fc.x * S, place.top + fc.y * S, Math.max(24, fc.r * S * 0.75)); if (mode === 'lamp') W.parkLamp = false; }
         W.pin.x = place.left + fc.x * S; W.pin.y = place.top + fc.y * S;
         if (el < 180) cells = [];
         else {
@@ -1386,7 +1505,16 @@
   var FOOT_H = sprite(['.bbbb.', 'bbwwbb', 'bbbbbb', '.bbbb.'], { b: '#8B4A2B', w: WHITE });
   var FOOT_V = sprite(['.bb.', 'bbbb', 'bwbb', 'bwbb', 'bbbb', '.bb.'], { b: '#8B4A2B', w: WHITE });
   var TBALL = sprite(['yy', 'yy'], { y: '#C9E04A' });
-  var RACKET = sprite(['.kkk.', 'klllk', 'klllk', 'klllk', '.kkk.', '..k..', '..k..', '..k..'], { k: INK, l: '#D9D4CA' });
+  var RACKET = sprite(['.kkk.', 'klllk', 'klllk', 'klllk', '.kkk.', '..k..', '..k..', '..k..'], { k: INK, l: '#D9D4CA' })
+    .map(function (c) { return { x: c.x, y: c.y - 3.5, col: c.col }; });   // the bottom of the handle sits on (0,0)
+  function rays(x0, y0, x1, y1, now) {                        // radio waves from the robot towards what it is flying
+    var ang = Math.atan2(y1 - y0, x1 - x0), out = [];
+    for (var w = 0; w < 3; w++) {
+      var r = ((now / 9 + w * 14) % 42) + 6;
+      for (var a = -0.45; a <= 0.45; a += 0.15) out.push({ x: Math.round(Math.cos(ang + a) * r / S), y: Math.round(Math.sin(ang + a) * r / S), col: w % 2 ? '#FFD66B' : Home.bot.accent });
+    }
+    propDraw.push({ x: x0, y: y0, cells: out });
+  }
   var PAD = sprite(['kkkkk', 'kakek', 'kkkkk'], { k: INK, a: '#C0522A', e: '#FFD66B' });
   function miniDrone(now) {
     var f = Math.floor(now / 40) % 2, bl = f ? '#8A8A8A' : INK;
@@ -1394,19 +1522,24 @@
                   { b: bl, k: INK, a: Home.bot.accent });
   }
   function tricksX() { return scrollX + Math.min(Math.max(innerWidth * 0.2, 170), 330); }
-  var BLADES = [];
-  for (var bi = 0; bi < 46; bi++) BLADES.push({ dx: (bi - 23) * S, h: 1 + ((bi * 7) % 3), c: bi % 3 === 0 ? '#5DA66E' : '#3C8D5A' });
-  var grass = { x: 0, y: 0, g: 0, target: 0 };
+  // grass only where it steps: small tufts spring up under its feet and fade
+  var tufts = [];
+  var grass = { x: 0, y: 0, g: 0, target: 0 };               // kept for the scene logic; the floor itself has no grass
+  function tuft(x, y) {
+    return;                                                  // MA preferred it without grass
+    if (tufts.length > 60) tufts.shift();
+    for (var i = -1; i <= 1; i++) tufts.push({ x: x + i * S + (Math.random() - 0.5) * 4, y: y, t0: performance.now(),
+      h: 1 + Math.floor(Math.random() * 3), c: Math.random() < 0.4 ? '#5DA66E' : '#3C8D5A' });
+  }
   function drawGrass(now) {
-    grass.g += (grass.target - grass.g) * 0.12;
-    if (grass.g < 0.03) return;
-    BLADES.forEach(function (b, i) {
-      var h = Math.round(b.h * grass.g + (grass.kick && now - grass.kick < 250 && i % 2 ? 1 : 0));
-      if (h <= 0) return;
-      var sway = Math.sin(now / 420 + i * 0.7) > 0.3 ? 1 : 0;
-      fctx.fillStyle = b.c;
-      for (var k = 0; k < h; k++) fctx.fillRect(Math.round(grass.x - scrollX + b.dx + (k === h - 1 ? sway : 0)), Math.round(grass.y - scrollY - (k + 1) * S), S, S);
+    tufts = tufts.filter(function (t) { return now - t.t0 < 900; });
+    tufts.forEach(function (t) {
+      var a = now - t.t0, grow = Math.min(1, a / 140), h = Math.max(1, Math.round(t.h * grow));
+      fctx.globalAlpha = a < 500 ? 1 : 1 - (a - 500) / 400;
+      fctx.fillStyle = t.c;
+      for (var k = 0; k < h; k++) fctx.fillRect(Math.round(t.x - scrollX + (k === h - 1 && Math.sin(now / 200 + t.x) > 0 ? 1 : 0)), Math.round(t.y - scrollY - (k + 1) * S), S, S);
     });
+    fctx.globalAlpha = 1;
   }
   function poofAt(x, y, n) { for (var i = 0; i < n; i++) parts.push({ x: x, y: y, vx: (Math.random() - 0.5) * 0.2, vy: -Math.random() * 0.16, life: 0, max: 360, col: Math.random() < 0.5 ? Home.bot.accent : '#FFD66B', g: 0.0004 }); }
 
@@ -1426,11 +1559,32 @@
     var lx = landing(sc);
     W.y = lx.y; W.dir = 1;
     W.x = fromLeft ? scrollX - 30 : lx.x;
-    W.tk = { phase: fromLeft ? 'wait' : 'play', t0: now, trick: Math.floor(Math.random() * 4), trickT: now, last: null };
+    W.tk = { phase: fromLeft ? 'wait' : 'play', t0: now, trick: Math.floor(Math.random() * TRICKS.length), trickT: now, last: null };
     grass.target = fromLeft ? 0 : 1;
     setState('tricks', now);
   }
+  // pixel fireworks: a ring of sparks that bursts, slows and falls
+  function fireworks(x, y, now) {
+    var cols = ['#FFD66B', Home.bot.accent, '#2D6AA8', '#C0522A', '#3C8D5A', '#8A4FA0'];
+    var spots = [[0, 0, 0], [-46, -26, 220], [44, -40, 440]];   // three bursts, one after another
+    spots.forEach(function (sp) {
+      setTimeout(function () {
+        var cx = x + sp[0], cy = y + sp[1], n = 30;
+        for (var i = 0; i < n; i++) {
+          var a = i / n * Math.PI * 2 + Math.random() * 0.2, v = 0.16 + Math.random() * 0.08;
+          parts.push({ x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: 820 + Math.random() * 260,
+                       col: cols[Math.floor(Math.random() * cols.length)], g: 0.0003 });
+        }
+        for (var j = 0; j < 8; j++) parts.push({ x: cx, y: cy, vx: (Math.random() - 0.5) * 0.06, vy: (Math.random() - 0.5) * 0.06, life: 0, max: 380, col: '#FFFFFF', g: 0 });
+      }, sp[2]);
+    });
+  }
   var TRICKS = ['soccer', 'football', 'tennis', 'drone'];
+  var TRICK_MS = { soccer: 7600, football: 9200, tennis: 7000, drone: 7600 };
+  var rowNums = Array.prototype.slice.call(document.querySelectorAll('#skills .row-i'));
+  function nextTrick(i) { var j; do { j = Math.floor(Math.random() * TRICKS.length); } while (j === i); return j; }
+  var skillsRows = document.querySelector('#skills .rows');
+  function tableX() { return (skillsRows ? skillsRows.getBoundingClientRect().left : innerWidth * 0.45) + scrollX - 6; }
 
   function arrive(now) {
     var sc = W.scene;
