@@ -196,6 +196,15 @@
     for (var i = i0 - FOOT_HALF; i <= i0 + FOOT_HALF; i++) if (i >= 0 && i < sky.w && sky.top[i] < m) m = sky.top[i];
     return m;
   }
+  function gLetterX() {                                       // centre of the G of MIGUEL, in page coordinates
+    var el = document.querySelector('.hero-title .l1'); if (!el) return null;
+    var tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), node, rg = document.createRange();
+    while ((node = tw.nextNode())) {
+      var i = node.nodeValue.indexOf('G');
+      if (i >= 0) { rg.setStart(node, i); rg.setEnd(node, i + 1); var r = rg.getBoundingClientRect(); return (r.left + r.right) / 2 + scrollX; }
+    }
+    return null;
+  }
   function stepBox() {                                       // the scroll text itself: a low step standing on the line
     var b = hintEl.getBoundingClientRect(), l = firstLine(hintEl);
     return { x1: b.left - 2 + scrollX, x2: b.right + 2 + scrollX, y: (l ? l.y : b.top) + scrollY };
@@ -366,20 +375,45 @@
     for (var i = 0; i < n; i++) parts.push({ x: x, y: y, vx: (Math.random() - 0.5) * spread, vy: -Math.random() * (up || 0.05),
       life: 0, max: 380 + Math.random() * 300, col: col, g: 0.0002 });
   }
-  var beams = [];                                            // columns of light: {x, top, bottom, w, t0, dur}
-  function beamAt(x, top, bottom, w, dur) { beams.push({ x: x, top: top, bottom: bottom, w: w, t0: performance.now(), dur: dur }); }
+  // portals: a round hole of pixels with a turning ring, centred where the robot leaves or arrives
+  var portals = [];
+  function openPortal(x, y, R) { var pt = { x: x, y: y, R: R, t0: performance.now(), closeT: null }; portals.push(pt); return pt; }
+  function portalR(pt, now) {
+    var o = clamp((now - pt.t0) / 180, 0, 1), r = pt.R * (1 - Math.pow(1 - o, 3));
+    if (pt.closeT != null) r *= 1 - clamp((now - pt.closeT) / 170, 0, 1);
+    return r;
+  }
+  function drawPortal(pt, now) {
+    var r = portalR(pt, now); if (r < 1) return;
+    var cx = Math.round((pt.x - scrollX) / S) * S, cy = Math.round((pt.y - scrollY) / S) * S;
+    fctx.fillStyle = 'rgba(18,18,18,0.9)';
+    for (var yy = -r; yy <= r; yy += S) {                    // the hole, filled cell by cell so it stays pixelated
+      var hw = Math.sqrt(Math.max(0, r * r - yy * yy));
+      var x0 = Math.round((cx - hw) / S) * S, x1 = Math.round((cx + hw) / S) * S;
+      fctx.fillRect(x0, Math.round((cy + yy) / S) * S, x1 - x0, S);
+    }
+    var cols = [Home.bot.accent, '#FFD66B', Home.bot.accent, '#F5F3EE'];
+    var rings = [[r, 1, 70], [r * 0.62, -1, 110]];
+    rings.forEach(function (rg, j) {
+      var rr = rg[0], n = Math.max(8, Math.round(2 * Math.PI * rr / S)), spin = Math.floor(now / rg[2]) * rg[1];
+      fctx.globalAlpha = j ? 0.55 : 1;
+      for (var i = 0; i < n; i++) {
+        var a = i / n * Math.PI * 2;
+        fctx.fillStyle = cols[((i + spin) % 4 + 4) % 4];
+        fctx.fillRect(Math.round((cx + Math.cos(a) * rr) / S) * S, Math.round((cy + Math.sin(a) * rr) / S) * S, S, S);
+      }
+    });
+    fctx.globalAlpha = 1;
+  }
+  function bit(x, y, vx, vy, max) {                         // a falling 0 or 1, or a plain pixel
+    parts.push({ x: x, y: y, vx: vx, vy: vy, life: 0, max: max, g: 0,
+                 col: Math.random() < 0.5 ? Home.bot.accent : '#FFD66B', ch: Math.random() < 0.45 ? (Math.random() < 0.5 ? '0' : '1') : null });
+  }
   function drawFx(now, dt) {
     fctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     fctx.clearRect(0, 0, innerWidth, innerHeight);
-    beams = beams.filter(function (b) { return now - b.t0 < b.dur; });
-    beams.forEach(function (b) {
-      var k = (now - b.t0) / b.dur, a = Math.sin(k * Math.PI);           // fades in and out
-      var x = b.x - scrollX, w = b.w * (0.6 + 0.4 * a);
-      var g = fctx.createLinearGradient(x - w / 2, 0, x + w / 2, 0);
-      g.addColorStop(0, 'rgba(255,214,107,0)'); g.addColorStop(0.5, 'rgba(255,214,107,' + (0.42 * a).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,214,107,0)');
-      fctx.fillStyle = g;
-      fctx.fillRect(x - w / 2, b.top - scrollY, w, b.bottom - b.top);
-    });
+    portals = portals.filter(function (pt) { return pt.closeT == null || now - pt.closeT < 180; });
+    portals.forEach(function (pt) { drawPortal(pt, now); });
     if (lightCone) {
       var c = lightCone;
       var g = fctx.createLinearGradient(c.m.x, c.m.y, c.r.x, c.r.y + c.r.h / 2);
@@ -395,7 +429,8 @@
       p.life += dt; p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt;
       fctx.globalAlpha = 1 - p.life / p.max;
       fctx.fillStyle = p.col;
-      fctx.fillRect(Math.round(p.x - scrollX), Math.round(p.y - scrollY), S, S);
+      if (p.ch) { fctx.font = '500 10px "JetBrains Mono", monospace'; fctx.fillText(p.ch, Math.round(p.x - scrollX), Math.round(p.y - scrollY)); }
+      else fctx.fillRect(Math.round(p.x - scrollX), Math.round(p.y - scrollY), S, S);
     });
     fctx.globalAlpha = 1;
   }
@@ -500,12 +535,39 @@
     if (W.prevState === 'lamp' && W.lamp) return lampCells(W.lamp.angle, false, false, false);
     return robotCells({}, W.dir, false);
   }
+  function formCentre(cells) {                              // centre of a sprite, in canvas cells, and its reach
+    var xa = Infinity, xb = -Infinity, ya = Infinity, yb = -Infinity;
+    cells.forEach(function (c) { if (c.x < xa) xa = c.x; if (c.x > xb) xb = c.x; if (c.y < ya) ya = c.y; if (c.y > yb) yb = c.y; });
+    return { x: (xa + xb + 1) / 2, y: (ya + yb + 1) / 2, r: Math.max(xb - xa, yb - ya) / 2 };
+  }
+  // cells drawn swirling into (t from 0 to 1) or out of (reverse) the centre of a portal
+  function swirl(cells, c, t, inward) {
+    var maxd = 1;
+    cells.forEach(function (q) { var d = Math.hypot(q.x - c.x, q.y - c.y); if (d > maxd) maxd = d; });
+    var out = [];
+    cells.forEach(function (q) {
+      var dx = q.x - c.x, dy = q.y - c.y, d = Math.hypot(dx, dy);
+      var delay = inward ? (1 - d / maxd) * 0.3 : (d / maxd) * 0.3;      // the edge goes in first; the core comes out first
+      var k = clamp((t - delay) / 0.7, 0, 1);
+      var e = inward ? k * k : 1 - Math.pow(1 - k, 2);
+      var f = inward ? 1 - e : e;                                       // how far from the centre (1 = in place)
+      if (f <= 0.04) return;
+      var ang = (1 - f) * 2.6, ca = Math.cos(ang), sa = Math.sin(ang);
+      out.push({ x: Math.round(c.x + (dx * ca - dy * sa) * f), y: Math.round(c.y + (dx * sa + dy * ca) * f),
+                 col: f < 0.7 ? (Math.random() < 0.5 ? '#FFD66B' : Home.bot.accent) : q.col });
+    });
+    return out;
+  }
   function startTeleport(now) {
-    W.bo = { cells: currentForm(now), vl: place.left - scrollX, vt: place.top - scrollY };
+    var cells0 = currentForm(now), c = formCentre(cells0);
+    // where it is on screen; if the page has already carried it off, it leaves from just inside the edge
+    var vl = clamp(place.left - scrollX, -c.x * S + 40, innerWidth - c.x * S - 40);
+    var vt = clamp(place.top - scrollY, -c.y * S + 110, innerHeight - c.y * S - 110);
+    place.left = vl + scrollX; place.top = vt + scrollY;
+    W.po = { cells: cells0, c: c, vl: vl, vt: vt };
+    W.po.portal = openPortal(place.left + c.x * S, place.top + c.y * S, Math.max(24, c.r * S * 0.75));
     lightCone = null; clearLit();
-    var cx = place.left + RC * S;
-    beamAt(cx, scrollY, place.top + FOOT * S + 6, 46, 520);
-    setState('beamout', now);
+    setState('portalout', now);
   }
 
   /* ---------------------------------------------------------------- lamp light */
@@ -530,7 +592,7 @@
   function tick(now, dt) {
     var blink = now < Home.blinkUntil;
     var sc = sceneNow();
-    var busy = W.state === 'morph' || W.state === 'crouch' || W.state === 'ignite' || W.state === 'flight' || W.state === 'hopoff' || W.state === 'land' || W.state === 'ride' || W.state === 'beam' || W.state === 'beamout' || W.state === 'intro' || W.state === 'regrab';
+    var busy = W.state === 'morph' || W.state === 'crouch' || W.state === 'ignite' || W.state === 'flight' || W.state === 'hopoff' || W.state === 'land' || W.state === 'ride' || W.state === 'portalin' || W.state === 'portalout' || W.state === 'intro' || W.state === 'regrab';
     if (W.rodeLast && W.rodeLast.section.getBoundingClientRect().top > innerHeight) W.rodeLast = null;
     if (!busy || W.state === 'land') {
       var inc = incoming();
@@ -791,6 +853,7 @@
         rp.ring += gap * Math.min(1, dt * 0.008);                        // it lags a little behind the scroll
         var moving = Math.abs(gap) > 3;
         var sway = Math.sin(now / 760) * 3 + (moving ? Math.sin(now / 95) * 1.5 : 0);
+        if (rp.sw) sway += rp.sw * Math.exp(-(now - rp.st) / 1100) * Math.cos((now - rp.st) / 300);   // the swing it arrived with
         var rx = an.x + sway;
         showRope(an.x, an.y, rx, rp.ring);
         place.left = rx - RC * S; place.top = rp.ring - (TOPM + feet().top - 3) * S;
@@ -812,25 +875,34 @@
         if (W.y >= floorW) { W.y = floorW; W.landT = now; puff(W.x, W.y, 6, '#B9B2A6', 0.1, 0.02); setState('workline', now); }
         break;
       }
-      case 'regrab': {                                                  // the rope comes down; it runs to it and hops up to grab it
+      case 'regrab': {                                                  // throws a hook up to where the rope is tied, then is pulled up
         var an4 = ropeAnchor(), ringY = ropeWant(an4), hb4 = ropeHB(), rgs = W.rg;
-        var lineY4 = an4.bottom;
-        showRope(an4.x, an4.y, an4.x + Math.sin(now / 300) * 3, ringY + 10);
-        if (!rgs.t1) {                                                    // run along the edge to the rope
-          var dxr = an4.x - W.x, spr = 0.32 * dt;
-          W.y = lineY4;
-          if (Math.abs(dxr) <= spr) { W.x = an4.x; rgs.t1 = now; rgs.sy = W.y; }
-          else { W.dir = dxr > 0 ? 1 : -1; W.x += W.dir * spr; if (now - W.lastStep > 110) { W.step ^= 1; W.lastStep = now; } }
+        var handX = W.x + W.dir * 4, handY = W.y - 15 * S;               // where the hand is when the arm is up
+        if (el < 160) {                                                   // wind-up: looks up, arm back
+          W.y = an4.bottom; W.dir = an4.x >= W.x ? 1 : -1;
           atFeet(W.x, W.y);
-          cells = robotCells({ blink: blink, step: W.step }, W.dir, false);
+          cells = robotCells({ blink: blink, armR: 'up', look: { x: 0, y: -1 } }, W.dir, false);
+          rgs.sy = W.y; rgs.sx = W.x;
           break;
         }
-        var gt3 = clamp((now - rgs.t1) / 460, 0, 1), ge = easeIO(gt3);
-        var gy3 = ringY + hb4;
-        W.x = an4.x; W.y = rgs.sy + (gy3 - rgs.sy) * ge - Math.sin(gt3 * Math.PI) * 24;
-        atFeet(W.x, W.y);
-        cells = robotCells({ blink: blink, armL: 'up', armR: 'up', step: 1 }, W.dir, false).concat(gt3 < 0.8 ? flames(now, 2) : []);
-        if (gt3 >= 1) { W.rp = { ring: W.y - hb4 }; setState('rope', now); cells = cells.concat(ring(false)); }
+        if (el < 520) {                                                   // the hook flies up in an arc
+          var ft = easeIO((el - 160) / 360);
+          var tipX = handX + (an4.x - handX) * ft, tipY = handY + (an4.y - handY) * ft - Math.sin(ft * Math.PI) * 40;
+          showRope(handX, handY, tipX, tipY);
+          parts.push({ x: tipX, y: tipY, vx: 0, vy: 0, life: 0, max: 90, col: Home.bot.accent, g: 0 });
+          atFeet(W.x, W.y);
+          cells = robotCells({ blink: blink, armR: 'reachUp', look: { x: 1, y: -1 } }, W.dir, false);
+          if (el > 500 && !rgs.caught) { rgs.caught = true; puff(an4.x, an4.y, 6, '#FFD66B', 0.12, 0.02); }
+          break;
+        }
+        var zt = clamp((el - 560) / 520, 0, 1), ze = zt * zt * (3 - 2 * zt);   // pulled up the rope
+        var ringX = rgs.sx + (an4.x - rgs.sx) * ze, ringTop = (rgs.sy - hb4) + (ringY - (rgs.sy - hb4)) * ze;
+        W.x = ringX; W.y = ringTop + hb4;
+        showRope(an4.x, an4.y, ringX, ringTop);
+        place.left = ringX - RC * S; place.top = ringTop - (TOPM + feet().top - 3) * S;
+        place.rot = clamp((rgs.sx - an4.x) * 0.06 * (1 - ze), -18, 18);
+        cells = robotCells({ blink: blink, armL: 'up', armR: 'up', step: 1 }, W.dir, false).concat(ring(false));
+        if (zt >= 1) { W.rp = { ring: ringTop, sw: clamp(rgs.sx - an4.x, -40, 40) * 0.5, st: now }; setState('rope', now); }
         break;
       }
 
@@ -850,60 +922,58 @@
         break;
       }
 
-      case 'intro': {                                      // waits for the name to rise, then is beamed onto it
+      case 'intro': {                                      // waits for the name to rise, then comes out of a portal over the G
         cells = [];
-        atFeet(W.x, W.y);
-        if (el > 1500) { W.travel = { pi: 'sky' }; W.beamDelay = 260; W.dir = 1; setState('beam', now); }
-        break;
-      }
-
-      case 'beamout': {                                    // scanned away from the top down; the pixels rise
-        var bo = W.bo, ot = clamp(el / 340, 0, 1);
-        place.left = bo.vl + scrollX; place.top = bo.vt + scrollY;
-        var ya = Infinity, yb = -Infinity;
-        bo.cells.forEach(function (c) { if (c.y < ya) ya = c.y; if (c.y > yb) yb = c.y; });
-        var scanR = ya + Math.floor(ot * (yb - ya + 1));
-        cells = bo.cells.filter(function (c) { return c.y >= scanR; });
-        bo.cells.forEach(function (c) {
-          if (c.y === scanR) { cells.push({ x: c.x, y: c.y, col: '#FFD66B' });
-            if (Math.random() < 0.25) parts.push({ x: place.left + c.x * S, y: place.top + c.y * S, vx: (Math.random() - 0.5) * 0.04, vy: -0.08 - Math.random() * 0.1, life: 0, max: 520, col: Math.random() < 0.5 ? Home.bot.accent : '#FFD66B', g: 0 }); }
-        });
-        if (ot >= 1) {
-          // a stream of pixels runs to where it is going
-          var goal = landing(W.scene, W.travel && W.travel.pi), fx0 = place.left + RC * S, fy0 = place.top + 12 * S;
-          var gx2 = goal.x, gy2 = goal.y - 9 * S;
-          for (var q = 0; q < 26; q++) {
-            var life = 200 + Math.random() * 60;
-            parts.push({ x: fx0 + (Math.random() - 0.5) * 20, y: fy0 + (Math.random() - 0.5) * 20, vx: (gx2 - fx0) / life, vy: (gy2 - fy0) / life,
-                         life: 0, max: life, col: q % 3 ? Home.bot.accent : '#FFD66B', g: 0 });
-          }
-          W.beamDelay = 240; setState('beam', now);
+        if (el > 1500) {
+          var gx = gLetterX();
+          if (gx != null) { W.x = gx; W.y = skyY(gx); }
+          W.travel = { pi: 'sky' }; W.dir = 1; W.pin = null; setState('portalin', now);
         }
+        atFeet(W.x, W.y);
         break;
       }
 
-      case 'beam': {                                       // gone for a moment, then printed row by row at its goal
+      case 'portalout': {                                  // a portal opens behind it and it swirls in, as bits
+        var po = W.po, ot = el;
+        place.left = po.vl + scrollX; place.top = po.vt + scrollY;
+        po.portal.x = place.left + po.c.x * S; po.portal.y = place.top + po.c.y * S;   // the portal stays behind it
+        if (ot < 180) cells = po.cells;
+        else {
+          var tt = clamp((ot - 180) / 440, 0, 1);
+          cells = swirl(po.cells, po.c, tt, true);
+          if (Math.random() < 0.6) {
+            var q2 = po.cells[Math.floor(Math.random() * po.cells.length)], px2 = place.left + q2.x * S, py2 = place.top + q2.y * S;
+            var cxp = po.portal.x, cyp = po.portal.y;
+            bit(px2, py2, (cxp - px2) / 260, (cyp - py2) / 260, 260);
+          }
+          if (tt >= 1 && po.portal.closeT == null) po.portal.closeT = now;
+        }
+        if (ot > 820) { W.pin = null; setState('portalin', now); }
+        break;
+      }
+
+      case 'portalin': {                                   // another portal opens where it goes; the bits swirl out and build its shape
         var bg2 = landing(W.scene, W.travel && W.travel.pi);
-        var bd = W.beamDelay || 120;
-        if (!W.beamLit) { W.beamLit = true; beamAt(bg2.x, scrollY, bg2.y + 6, 46, bd + 520); }
-        var bt2 = clamp((el - bd) / 300, 0, 1);
         W.x = bg2.x; W.y = bg2.y; atFeet(bg2.x, bg2.y);
-        // printed directly in the shape it takes there: a lamp in Coursework, a drone in Work
         var mode = W.scene.mode;
         var form = mode === 'lamp' ? lampCells(1.15, false, blink, false)
                  : mode === 'drone' ? droneCells(now, 0.1, false)
                  : robotCells({ blink: blink }, W.dir, dark);
-        var y0f = Infinity, y1f = -Infinity;
-        form.forEach(function (c) { if (c.y < y0f) y0f = c.y; if (c.y > y1f) y1f = c.y; });
-        var rowsTo = y0f + Math.floor(bt2 * (y1f - y0f + 1));
-        cells = el < bd ? [] : form.filter(function (c) { return c.y < rowsTo; });
-        if (el >= bd && el < bd + 300) {
-          var xs = form.map(function (c) { return c.x; }), xa = Math.min.apply(null, xs), xb = Math.max.apply(null, xs);
-          cells.push({ x: xa + Math.floor(Math.random() * (xb - xa + 1)), y: rowsTo, col: Home.bot.accent });
+        var fc = formCentre(form);
+        if (!W.pin) W.pin = openPortal(place.left + fc.x * S, place.top + fc.y * S, Math.max(24, fc.r * S * 0.75));
+        W.pin.x = place.left + fc.x * S; W.pin.y = place.top + fc.y * S;
+        if (el < 180) cells = [];
+        else {
+          var ti = clamp((el - 180) / 460, 0, 1);
+          cells = swirl(form, fc, ti, false);
+          if (ti < 0.8 && Math.random() < 0.6) {
+            var a2 = Math.random() * Math.PI * 2, sp3 = 0.06 + Math.random() * 0.08;
+            bit(W.pin.x, W.pin.y, Math.cos(a2) * sp3, Math.sin(a2) * sp3, 360);
+          }
+          if (ti >= 1 && W.pin.closeT == null) W.pin.closeT = now;
         }
-        if (el > bd + 320) {
-          W.landT = now; W.beamLit = false; W.beamDelay = 0;
-          puff(bg2.x, bg2.y - 9 * S, 10, '#FFD66B', 0.18, 0.06);          // a small flash
+        if (el > 820) {
+          W.landT = now; W.pin = null;
           if (mode === 'lamp') { W.lamp = { angle: 1.15, av: 0 }; setState('lamp', now); }
           else if (mode === 'drone') { W.drone = { x: W.x - scrollX, v: 0, wob: 1 }; setState('drone', now); }
           else { arrive(now); if (W.scene.mode === 'hero') W.hello = now; }
