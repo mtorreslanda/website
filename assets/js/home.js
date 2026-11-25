@@ -290,9 +290,9 @@
     var y = window.scrollY, vh = window.innerHeight, goal = null;
     for (var i = 3; i < panels.length; i++) {             // only Work|Coursework, Coursework|Skills, Skills|Contact
       var d = statics[i] - y;                              // where section i starts, relative to the top of the screen
-      if (d <= -vh * 0.18 || d >= vh * 0.97) continue;
+      if (d < vh * 0.2 || d > vh * 0.8) continue;          // only when the boundary is left in the middle of the screen
       var q = 1 - d / vh;                                  // how much of the new section has slid in (0..1)
-      var forward = scrollDir > 0 ? q > 0.22 : q > 0.78;   // follow the direction the reader was going
+      var forward = scrollDir > 0 ? q > 0.35 : q > 0.65;   // follow the direction the reader was going
       goal = forward ? statics[i] : Math.max(statics[i - 1], statics[i] - vh);
       break;
     }
@@ -306,7 +306,7 @@
     var y = window.scrollY;
     if (!snapping && y !== lastY) scrollDir = y > lastY ? 1 : -1;
     lastY = y;
-    clearTimeout(snapT); snapT = setTimeout(settle, 180);
+    clearTimeout(snapT); snapT = setTimeout(settle, 280);
   }, { passive: true });
 
   /* ================================================================ shared with walker.js */

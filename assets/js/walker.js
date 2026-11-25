@@ -491,7 +491,8 @@
     W.x = sx; W.y = sy;
     var tg = landing(sc);
     var d = Math.hypot(tg.x - sx, tg.y - sy);
-    var kind = d < 230 ? (tg.y > sy + 40 ? 'fall' : 'hop') : (tg.y > sy && d < 360) ? 'fall' : 'fly';
+    // going down it lets go and falls (no rockets); up close it hops; far up it flies
+    var kind = tg.y > sy + 40 ? 'fall' : d < 230 ? 'hop' : 'fly';
     W.scene = sc;
     var quick = W.tempo === 'express';
     W.travel = { sc: sc, sx: sx, sy: sy, kind: kind, pi: tg.pi,
@@ -499,6 +500,9 @@
     W.x = sx; W.y = sy;
     if (W.tempo === 'teleport') { startTeleport(now); return; }
     if (quick) { setState('flight', now); W.travel.t0 = now; return; }   // no wind-up
+    if (kind === 'fall' && (W.prevState === 'hook' || W.prevState === 'rope' || sy <= top + 10)) {   // hanging, or already off the top: just drop
+      setState('flight', now); W.travel.t0 = now; return;
+    }
     setState(kind === 'fly' ? 'crouch' : 'hopoff', now);
   }
 
