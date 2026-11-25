@@ -155,7 +155,7 @@ img, video { display: block; max-width: 100%; }
                 background: #FBFAF7; box-shadow: 0 14px 30px -22px rgba(40, 30, 10, .4); }
   .p-steps li > :not(img) { margin-left: 16px; margin-right: 16px; }
   .p-steps li > p { margin-bottom: 18px; }
-  .p-step-img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; margin-bottom: 14px; }
+  .p-step-img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: contain; background: #EFECE5; padding: 8px; margin-bottom: 14px; }
   .p-steps li > i { display: block; }
   .p-step-of { display: inline; color: var(--grey); }
   .p-steps h3 { font-size: 1.5rem; }
