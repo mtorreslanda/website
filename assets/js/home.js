@@ -122,9 +122,12 @@
     return String(v);
   }
 
-  function renderSpec() {
+  function renderSpec(changed) {
     if (!specEl) return;
+    var prev = {};
+    specEl.querySelectorAll('.part').forEach(function (el) { prev[el.dataset.k] = el.dataset.v; });
     specEl.innerHTML = '';
+    if (changed) specEl.classList.add('ready');
     KEYS.forEach(function (k) {
       var btn = document.createElement('button');
       btn.type = 'button';
@@ -135,23 +138,31 @@
       if (k === 'accent') { var sw = document.createElement('i'); sw.style.background = bot.accent; val.appendChild(sw); }
       else val.textContent = valueText(k, bot[k]);
       btn.appendChild(name); btn.appendChild(val);
+      btn.dataset.k = k; btn.dataset.v = String(bot[k]);
+      if (changed && !reduce && prev[k] !== undefined && prev[k] !== String(bot[k])) {
+        btn.classList.add('flash');
+        if (k !== 'accent') { val.setAttribute('data-final', val.textContent); scramble(val); }
+      }
       btn.addEventListener('click', function () {
         lastEdit = performance.now();
         var opts = R.OPTIONS[k];
         var next = Object.assign({}, bot);
         next[k] = opts[(opts.indexOf(bot[k]) + 1) % opts.length];
-        setBot(next, true);
+        setBot(next, true, k);
         var again = specEl.querySelectorAll('.part')[KEYS.indexOf(k)];
         if (again) again.focus();
       });
       specEl.appendChild(btn);
     });
-    if (idEl) idEl.textContent = 'unit ' + String(bot.seed % 100000).padStart(5, '0');
+    if (idEl) {
+      idEl.textContent = 'unit ' + String(bot.seed % 100000).padStart(5, '0');
+      if (changed === 'all' && !reduce) { idEl.setAttribute('data-final', idEl.textContent); scramble(idEl); }
+    }
   }
 
   /* The robot stands in a pixel teleporter: an emitter on top, a pad below, no glass.
-     Grid: 20 x 24 cells; the robot occupies columns 2-17 and rows 4-20. */
-  var CW = 20, CH = 24, RX = 2, RY = 3;
+     Grid: 24 x 28 cells. Emitter rows 0-2, robot rows 6-22 (columns 4-19), pad rows 24-26. */
+  var CW = 24, CH = 28, RX = 4, RT = 6, PAD = 24;
   function heroSize() {
     var dpr = window.devicePixelRatio || 1;
     var w = heroCanvas.clientWidth;
@@ -159,37 +170,35 @@
     heroCanvas.height = Math.round(w * CH / CW * dpr);
   }
 
-  function setBot(next, animate) {
+  function setBot(next, animate, changedKey) {
     var old = bot;
     bot = next;
     setFavicon(bot);
-    renderSpec();
+    renderSpec(animate ? changedKey || 'all' : null);
     if (walker && animate) walker.jumpReq = true;
     hero.build = (animate && !reduce) ? { t0: performance.now(), old: old } : null;
     drawHero(performance.now());
   }
   function newRandom() { seed = (seed + 7919) >>> 0; setBot(R.make(seed), true); }
 
-  // rows of the machine: [y, x0, x1, colour] with 'l' = lights
   function machine(ctx, s, now, active) {
     var ink = THEME.ink;
     function bar(y, x0, x1, c) { ctx.fillStyle = c; ctx.fillRect(Math.round(x0 * s), Math.round(y * s), Math.round((x1 - x0 + 1) * s), Math.ceil(s)); }
     function px(x, y, c) { ctx.fillStyle = c; ctx.fillRect(Math.round(x * s), Math.round(y * s), Math.ceil(s), Math.ceil(s)); }
     // emitter
-    bar(0, 4, 15, ink); bar(1, 2, 17, ink); bar(2, 6, 13, ink);
+    bar(0, 6, 17, ink); bar(1, 4, 19, ink); bar(2, 8, 15, ink);
     // pad
-    bar(21, 3, 16, ink); bar(22, 1, 18, ink); bar(23, 2, 4, ink); bar(23, 15, 17, ink);
+    bar(PAD, 5, 18, ink); bar(PAD + 1, 3, 20, ink); bar(PAD + 2, 4, 6, ink); bar(PAD + 2, 17, 19, ink);
     // lights: a slow chase when idle, all on while building
-    var lightsTop = [4, 7, 10, 13, 15], lightsPad = [3, 6, 9, 12, 15];
+    var lightsTop = [6, 9, 12, 15, 17], lightsPad = [5, 8, 11, 14, 17];
     var k = Math.floor(now / 380) % 5;
     lightsTop.forEach(function (x, i) { px(x, 1, active || i === k ? bot.accent : '#3A3A3A'); });
-    lightsPad.forEach(function (x, i) { px(x + 1, 22, active || i === (4 - k) ? bot.accent : '#3A3A3A'); });
-    // nozzle glow
-    for (var x = 7; x <= 12; x++) px(x, 2, active ? THEME.eye : '#2E2E2E');
+    lightsPad.forEach(function (x, i) { px(x + 1, PAD + 1, active || i === (4 - k) ? bot.accent : '#3A3A3A'); });
+    for (var x = 9; x <= 14; x++) px(x, 2, active ? THEME.eye : '#2E2E2E');   // nozzle
   }
 
-  function drawRobotRows(ctx, b, s, y0, rowFrom, rowTo, pose) {
-    R.cells(b, pose || {}).forEach(function (p) {
+  function drawRobotRows(ctx, b, s, y0, rowFrom, rowTo) {
+    R.cells(b, {}).forEach(function (p) {
       if (p.y < rowFrom || p.y > rowTo) return;
       ctx.fillStyle = R.color(p.c, b, THEME);
       ctx.fillRect(Math.round((RX + p.x) * s), Math.round(y0 + p.y * s), Math.ceil(s), Math.ceil(s));
@@ -201,21 +210,18 @@
     var ctx = heroCanvas.getContext('2d');
     ctx.clearRect(0, 0, heroCanvas.width, heroCanvas.height);
     var bld = hero.build;
-    var y0 = (RY + 1) * s;                                  // robot top, resting on the pad
+    var y0 = RT * s;
     if (bld) {
-      var t = now - bld.t0, OUT = 420, IN = 900;
-      // beam between emitter and pad
-      ctx.fillStyle = bot.accent; ctx.globalAlpha = 0.10 + 0.05 * Math.sin(now / 40);
-      ctx.fillRect(Math.round(5 * s), Math.round(3 * s), Math.round(10 * s), Math.round(18 * s));
+      var t = now - bld.t0, OUT = 420, IN = 900, scan;
+      ctx.fillStyle = bot.accent; ctx.globalAlpha = 0.10 + 0.05 * Math.sin(now / 40);   // beam
+      ctx.fillRect(Math.round(7 * s), Math.round(3 * s), Math.round(10 * s), Math.round((PAD - 3) * s));
       ctx.globalAlpha = 1;
-      var scan;
       if (t < OUT) {                                        // the old robot is erased from the top down
         scan = Math.floor(t / OUT * R.H);
         drawRobotRows(ctx, bld.old, s, y0, scan + 1, R.H);
       } else if (t < OUT + IN) {                            // the new one is printed row by row
         scan = Math.floor((t - OUT) / IN * R.H);
         drawRobotRows(ctx, bot, s, y0, 0, scan - 1);
-        // the row being printed flickers in the accent colour
         R.cells(bot, {}).forEach(function (p) {
           if (p.y !== scan) return;
           ctx.fillStyle = Math.random() < 0.5 ? bot.accent : THEME.eye;
@@ -223,18 +229,17 @@
         });
       } else { hero.build = null; bld = null; }
       if (bld) {
-        ctx.fillStyle = THEME.eye; ctx.globalAlpha = 0.9;     // scan line
-        ctx.fillRect(Math.round(4 * s), Math.round(y0 + scan * s), Math.round(12 * s), Math.max(1, Math.round(s * 0.25)));
+        ctx.fillStyle = THEME.eye; ctx.globalAlpha = 0.9;
+        ctx.fillRect(Math.round(6 * s), Math.round(y0 + scan * s), Math.round(12 * s), Math.max(1, Math.round(s * 0.25)));
         ctx.globalAlpha = 1;
         machine(ctx, s, now, true);
         return;
       }
     }
-    var bob = reduce ? 0 : (Math.sin(now / 700) > 0 ? -s * 0.25 : 0);
+    var bob = reduce ? 0 : (Math.sin(now / 700) > 0 ? -s * 0.3 : 0);
     var pulse = reduce ? false : (Math.floor(now / 900) % 3 === 0);
-    // soft glow on the pad under the feet
-    ctx.fillStyle = bot.accent; ctx.globalAlpha = 0.18;
-    ctx.fillRect(Math.round(5 * s), Math.round(20.4 * s), Math.round(10 * s), Math.round(0.6 * s));
+    ctx.fillStyle = bot.accent; ctx.globalAlpha = bob ? 0.12 : 0.2;                  // glow on the pad
+    ctx.fillRect(Math.round(7 * s), Math.round((PAD - 0.6) * s), Math.round(10 * s), Math.round(0.6 * s));
     ctx.globalAlpha = 1;
     R.draw(ctx, bot, { blink: now < blinkUntil, pulse: pulse }, RX * s, y0 + bob, s, THEME, false);
     machine(ctx, s, now, false);
