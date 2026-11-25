@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#F5F3EE">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=3">
+<link rel="stylesheet" href="assets/css/site.css?v=4">
 </head>
 <body>
 <nav class="nav"><div class="wrap">
@@ -131,6 +131,32 @@
   </div>
 </div></section>
 
+<section class="block" id="more"><div class="wrap">
+  <div class="sec-head rv"><h2>More experiments</h2><p>Shorter projects, described without code.</p></div>
+  <div class="grid two">
+<article class="card rv">
+  <div class="thumb type">Behaviour cloning</div>
+  <div class="body">
+    <h3>Behaviour cloning for a farm-management agent</h3>
+    <p>Kaggle simulation competition (30 in-game days, 720 turns, two farms sharing one market). Cloned the top players from 8.9 M state–action pairs in their replays. The first clone hit 98.8% action accuracy and still passed every turn: replaying the games showed the replay format stores the action that produced each observation, one turn late. Fixed, plus an opening book and a cleaner corpus, the agent went from 2,422 to 96,332 coins and won 6 of 12 games against top-10 agents. A Bradley–Terry ranking rebuilt the official top 10 (8 of 9) without seeing it.</p>
+    <div class="res">Not submitted in the end; kept as a study in verifying data by replaying it</div>
+    <div class="tags"><span>Behaviour cloning</span><span>PPO</span><span>Bradley–Terry</span><span>Simulation</span></div>
+    
+  </div>
+</article>
+<article class="card rv">
+  <div class="thumb type">Regression</div>
+  <div class="body">
+    <h3>Sports prediction models</h3>
+    <p>NFL: weekly projections per player built as a chain (targets → receptions and yards, touchdowns apart), turned into calibrated probabilities and joint outcomes with a copula. Tennis: Elo ratings for 20+ years of ATP and WTA matches, benchmarked against the sharpest public forecasts.</p>
+    <div class="res">WR model: MAE 4.89 fantasy points out of sample (2022–2025), calibration within ±2 pp. Tennis Elo within 0.018–0.025 log-loss of the benchmark, and adding it on top adds nothing</div>
+    <div class="tags"><span>Regression</span><span>Calibration</span><span>Copulas</span><span>Elo</span></div>
+    
+  </div>
+</article>
+  </div>
+</div></section>
+
 <section class="block" id="coursework"><div class="wrap">
   <div class="sec-head rv"><h2>Coursework</h2><p>From the Master's at Universidad Complutense de Madrid. Code is public.</p></div>
   <div class="grid">
@@ -238,11 +264,11 @@
   <a class="mail" href="mailto:mtorreslanda@gmail.com">mtorreslanda@gmail.com</a>
   <div class="links"><a href="https://www.linkedin.com/in/miguel-angel-castro-torreslanda/">LinkedIn</a><a href="https://github.com/mtorreslanda">GitHub</a></div>
 </div></section>
-<script src="assets/js/hero.js?v=3"></script>
+<script src="assets/js/hero.js?v=4"></script>
 <footer><div class="wrap">
   <span>© 2026 Miguel Ángel Castro Torreslanda</span>
   <span>The lines on the front page are real trajectories from my projects.</span>
 </div></footer>
-<script src="assets/js/site.js?v=3"></script>
+<script src="assets/js/site.js?v=4"></script>
 </body>
 </html>
