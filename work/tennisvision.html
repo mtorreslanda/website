@@ -5,49 +5,258 @@
 <script>document.documentElement.classList.add('js')</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TennisVision — Miguel Ángel Castro Torreslanda</title>
-<meta name="description" content="Broadcast video in, shot-by-shot data out: every shot, bounce and player position of a match, with the ball rebuilt in 3D.">
+<meta name="description" content="From a single broadcast feed to shot-by-shot tennis data: every shot, every bounce, the ball in 3D and both players in court metres.">
 <meta property="og:title" content="TennisVision — Miguel Ángel Castro Torreslanda">
-<meta property="og:description" content="Broadcast video in, shot-by-shot data out: every shot, bounce and player position of a match, with the ball rebuilt in 3D.">
-<meta property="og:image" content="https://mtorreslanda.com/assets/img/tennis-3d.jpg">
-<meta name="theme-color" content="#F5F3EE">
+<meta property="og:description" content="From a single broadcast feed to shot-by-shot tennis data: every shot, every bounce, the ball in 3D and both players in court metres.">
+<meta property="og:image" content="https://mtorreslanda.com/assets/img/tennis-board-poster.jpg">
+<meta property="og:type" content="website">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/site.css?v=6">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:wght@400;700&family=Oswald:wght@500;600&family=Barlow+Condensed:ital,wght@0,600;1,600;1,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/project.css?v=7">
+<link rel="stylesheet" href="../assets/css/court-explorer.css?v=7">
+<style>
+  /* this project's sheet: clay-court paper, printed in brick ink */
+  :root { --print: #B5562F; }
+  .p-print { opacity: .44;
+    /* the sheet fades into the paper at the bottom, as on every project page, except the bottom-right corner,
+       where there is no text: there the drawing stays, fading out more slowly */
+    -webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent 96%), radial-gradient(70% 95% at 100% 100%, #000 30%, transparent 85%);
+            mask-image: linear-gradient(to bottom, #000 50%, transparent 96%), radial-gradient(70% 95% at 100% 100%, #000 30%, transparent 85%); }
+  body { background-color: #F4ECE3; }
+  .nav.scrolled { background: rgba(244, 236, 227, .9); }
+  .p-tv { padding: 14px 14px 0; }
+  .p-tv .cx { border-radius: 6px; box-shadow: inset 0 0 0 1px #000, 0 0 0 6px #1b1b1b; }
+  .p-demo { margin-top: 2.4rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.2rem 2.5rem;
+            border-top: 1px solid var(--ink); border-bottom: 1px solid var(--line); padding: 1.4rem 0; }
+  .p-demo p { color: #3A3A3A; line-height: 1.6; max-width: 62ch; }
+  .p-demo p b { color: var(--ink); font-weight: 500; }
+  .p-demo a { font-family: var(--serif); font-size: 1.5rem; text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: 3px; white-space: nowrap; }
+  .p-demo a span { color: var(--accent); }
+  .p-progress { margin-top: 3rem; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 1rem 3rem; }
+  .p-progress i { font-style: normal; font-family: var(--mono); font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+  .p-progress h3 { font-family: var(--serif); font-weight: 400; font-size: 1.7rem; line-height: 1.15; margin-top: .6rem; }
+  .p-progress p { color: #3A3A3A; line-height: 1.6; }
+  .p-links { display: flex; flex-wrap: wrap; gap: 1rem 3rem; align-items: baseline; }
+  @media (max-width: 900px) { .p-progress { grid-template-columns: 1fr; } }
+  @media (max-width: 820px) { .p-title { font-size: clamp(2.2rem, 11.6vw, 4.2rem); } .p-tv { padding: 8px 8px 0; } .p-tv .cx { box-shadow: none; } }
+</style>
 </head>
 <body>
-<nav class="nav"><div class="wrap">
-  <a class="logo" href="../index.html">M<span>·</span>A<span>·</span>C</a>
+<nav class="nav" aria-label="Main">
+  <a href="../index.html" class="nav-logo" aria-label="Miguel Ángel Castro Torreslanda, home">
+    <svg viewBox="0 0 170 100" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <defs><filter id="pencil" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G" result="d"/>
+        <feComposite in="d" in2="n" operator="in" result="grain"/><feMerge><feMergeNode in="d"/><feMergeNode in="grain"/></feMerge></filter></defs>
+      <!-- TennisVision: the monogram inside a tennis ball, its two seams, all in green pencil (SH40; the football is terracotta) -->
+      <g class="guides" stroke="#A0A0A0" stroke-width=".6">
+        <line x1="2" y1="4" x2="168" y2="4" style="--len:170"/><line x1="2" y1="96" x2="168" y2="96" style="--len:170"/>
+        <line x1="39" y1="2" x2="39" y2="98" style="--len:100"/><line x1="131" y1="2" x2="131" y2="98" style="--len:100"/>
+        <line x1="20" y1="50" x2="150" y2="50" style="--len:130"/></g>
+      <g class="hatch" stroke="#3F7A3A" stroke-width=".9" opacity=".45" filter="url(#pencil)">
+        <path d="M50 26 L62 14 M46 40 L74 12 M44 52 L84 12 M46 62 L96 12 M50 70 L108 12 M56 76 L118 14 M64 80 L124 20 M74 84 L128 30 M86 86 L130 42 M100 86 L130 56" style="--len:60"/></g>
+      <g class="strokes" filter="url(#pencil)" stroke="#3F7A3A" stroke-width="2.4">
+        <circle cx="85" cy="50" r="46" style="--len:300"/>
+        <path d="M46 24 Q58 50 46 76 M124 24 Q112 50 124 76" stroke-width="1.6" style="--len:60"/>
+        <path d="M60 64 L60 36 L73 54 L86 36 L86 64" stroke-width="2.6" style="--len:110"/>
+        <path d="M93 36 L113 36 M103 36 L103 64" stroke-width="2.6" style="--len:60"/></g>
+    </svg>
+  </a>
   <div class="nav-links">
     <a href="../index.html#work">Work</a>
     <a class="opt" href="../index.html#coursework">Coursework</a>
     <a href="../index.html#about">About</a>
     <a href="../index.html#contact">Contact</a>
   </div>
-</div></nav>
-<main class="wrap">
-<header class="case-head">
-  <a class="back" href="../index.html#work">← All work</a>
-  <div class="kicker" style="margin-top:28px">Computer vision · Tennis · 2026</div>
-  <h1>TennisVision</h1>
-  <p class="oneliner">Broadcast video in, shot-by-shot data out: every shot, bounce and player position of a match, with the ball rebuilt in 3D.</p>
-  <div class="tags"><span>PyTorch</span><span>RF-DETR</span><span>ByteTrack</span><span>Keypoint detection</span><span>3D physics</span><span>OCR</span></div>
+</nav>
+
+<header class="p-hero">
+  <!-- the printed sheet: a grass court from above, coloured in with green pencil, zigzag by hand, on clay paper,
+       with the ball marks of the championship point -->
+  <svg class="p-print" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <filter id="ink" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="11" result="g"/>
+        <feDisplacementMap in="SourceGraphic" in2="g" scale="1.4" xChannelSelector="R" yChannelSelector="G" result="d"/>
+        <feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="3" seed="5" result="blot"/>
+        <feColorMatrix in="blot" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.55" result="fade"/>
+        <feComposite in="d" in2="fade" operator="in"/>
+      </filter>
+      <!-- coloured pencil: a wobbly edge and the grain of the paper showing through the stroke -->
+      <filter id="lawn" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="4" result="w"/>
+        <feDisplacementMap in="SourceGraphic" in2="w" scale="3" xChannelSelector="R" yChannelSelector="G" result="d"/>
+        <feTurbulence type="fractalNoise" baseFrequency=".95" numOctaves="3" seed="9" result="g"/>
+        <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -3.9 2.45" result="grain"/>
+        <feComposite in="d" in2="grain" operator="in"/>
+      </filter>
+      <clipPath id="lawn-clip"><rect x="78" y="112" width="1444" height="676"/></clipPath>
+    </defs>
+    <g clip-path="url(#lawn-clip)"><g filter="url(#lawn)"><g id="grass" fill="none" stroke-linecap="round" stroke-linejoin="round"></g></g></g>
+    <g filter="url(#ink)" fill="none" stroke="currentColor">
+      <g id="court" stroke-width="3.5" stroke="#FFFDF8"></g>
+      <g id="marks" stroke-width="1.2"></g>
+    </g>
+  </svg>
+  <div class="p-kicker"><b>02</b> &nbsp;·&nbsp; Computer vision · Tennis · 2026</div>
+  <div class="p-titlebar">
+    <h1 class="p-title" data-pencil data-pencil-glyphs="../assets/data/title-glyphs.json"><span>TennisVision</span></h1>
+  </div>
+  <p class="p-lede">From a single broadcast feed to shot-by-shot tennis data: every shot, every bounce, the ball in 3D.</p>
+  <div class="p-cta"><a href="#board">Watch the live board ↓</a><a href="../tennisvision/">Open the product demo ↗</a><a href="https://github.com/mtorreslanda/tennisvision-showcase">Technical write-up ↗</a></div>
+  <canvas class="p-field" data-costume="tennis" aria-hidden="true"></canvas>
 </header>
-<figure class="cover"><div class="frame dark"><img src="../assets/img/tennis-3d.jpg" alt="3D reconstruction of a rally: a virtual court with both players and the fitted ball flight." loading="lazy" decoding="async"></div><figcaption>Our 3D reconstruction of a rally: a virtual camera over the court, each player at the measured position and the ball flight fitted with gravity, drag and spin.</figcaption></figure>
-<div class="metrics"><div><b>96%</b><span>of 3,199 hand-checked shots and bounces detected</span></div><div><b>99.5%</b><span>of serves found</span></div><div><b>97%</b><span>clean points on matches it never saw, clay and grass included</span></div><div><b>9.5 km/h</b><span>serve-speed error against the official radar display</span></div></div>
-<div class="prose">
-<h2 class="rv">The problem</h2><div class="body rv"><p>Shot-level tennis data (where every ball bounces, how fast, who hit it) comes from multi-camera systems installed at a few venues. TennisVision gets it from a single broadcast feed.</p></div>
-<h2 class="rv">How it works</h2><div class="body rv"><ol class="pipeline"><li><b>Scenes</b><span>keep the main-camera shots</span></li><li><b>Scoreboard</b><span>OCR: server, score, serve speed</span></li><li><b>Players</b><span>RF-DETR + ByteTrack, feet → metres</span></li><li><b>Court</b><span>own keypoint network, per-frame homography</span></li><li><b>Ball</b><span>full-frame detector + native-resolution crop refinement</span></li><li><b>Events</b><span>event network + rule-aware decoder</span></li><li><b>3D</b><span>flight fit with gravity, drag and spin</span></li></ol></div>
-<h2 class="rv">Engineering choices</h2><div class="body rv"><ul class='facts'><li><b>Our own court detector.</b> 14 court keypoints per frame, trained from scratch on 4,950 images from 5 matches and 3 surfaces: 0.68 px error against the painted lines, versus 2.11 px for the off-the-shelf model it replaced.</li><li><b>Grammar over the events.</b> A neural event detector proposes shots and bounces; a decoder that knows the rules (shot, bounce, shot…) arbitrates. On 439 hand-reviewed points this cut errors from 195 to 144.</li><li><b>Physics, not interpolation.</b> The ball between two events is a fitted 3D flight. The broadcast camera zooms, so it is modelled with a fixed centre and a focal length per frame.</li><li><b>The scoreboard is data too.</b> OCR reads server, score and the official serve speed, which became our yardstick for speed error (it started at 33 km/h).</li></ul></div>
-<h2 class="rv">Amateur version</h2><div class="body rv"><p>A second line of work adapts the system to a single fixed amateur camera with no scoreboard. Rallies are cut by detecting the serve pose, and the score is rebuilt from the structure of the match: with clean tracks, 38 of 38 serves found and the set reconstructed correctly.</p></div>
-</div>
-<div class="gallery"><figure class="rv"><div class="frame"><img src="../assets/img/tennis-topview.jpg" alt="Bounces and player paths in metres, from the same rally." loading="lazy" decoding="async"></div><figcaption>Bounces and player paths in metres, from the same rally.</figcaption></figure><figure class="rv"><div class="frame"><img src="../assets/img/tennis-clay.jpg" alt="Debug view on clay: player boxes with court coordinates, ball track and bounce candidates. Frame from public match footage, shown small for illustration." loading="lazy" decoding="async"></div><figcaption>Debug view on clay: player boxes with court coordinates, ball track and bounce candidates. Frame from public match footage, shown small for illustration.</figcaption></figure></div>
-<div class="note"><b>About the data.</b> Built only with permissively licensed components and our own code. Match footage belongs to its broadcasters; it is not redistributed here.</div>
-<nav class="next"><a href="nflvision.html"><small>← Previous</small><span>NFLVision</span></a><a href="liftoff-agent.html"><small>Next →</small><span>Autonomous FPV racing</span></a></nav>
-</main>
-<footer><div class="wrap">
-  <span>© 2026 Miguel Ángel Castro Torreslanda</span>
-</div></footer>
-<script src="../assets/js/site.js?v=6"></script>
-<script>if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.querySelectorAll('video[data-autoplay]').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });</script>
+
+<section class="p-exhibit" id="board">
+  <figure class="p-mount">
+    <video src="../assets/img/tennis-board.mp4" poster="../assets/img/tennis-board-poster.jpg" muted loop playsinline autoplay data-autoplay
+           aria-label="Live board of the championship point of the 2026 ATP Finals"></video>
+    <figcaption class="p-plate"><span><b>Fig. 1</b> &nbsp;Live board, championship point</span><span>ATP Finals 2026 · Alcaraz vs Zverev · public video, never seen by the model</span></figcaption>
+  </figure>
+</section>
+
+<section class="p-numbers" aria-label="Key results">
+  <div><b data-count="96" data-dec="0" data-suffix="%">96%</b><span>of 3,199 hand-checked shots and bounces detected</span></div>
+  <div><b data-count="99.5" data-suffix="%">99.5%</b><span>of serves found</span></div>
+  <div><b data-count="97" data-dec="0" data-suffix="%">97%</b><span>points read without a single error on matches it never saw</span></div>
+  <div><b data-count="0.68" data-dec="2" data-suffix=" px">0.68 px</b><span>court error against the painted lines; the off-the-shelf model: 2.11</span></div>
+</section>
+
+<section class="p-beats">
+  <div><i>01 · The problem</i><h3>Shot data lives at a handful of venues.</h3>
+    <p>Where every ball bounced, how fast it was hit and from where: that data comes from multi-camera systems installed at a few courts. Broadcast video exists for every match.</p></div>
+  <div><i>02 · What it does</i><h3>One TV camera in, every shot out.</h3>
+    <p>TennisVision finds the players, the court and the ball, times every shot and bounce, and rebuilds the ball's flight in 3D, fifty times a second.</p></div>
+  <div><i>03 · The proof</i><h3>On a final it had never seen.</h3>
+    <p>The point above is the last of the 2026 ATP Finals, from a public upload published after every model was trained. No ground truth behind it, no help.</p></div>
+</section>
+
+<section class="p-explore" id="explore">
+  <div class="p-sechead"><i>Try it</i><h2>Replay the point</h2>
+    <p>This is what TennisVision measured on the championship point, drawn from the same data that is published on GitHub. Press play, or pick a bounce or a bar to see that shot.</p></div>
+  <figure class="p-mount p-tv">
+    <div class="cx" data-src="../assets/data/tennis-point.json"></div>
+    <figcaption class="p-plate"><span><b>Fig. 2</b> &nbsp;The point from above</span><span><a href="https://github.com/mtorreslanda/tennisvision-showcase/blob/main/data/championship-point-tracking.csv">Tracking at 50 Hz ↗</a> &nbsp;·&nbsp; <a href="https://github.com/mtorreslanda/tennisvision-showcase/blob/main/data/championship-point-events.csv">Every shot and bounce ↗</a></span></figcaption>
+  </figure>
+  <div class="p-demo">
+    <p><b>There is a product demo too.</b> The same data as a broadcast product: the pipeline step by step on one frame, the court explorer full size, and the board.</p>
+    <a href="../tennisvision/">Open the product demo <span>→</span></a>
+  </div>
+</section>
+
+<section class="p-how" id="how">
+  <div class="p-sechead"><i>How it works</i><h2>Seven stages, one measurement each</h2></div>
+  <div class="p-how-grid">
+    <figure class="p-mount p-how-fig"><img src="../assets/img/tennis-stage1-scenes.jpg" alt="" data-how-img><figcaption class="p-plate"><span><b data-how-n>Fig. 3</b> &nbsp;<span data-how-cap>Scenes</span></span></figcaption></figure>
+    <ol class="p-steps">
+      <li data-img="tennis-stage1-scenes.jpg"><img class="p-step-img" src="../assets/img/tennis-stage1-scenes.jpg" alt="" loading="lazy"><i>01 <span class="p-step-of">/ 07</span></i><h3>Scenes</h3><p>The broadcast is cut into shots. Only those where the court is seen from the main camera are kept, and the scoreboard is read with OCR.</p></li>
+      <li data-img="tennis-stage2-players.jpg"><img class="p-step-img" src="../assets/img/tennis-stage2-players.jpg" alt="" loading="lazy"><i>02 <span class="p-step-of">/ 07</span></i><h3>Players</h3><p>A transformer detector finds every person; a filter keeps the two players and drops the umpire, line judges and ball kids. Their feet go onto the court, in metres.</p></li>
+      <li data-img="tennis-stage3-court.jpg"><img class="p-step-img" src="../assets/img/tennis-stage3-court.jpg" alt="" loading="lazy"><i>03 <span class="p-step-of">/ 07</span></i><h3>Court and camera</h3><p>A keypoint network, trained from scratch, finds the 14 line intersections in every frame: a homography for the ground and a 3D camera that pans and zooms.</p></li>
+      <li data-img="tennis-stage4-ball.jpg"><img class="p-step-img" src="../assets/img/tennis-stage4-ball.jpg" alt="" loading="lazy"><i>04 <span class="p-step-of">/ 07</span></i><h3>Ball</h3><p>Two convolutional heatmap networks: one scans the whole frame, the other looks again at native resolution around the ball's predicted path.</p></li>
+      <li data-img="tennis-stage5-events.png"><img class="p-step-img" src="../assets/img/tennis-stage5-events.png" alt="" loading="lazy"><i>05 <span class="p-step-of">/ 07</span></i><h3>Events</h3><p>A video network that fuses image and sound, the crack of the racket and the thud of the bounce, gives the probability of a shot and of a bounce in every frame.</p></li>
+      <li data-img="tennis-stage6-flight.png"><img class="p-step-img" src="../assets/img/tennis-stage6-flight.png" alt="" loading="lazy"><i>06 <span class="p-step-of">/ 07</span></i><h3>Rules and physics</h3><p>A decoder that knows the rules turns probabilities into tennis. Then every flight is fitted in 3D with gravity, drag and spin, through the moving camera.</p></li>
+      <li data-img="tennis-board-poster.jpg"><img class="p-step-img" src="../assets/img/tennis-board-poster.jpg" alt="" loading="lazy"><i>07 <span class="p-step-of">/ 07</span></i><h3>Analytics</h3><p>Speed, contact height, clearance over the net, depth, in or out, and how far each player ran: shot by shot, as the point unfolds.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="p-proof">
+  <div class="p-sechead"><i>Results</i><h2>Measured shot by shot</h2>
+    <p>On 439 points reviewed by hand, 3,199 shots and bounces, from four matches on hard, clay and grass.</p></div>
+  <dl class="p-results">
+    <div><dt>Events</dt><dd>96% of real shots and bounces detected</dd></div>
+    <div><dt>Serve</dt><dd>99.5% of serves found</dd></div>
+    <div><dt>Unseen matches</dt><dd>97% of points read without a single error, clay and grass included</dd></div>
+    <div><dt>Rules layer</dt><dd>errors on 439 points cut from 195 to 144</dd></div>
+    <div><dt>Court</dt><dd>0.68 px from the painted lines; the off-the-shelf model, 2.11 px</dd></div>
+    <div><dt>Serve speed</dt><dd>median error 9.5 km/h against the official radar display</dd></div>
+  </dl>
+  <div class="p-progress">
+    <div><i>In progress</i><h3>Club tennis, one fixed camera.</h3></div>
+    <p>The same idea for amateur matches filmed with a single fixed camera and no scoreboard: the score, the stats and the highlights, built automatically. Rallies are already cut by detecting the serving pose (56 of 57 serves found), and given who wins each point the score comes out right: 38 of 38 points and the 6–0 set.</p>
+  </div>
+  <div class="p-links">
+    <a class="p-writeup" href="https://github.com/mtorreslanda/tennisvision-showcase">Read the technical write-up on GitHub <span>↗</span></a>
+    <a class="p-writeup" href="../tennisvision/">Open the product demo <span>→</span></a>
+  </div>
+</section>
+
+<footer class="p-foot">
+  <a class="p-next" href="liftoff-agent.html"><i>Next project</i><b>Autonomous FPV racing →</b></a>
+  <p>© 2026 Miguel Ángel Castro Torreslanda · Match footage belongs to the ATP and its broadcaster; shown small and short, for illustration. Only permissively licensed components are used; code, data and weights are not published.</p>
+</footer>
+
+<script>
+/* the printed sheet: a court from above, 60 px per metre, and the ball marks of the championship point */
+(function () {
+  var NS = 'http://www.w3.org/2000/svg', c = document.getElementById('court'), m = document.getElementById('marks');
+  function el(t, a, p) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); p.appendChild(e); return e; }
+  var S = 60, X0 = 87, Y0 = 121, L = 23.77, W = 10.97;
+  function X(y) { return X0 + y * S; } function Y(x) { return Y0 + x * S; }
+  // the lawn, coloured in by hand: one big zigzag from sideline to sideline, every stroke on the same slant (down
+  // and back up again, like hatching), moving along the court a little with each stroke, the way a court gets coloured in with a pencil: each stroke reaches the line, or stops short, or
+  // runs over a little; now and then the pencil lifts. A second, lighter pass on the same slant fills the gaps.
+  // A seeded random keeps the sheet the same on every visit.
+  var gr = document.getElementById('grass'), seed = 7;
+  function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+  var top = Y(0), bot = Y(W), H = bot - top;
+  // every stroke is its own path, so the pressure changes from one to the next: a slow swell along the court
+  // (the hand pressing harder, then easing off) plus a little jitter stroke to stroke; harder = wider and darker
+  function pasada(x0, x1, paso, lean, color, ancho, op, fase) {
+    var x = x0, down = true, px = x, py = top - 6;
+    while (x < x1) {
+      x += paso * (.75 + rnd() * .55);
+      var reach = rnd() < .18 ? .78 + rnd() * .14 : .96 + rnd() * .1;          // most strokes reach the line
+      var ny = down ? top + H * reach : bot - H * reach, nx = (down ? x + lean * reach : x) + (rnd() - .5) * 5;
+      var bend = (rnd() - .5) * 14;                                             // a stroke is never quite straight
+      var presion = Math.max(.35, Math.min(1.3, .8 + .32 * Math.sin(x / 95 + fase) + .18 * Math.sin(x / 31 + 2 * fase) + (rnd() - .5) * .35));
+      el('path', { d: 'M' + px.toFixed(1) + ' ' + py.toFixed(1) + ' Q' + ((px + nx) / 2 + bend).toFixed(1) + ' ' + ((py + ny) / 2).toFixed(1) + ' ' + nx.toFixed(1) + ' ' + ny.toFixed(1),
+                   stroke: color, 'stroke-width': (ancho * (.6 + .5 * presion)).toFixed(2), 'stroke-opacity': (op * (.45 + .55 * presion)).toFixed(3) }, gr);
+      px = nx; py = ny; down = !down;
+      if (rnd() < .035) x += rnd() * 18;                                        // the pencil lifts and lands a bit further
+    }
+  }
+  pasada(X(-2.5), X(L + .4), 9.5, 150, '#5E9A4C', 7, .5, 0);
+  pasada(X(-2.4), X(L + .4), 14, 150, '#6FAA5A', 5.5, .3, 2.1);
+  el('rect', { x: X(0), y: Y(0), width: L * S, height: W * S }, c);
+  [1.37, 9.6].forEach(function (x) { el('line', { x1: X(0), y1: Y(x), x2: X(L), y2: Y(x) }, c); });
+  [L / 2 - 6.4, L / 2 + 6.4].forEach(function (y) { el('line', { x1: X(y), y1: Y(1.37), x2: X(y), y2: Y(9.6) }, c); });
+  el('line', { x1: X(L / 2 - 6.4), y1: Y(W / 2), x2: X(L / 2 + 6.4), y2: Y(W / 2) }, c);
+  el('line', { x1: X(0), y1: Y(W / 2), x2: X(0) + 12, y2: Y(W / 2) }, c); el('line', { x1: X(L), y1: Y(W / 2), x2: X(L) - 12, y2: Y(W / 2) }, c);
+  el('line', { x1: X(L / 2), y1: Y(-.9), x2: X(L / 2), y2: Y(W + .9), 'stroke-width': 4, 'stroke-dasharray': '2 5' }, c);
+  // [x across, y along] of each bounce, shot 1 to 16 (data/tennis-point.json)
+  [[6.01, 17.3], [4.41, 4.04], [8.82, 21.19], [2.86, 4.51], [7.23, 18.0], [6.48, 3.96], [3.02, 23.79], [2.05, 5.75],
+   [8.18, 22.47], [4.17, 3.25], [7.48, 19.13], [2.81, 3.55], [7.5, 21.98], [7.78, 6.01], [6.93, 20.11], [9.55, 3.98]].forEach(function (b, i) {
+    el('ellipse', { cx: X(b[1]), cy: Y(b[0]), rx: 11, ry: 7, transform: 'rotate(' + (b[1] > L / 2 ? -8 : 8) + ' ' + X(b[1]) + ' ' + Y(b[0]) + ')' }, m);
+    var t = el('text', { x: X(b[1]) + 14, y: Y(b[0]) - 9, fill: 'currentColor', stroke: 'none', 'font-family': 'JetBrains Mono, monospace', 'font-size': 15 }, m);
+    t.textContent = i + 1;
+  });
+})();
+/* numbers that count up when they come into view */
+(function () {
+  var els = document.querySelectorAll('[data-count]');
+  if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (!e.isIntersecting) return; io.unobserve(e.target);
+      var b = e.target, to = parseFloat(b.dataset.count), dec = +(b.dataset.dec || 1), suf = b.dataset.suffix || '', t0 = performance.now();
+      (function tick(now) { var f = Math.min(1, (now - t0) / 1400), v = to * (1 - Math.pow(1 - f, 3));
+        b.textContent = v.toFixed(dec) + suf; if (f < 1) requestAnimationFrame(tick); })(t0);
+      setTimeout(function () { b.textContent = to.toFixed(dec) + suf; }, 1600);   // the final value, whatever happens
+    });
+  }, { threshold: .6 });
+  els.forEach(function (b) { b.textContent = (0).toFixed(+(b.dataset.dec || 1)) + (b.dataset.suffix || ''); io.observe(b); });
+})();
+window.addEventListener('scroll', function () { document.querySelector('.nav').classList.toggle('scrolled', scrollY > 50); }, { passive: true });
+if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.querySelectorAll('video[data-autoplay]').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
+</script>
+<script src="../assets/js/robot.js?v=7"></script>
+<script src="../assets/js/robot-side.js?v=7"></script>
+<script src="../assets/js/pencil-name.js?v=7"></script>
+<script src="../assets/js/costume-tennis.js?v=7"></script>
+<script src="../assets/js/court-explorer.js?v=7"></script>
+<script src="../assets/js/project.js?v=7"></script>
 </body>
 </html>

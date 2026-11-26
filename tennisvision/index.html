@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TennisVision · Product demo</title>
+<meta name="description" content="TennisVision turns ordinary tennis broadcasts into shot-by-shot data: every shot, every bounce, the ball in 3D and both players in court metres.">
+<meta property="og:title" content="TennisVision · Product demo">
+<meta property="og:description" content="From TV coverage to data on every shot. Shown on the championship point of the 2026 ATP Finals.">
+<meta property="og:image" content="https://mtorreslanda.com/assets/img/tennis-board-poster.jpg">
+<meta name="theme-color" content="#0f1720">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Barlow+Condensed:ital,wght@0,600;1,600;1,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="tv.css?v=1">
+<link rel="stylesheet" href="../assets/css/court-explorer.css?v=1">
+<style>
+  html, body { margin: 0; }
+  .barra-in { gap: 18px; }
+  .pedir { margin-left: auto; white-space: nowrap; text-decoration: none; background: var(--ambar); color: var(--noche); font-weight: 700;
+           padding: 8px 14px; border-radius: 6px; font-size: 14px; }
+  .pedir:hover { filter: brightness(1.08); }
+  .volver { color: var(--gris); text-decoration: none; font-size: 13px; white-space: nowrap; }
+  .volver:hover { color: var(--crema); }
+  .court-tab { max-width: 1280px; margin: 0 auto; padding-block: 22px 32px; }
+  .court-tab .cx { padding: 0; background: transparent; }
+  .cierre { max-width: 1280px; margin: 0 auto; padding: 28px 0 40px; display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center;
+            justify-content: space-between; border-top: 1px solid var(--borde); }
+  .cierre p { color: var(--gris); font-size: 13px; max-width: 80ch; }
+  .cierre .btn { text-decoration: none; display: inline-block; }
+  .vista > .cierre { margin-inline: auto; }
+  .origen { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--datos); font-weight: 700; }
+  @media (max-width: 700px) {
+    .volver { display: none; } .marca { font-size: 19px; } .pedir { padding: 7px 10px; font-size: 13px; }
+    .barra-in { flex-wrap: wrap; height: auto; padding-block: 8px; row-gap: 6px; }
+    .tabs { order: 3; width: 100%; }
+    .linea .hito span { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="fondos" aria-hidden="true"><i data-v="home" class="on"></i><i data-v="how"></i><i data-v="court"></i><i data-v="demo"></i></div>
+<header class="barra">
+  <div class="barra-in">
+    <div class="marca">Tennis<span>Vision</span></div>
+    <nav class="tabs" role="tablist" aria-label="Sections"><span class="tab-ind" id="tab-ind" aria-hidden="true"></span>
+      <button class="tab" role="tab" id="t-home" data-vista="home" aria-selected="true">Home</button>
+      <button class="tab" role="tab" id="t-how" data-vista="how" aria-selected="false">How it works</button>
+      <button class="tab" role="tab" id="t-court" data-vista="court" aria-selected="false">Court</button>
+      <button class="tab" role="tab" id="t-demo" data-vista="demo" aria-selected="false">Demo</button>
+    </nav>
+    <a class="volver" href="../work/tennisvision.html">← Project page</a>
+    <a class="pedir" href="../index.html#contact">Request a demo</a>
+  </div>
+</header>
+
+<main>
+<!-- HOME -->
+<section class="vista" id="home" role="tabpanel" aria-labelledby="t-home">
+  <div class="hero">
+    <video src="../assets/img/tennis-board.mp4" poster="../assets/img/tennis-board-poster.jpg" autoplay muted loop playsinline aria-hidden="true"></video>
+    <div class="hero-in">
+      <div class="eyebrow" data-a="0">Computer vision · ATP Finals 2026, the final</div>
+      <h1 class="revela">Tennis<span>Vision</span></h1>
+      <p class="sub" data-a="3">From TV coverage to data on every shot.</p>
+      <p class="meta" data-a="4">Alcaraz – Zverev · the championship point · 16 shots · no sensors, only the broadcast picture</p>
+      <div class="acciones" data-a="5">
+        <button class="btn btn-1" data-ir="how">Start the tour →</button>
+        <button class="btn btn-2" data-ir="court">Explore the point</button>
+      </div>
+    </div>
+  </div>
+  <div class="cifras" aria-label="Results">
+    <div class="cifra" data-a="6"><b data-cuenta="96 %">96 %</b><span>of 3,199 real shots and bounces detected</span></div>
+    <div class="cifra" data-a="7"><b data-cuenta="99.5 %">99.5 %</b><span>of serves found</span></div>
+    <div class="cifra" data-a="8"><b data-cuenta="97 %">97 %</b><span>of points read without an error on matches it never saw, clay and grass included</span></div>
+    <div class="cifra" data-a="9"><b data-cuenta="9.5 km/h">9.5 km/h</b><span>median serve-speed error against the official radar display</span></div>
+  </div>
+  <div class="ticker" data-a="10" aria-label="The championship point in data">
+    <div class="ticker-marca">IN DATA</div>
+    <div class="ticker-ventana"><div class="ticker-pista" id="ticker"></div></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="vista" id="how" role="tabpanel" aria-labelledby="t-how" hidden>
+  <div class="rec">
+    <div class="rec-cab">
+      <div>
+        <div class="eyebrow" data-a="0">One frame, layer by layer · US Open 2026 final, Zverev – Shelton</div>
+        <h2 id="rec-titulo" data-a="1">From the TV picture to a decision, in 10 steps</h2>
+      </div>
+      <div class="paso-actual" aria-live="polite" data-a="2"><small id="paso-num">STEP 0 OF 9</small><span id="paso-nom">Broadcast</span></div>
+      <div class="linea" id="linea" data-a="3"><div class="relleno" id="relleno"></div></div>
+    </div>
+    <div class="escenario" data-a="4" id="escenario" tabindex="0" aria-label="Image of the current step; press to focus">
+      <div class="marco">
+        <img id="img-a" alt="">
+        <img id="img-b" alt="" style="opacity:0">
+        <svg viewBox="0 0 1920 1080" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <mask id="agujeros"><rect width="1920" height="1080" fill="white"/><g id="huecos"></g></mask>
+            <marker id="punta" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f2efe8"/></marker>
+          </defs>
+          <g class="velo" id="velo" opacity="0">
+            <rect width="1920" height="1080" fill="#05090d" fill-opacity="0.72" mask="url(#agujeros)"/>
+            <g id="marcos"></g>
+            <g id="flechas"></g>
+          </g>
+        </svg>
+        <div class="pista-tap">Tap the picture to focus</div>
+        <button class="lado izq" id="ant" aria-label="Previous step">‹</button>
+        <button class="lado der" id="sig" aria-label="Next step">›</button>
+        <div class="hud-esq" id="hud-esq"><button class="mando" id="btn-foco">Focus</button><button class="mando subir" id="btn-fondo">↑ In depth</button></div>
+      </div>
+      <div class="nota" id="nota" role="note"><h3 id="nota-t"></h3><div id="nota-x"></div><div class="cta">↑ in depth</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- COURT -->
+<section class="vista" id="court" role="tabpanel" aria-labelledby="t-court" hidden>
+  <div class="court-tab" data-a="0">
+    <div class="cx" data-src="../assets/data/tennis-point.json"
+         data-links="Download the tracking (50 Hz) ↗|https://github.com/mtorreslanda/tennisvision-showcase/blob/main/data/championship-point-tracking.csv;Every shot and bounce ↗|https://github.com/mtorreslanda/tennisvision-showcase/blob/main/data/championship-point-events.csv"></div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section class="vista" id="demo" role="tabpanel" aria-labelledby="t-demo" hidden>
+  <div class="demo">
+    <div>
+      <div class="eyebrow" data-a="0">Demo · all together</div>
+      <h2 data-a="1">The championship point, live</h2>
+    </div>
+    <video data-a="2" id="video-demo" src="../assets/img/tennis-board.mp4" poster="../assets/img/tennis-board-poster.jpg" controls playsinline preload="metadata"></video>
+    <div class="leyenda" data-a="3">
+      <div class="c1"><b>On the video</b>Each player at their feet, the fitted 3D ball in green with its shadow, and a ring on every bounce.</div>
+      <div class="c2"><b>Shot card</b>Player and stroke, launch speed against the rally average, bounce in or out, contact height and clearance over the net.</div>
+      <div class="c3"><b>From above</b>Every bounce in metres, numbered by the shot that produced it, and both players' paths.</div>
+      <div class="c4"><b>Rally strip</b>One bar per shot, Zverev up and Alcaraz down; the height is the launch speed.</div>
+    </div>
+  </div>
+</section>
+
+<footer class="vista"><div class="cierre">
+  <p>TennisVision is a research prototype by Miguel Á. Castro. Match footage belongs to the ATP and its broadcaster; the frames shown come from a public upload and are used small and short, for illustration. Everything drawn on top is TennisVision output.</p>
+  <a class="btn btn-1" href="../index.html#contact">Request a demo →</a>
+</div></footer>
+</main>
+
+<div class="cortina" id="cortina"></div>
+<aside class="fondo" id="fondo" aria-hidden="true">
+  <div class="fondo-in">
+    <div class="fondo-cab">
+      <div><div class="eyebrow" id="f-eyebrow"></div><h2 id="f-titulo"></h2><div class="origen" id="f-origen"></div></div>
+      <button class="cerrar" id="cerrar">Close ✕</button>
+    </div>
+    <div class="datos3" id="f-datos"></div>
+    <div class="cols">
+      <div id="f-texto"></div>
+      <div><h3>Still hard</h3><p class="falla" id="f-falla"></p><h3 style="margin-top:18px">Built with</h3><p class="herr" id="f-herr"></p></div>
+    </div>
+  </div>
+</aside>
+
+<script>
+// Focus boxes in pixels of the 1920x1080 images (tools/tennis/capas_uso.py and pasos_en.py → focos / cajas).
+// The tour is the US Open 2026 final, frame 1462 of one rally: Zverev has just hit a backhand and the ball goes to
+// Shelton. Home, Court and Demo show the championship point of the ATP Finals: two matches, two venues.
+const FINAL = "From a full final processed end to end (US Open 2026, Zverev – Shelton)";
+const PASOS = [
+  { nom: "Broadcast", img: "tv-uso-layer-0", origen: FINAL, cajas: [[302, 140, 1618, 1000]], nota: [80, 330], flechas: [],
+    t: "Only the broadcast picture",
+    x: "The input is ordinary TV coverage: 1080p, 60 frames per second. No sensors, no cameras of our own.",
+    datos: [["3.4 h", "of video of the final"], ["272", "main-camera shots"], ["237", "points found"]],
+    texto: ["The match is cut into shots wherever the production changes camera, and only the main camera, with the whole court in view, is kept.",
+            "A shot is almost always one point, from the serve to the end of the rally. Everything that follows runs shot by shot."],
+    falla: "Some shots hold two points or start halfway through one; the secondary camera is not used yet.",
+    herr: "Shot-boundary detection · the court itself as the camera classifier" },
+  { nom: "Scoreboard", img: "tv-uso-layer-1", origen: FINAL, cajas: [[85, 856, 670, 1052]], nota: [760, 700], flechas: [[760, 860, 680, 930]],
+    t: "Reading the scoreboard",
+    x: "OCR reads the TV graphic: who serves, the score and, comparing with the next point, who won it.",
+    datos: [["100/100", "shots read correctly across three tournaments"], ["93/93", "times the server matched the video"], ["213", "score changes in the final, sets and tie-break included"]],
+    texto: ["Every broadcaster draws its scoreboard in a different place and style, so only the graphic's area is read and several frames vote on the result.",
+            "The score gives every point its context: set, game, who serves and from which side."],
+    falla: "The graphic sometimes hides at the start or the end of a shot; then fewer frames get a vote.",
+    herr: "OCR on CPU · voting across frames" },
+  { nom: "Players", img: "tv-uso-layer-2", origen: FINAL, cajas: [[613, 722, 819, 1002], [1193, 142, 1304, 320]], nota: [880, 560], flechas: [[880, 700, 828, 820], [1100, 560, 1230, 330]],
+    t: "Where each player is",
+    x: "A detector finds every person, a tracker keeps the two players apart, and the court says where their feet are, in metres.",
+    datos: [["101,853", "player positions in the final"], ["3.3 km", "Shelton ran during the points (Zverev 3.0)"], ["29 km/h", "Shelton's top speed"]],
+    texto: ["The ground point is the bottom of each box. When the near player is cut off by the bottom of the picture, the feet are estimated from the head instead, with the player's height calibrated in the same shot.",
+            "From positions in metres come distances, heat maps, speeds and who hits each ball."],
+    falla: "The near player is cut off in 6.8 % of the frames; estimated from the head, the position is still about 25 cm off.",
+    herr: "Transformer object detector · multi-object tracker" },
+  { nom: "Court", img: "tv-uso-layer-3", origen: FINAL, cajas: [[302, 232, 1618, 884]], nota: [40, 330], flechas: [[560, 420, 640, 470]],
+    t: "From pixels to metres",
+    x: "A network finds the 14 intersections of the court lines in every frame. With them, any pixel on the ground becomes metres.",
+    datos: [["0.68 px", "from the real painted lines (the off-the-shelf model: 2.11)"], ["4,950", "training frames, 5 matches, 3 surfaces"], ["15", "bounces of the final that change from out to in with it"]],
+    texto: ["The TV camera zooms during the point, so the conversion is computed frame by frame, not once per shot.",
+            "The court network was trained from scratch, and it is three times more precise than the off-the-shelf model it replaced."],
+    falla: "Very unusual camera angles, far from the standard main camera, are still untested.",
+    herr: "Keypoint network trained from scratch · line refiner" },
+  { nom: "Ball", img: "tv-uso-layer-4", origen: FINAL, cajas: [[746, 209, 1302, 565]], nota: [80, 560], flechas: [[600, 600, 770, 535]],
+    t: "Finding the ball",
+    x: "The ball is a few pixels wide and moves at 200 km/h. One network scans the whole frame; a second one looks again, at native resolution, around the ball's predicted path.",
+    datos: [["~75 %", "of frames with the ball found, on test matches"], ["49 %", "of the remaining errors come from not seeing the ball"], ["2", "convolutional heatmap networks"]],
+    texto: ["A last pass removes physically impossible jumps: a frame or two where something else (the clock, the scoreboard) looked like the ball.",
+            "It is the bottleneck of the whole system: almost half of the remaining errors come from not seeing the ball when it is next to the racket or hidden by a player."],
+    falla: "The ball hidden behind the near player at the moment it bounces.",
+    herr: "Two convolutional heatmap networks · jump filter" },
+  { nom: "Shots & bounces", img: "tv-uso-layer-5", origen: FINAL, cajas: [[1180, 199, 1612, 330], [567, 610, 900, 720]], nota: [1180, 620], flechas: [[1180, 680, 910, 668], [1400, 620, 1380, 340]],
+    t: "What happens, and when",
+    x: "A video network that fuses image and sound marks shots and bounces. On top, a decoder that knows the rules of tennis arbitrates: shot, bounce, shot…",
+    datos: [["96 %", "of 3,199 real shots and bounces detected"], ["195 → 144", "errors on 439 hand-reviewed points, with the rules layer"], ["99.5 %", "of serves found"]],
+    texto: ["The network proposes; the rule-aware decoder decides, adds the bounces it missed between two shots and needs a player near the ball for every shot. Each piece was measured point by point before it went in.",
+            "From each shot come who hit it and the stroke (serve, forehand, backhand); from each bounce, in or out."],
+    falla: "Volleys, and shots with the ball hidden, are still the ones most often missed.",
+    herr: "Image + audio event network · rule-aware decoder" },
+  { nom: "3D physics", img: "tv-uso-layer-6", origen: FINAL, cajas: [[236, 200, 1320, 860]], nota: [1360, 560], flechas: [[1360, 620, 1060, 560]],
+    t: "The ball in the air",
+    x: "With gravity, air drag and spin, the 3D flight that passes through the detections is fitted: height, speed and where it lands.",
+    datos: [["9.5 km/h", "median serve-speed error against the official radar display (it started at 33)"], ["92 %", "of flights accepted by the quality check"], ["2.4 px", "mean error of the fitted flights on the picture"]],
+    texto: ["A flight goes from one event to the next, and the bounce has to touch the ground. In green, what has already flown; dashed, what comes next: Zverev's backhand lands in and reaches Shelton's racket.",
+            "The TV camera stays in place but zooms: it is modelled with a fixed centre and a focal length per frame. Drag was calibrated against the official radar."],
+    falla: "At the bounce, the outgoing flight can start up to about a metre from where the incoming one ended; the drawing smooths that join.",
+    herr: "Flight model with gravity, drag and spin · per-frame camera" },
+  { nom: "Full-match analysis", img: "tv-analysis", origen: FINAL, cajas: [[24, 70, 556, 590], [1089, 70, 1872, 590]], nota: [640, 600], flechas: [[640, 660, 560, 560], [1160, 620, 1300, 595]],
+    t: "A whole match, in data",
+    x: "Every shot, bounce and step of the players ends up in a table. With it, the match can be read without watching it again: where each one hits, how they serve, how much they run.",
+    datos: [["1,096", "shots of that final with stroke, speed and bounce"], ["101,853", "player positions during the points"], ["65 %", "of the points of 9 shots or more won by Zverev"]],
+    texto: ["The steps before, applied to a full final, give one table per shot, per bounce and per player position.",
+            "Zverev looks for the T with his serve (53 % on the deuce side, 60 % on the ad side) and lands 90 % of his groundstrokes in; Shelton 86 %. Shelton covers more ground and reaches higher top speeds."],
+    falla: "Balls into the net are still counted as out.",
+    herr: "pandas · matplotlib" },
+  { nom: "Prediction", img: "tv-prediction", origen: FINAL, cajas: [[80, 200, 1602, 960]], nota: [1560, 40], flechas: [],
+    t: "Where will the next shot go?",
+    x: "With what is known at this instant (where both players are and where the ball comes from) a model predicts the direction of the next shot.",
+    datos: [["51 %", "groundstroke direction, random forest"], ["39 %", "the baseline: always the most frequent direction"], ["51 %", "serve zone: no better than the player's habit (52 %)"]],
+    texto: ["A random forest, cross-validated and compared with two simple baselines. What weighs most is where both players stand and where the ball comes from.",
+            "It is the step from describing what happened to anticipating what comes next. With more matches and more variables, it can go beyond a single match."],
+    falla: "On the serve, one match is not enough (189 serves), and professionals disguise where they serve.",
+    herr: "scikit-learn · random forest · logistic regression" },
+  { nom: "Technique", img: "tv-technique", origen: FINAL, cajas: [[60, 230, 1860, 870]], nota: [1330, 24], flechas: [],
+    t: "What to change: the motion",
+    x: "With the player's skeleton (17 body points) the serve motion can be studied: the toss, the shoulders, the hips. The goal is to say what to correct. In research.",
+    datos: [["189", "serves analysed with their skeleton"], ["3", "instants: 0.33 s and 0.17 s before contact, and contact"], ["0.78", "pose confidence on the near player (0.60 far)"]],
+    texto: ["Posture is measured at contact and 0.17 and 0.33 s before: where the tossed ball is relative to the shoulders, the lean of the trunk, the feet.",
+            "The prescriptive step is to compare the motion when the serve works and when it fails, or when the opponent reads it, and point out what changes."],
+    falla: "One match does not give enough serves per player to compare motions reliably, and the far player is seen worse than the near one.",
+    herr: "17-keypoint pose model, under evaluation" },
+];
+const TICKER = ["16 shots in the championship point", "240 km/h first serve", "31 of 31 flights fitted in 3D", "Alcaraz ran 38.2 m, Zverev 34.2 m",
+  "The winner cleared the net by 0.17 m", "120 km/h backhand to finish it", "3,199 shots and bounces reviewed by hand", "439 points checked shot by shot",
+  "97 % clean points on unseen matches", "50 positions per player per second"];
+
+const $ = (s) => document.querySelector(s);
+const NS = "http://www.w3.org/2000/svg";
+let paso = 0, foco = false, capa = "a";
+
+// the ticker, twice for a seamless loop
+(function () {
+  const una = TICKER.map((t) => `<span>${t}</span><i aria-hidden="true"></i>`).join("");
+  $("#ticker").innerHTML = una + `<span aria-hidden="true" class="copia">${una}</span>`;
+})();
+
+// entrance animations: the cascade order comes from data-a
+const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
+document.querySelectorAll("[data-a]").forEach((e) => e.style.setProperty("--d", e.dataset.a));
+function anima(v) {
+  const sec = $("#" + v);
+  sec.classList.remove("anima"); void sec.offsetWidth; sec.classList.add("anima");
+  clearTimeout(sec._fin); sec._fin = setTimeout(() => sec.classList.remove("anima"), 2600);   // safeguard: final state always visible
+  if (v === "home" && !quieto) cuenta();
+}
+function cuenta() {
+  document.querySelectorAll("[data-cuenta]").forEach((b, k) => {
+    const txt = b.dataset.cuenta, m = txt.match(/[\d.]+/), fin = parseFloat(m[0]), dec = (m[0].split(".")[1] || "").length;
+    const t0 = performance.now() + 500 + k * 120, dur = 1300;
+    let hecho = false;
+    const step = (t) => {
+      if (hecho) return;
+      const k2 = Math.max(0, Math.min(1, (t - t0) / dur)), v = fin * (1 - (1 - k2) ** 4);
+      b.textContent = txt.replace(m[0], v.toFixed(dec));
+      if (k2 < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+    setTimeout(() => { hecho = true; b.textContent = txt; }, 500 + k * 120 + dur + 150);
+  });
+}
+function mueveInd() {
+  const t = document.querySelector('.tab[aria-selected="true"]'), ind = $("#tab-ind");
+  if (t && ind) { ind.style.left = t.offsetLeft + "px"; ind.style.width = t.offsetWidth + "px"; ind.parentElement.classList.toggle("listo", t.offsetWidth > 0); }
+}
+addEventListener("resize", mueveInd);
+document.fonts && document.fonts.ready.then(mueveInd);
+if ("ResizeObserver" in window) new ResizeObserver(mueveInd).observe(document.querySelector(".tabs"));
+
+const vistas = ["home", "how", "court", "demo"];
+function ver(v) {
+  if (!vistas.includes(v)) v = "home";
+  vistas.forEach((k) => { $("#" + k).hidden = k !== v; $("#t-" + k).setAttribute("aria-selected", String(k === v)); });
+  mueveInd();
+  document.querySelectorAll(".fondos i").forEach((f) => f.classList.toggle("on", f.dataset.v === v));
+  if (v !== "demo") { const vd = $("#video-demo"); if (vd) vd.pause(); }
+  try { history.replaceState(null, "", "#" + v); } catch (e) {}
+  anima(v);
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll(".tab").forEach((b) => b.addEventListener("click", () => ver(b.dataset.vista)));
+document.querySelectorAll("[data-ir]").forEach((b) => b.addEventListener("click", () => ver(b.dataset.ir)));
+
+// timeline: the last three steps (analysis, prediction, technique) are what is done WITH the data
+const PRIMER_EXTRA = 7;
+const linea = $("#linea");
+PASOS.forEach((p, i) => {
+  const b = document.createElement("button");
+  b.className = i >= PRIMER_EXTRA ? "hito extra" : "hito"; b.type = "button"; b.innerHTML = `<i></i><span>${p.nom}</span>`;
+  b.setAttribute("aria-label", `Step ${i}: ${p.nom}`);
+  b.addEventListener("click", () => { foco = false; ir(i); });
+  linea.appendChild(b);
+});
+function el(tag, at) { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); return e; }
+function pinta() {
+  const p = PASOS[paso];
+  const src = `img/${p.img}.jpg`, vis = $("#img-" + capa), otra = $("#img-" + (capa === "a" ? "b" : "a"));
+  if (!vis.getAttribute("src")) { vis.src = src; vis.style.opacity = 1; }
+  else if (!vis.src.endsWith(src)) { otra.src = src; otra.style.opacity = 1; vis.style.opacity = 0; capa = capa === "a" ? "b" : "a"; }
+  $("#paso-num").textContent = (paso >= PRIMER_EXTRA ? "WITH THE DATA · " : "") + `STEP ${paso} OF ${PASOS.length - 1}`;
+  $("#paso-num").parentElement.classList.toggle("extra", paso >= PRIMER_EXTRA);
+  if ($("#paso-nom").textContent !== p.nom) { const pn = $("#paso-nom"); pn.textContent = p.nom; pn.classList.remove("cambia"); void pn.offsetWidth; pn.classList.add("cambia"); }
+  [...linea.querySelectorAll(".hito")].forEach((h, i) => { h.classList.toggle("actual", i === paso); h.classList.toggle("hecho", i < paso); });
+  $("#relleno").style.width = `${(90 * Math.min(paso, PRIMER_EXTRA - 1)) / (PASOS.length - 1)}%`;
+  const huecos = $("#huecos"), marcos = $("#marcos"), flechas = $("#flechas");
+  huecos.replaceChildren(); marcos.replaceChildren(); flechas.replaceChildren();
+  p.cajas.forEach(([x0, y0, x1, y1]) => {
+    huecos.appendChild(el("rect", { x: x0, y: y0, width: x1 - x0, height: y1 - y0, rx: 14, fill: "black" }));
+    marcos.appendChild(el("rect", { x: x0, y: y0, width: x1 - x0, height: y1 - y0, rx: 14, fill: "none", stroke: "#f4a259", "stroke-width": 5 }));
+  });
+  p.flechas.forEach(([x0, y0, x1, y1]) => flechas.appendChild(el("line", { x1: x0, y1: y0, x2: x1, y2: y1, stroke: "#f2efe8", "stroke-width": 5, "marker-end": "url(#punta)" })));
+  $("#velo").setAttribute("opacity", foco ? 1 : 0);
+  $("#escenario").classList.toggle("foco", foco);
+  const n = $("#nota");
+  n.style.left = `${(100 * p.nota[0]) / 1920}%`; n.style.top = `${(100 * p.nota[1]) / 1080}%`;
+  $("#nota-t").textContent = p.t; $("#nota-x").textContent = p.x;
+  $("#btn-foco").textContent = foco ? "Unfocus" : "Focus";
+  $("#f-eyebrow").textContent = `Step ${paso} · ${p.nom}`;
+  $("#f-titulo").textContent = p.t;
+  $("#f-origen").textContent = p.origen || "";
+  $("#f-datos").innerHTML = p.datos.map(([b, s]) => `<div class="dato"><b>${b}</b><span>${s}</span></div>`).join("");
+  $("#f-texto").innerHTML = p.texto.map((t) => `<p>${t}</p>`).join("");
+  $("#f-falla").textContent = p.falla; $("#f-herr").textContent = p.herr;
+}
+let tHud = null;
+function hud() {
+  const e = $("#escenario"); e.classList.add("hud-on"); clearTimeout(tHud);
+  tHud = setTimeout(() => { if (!e.querySelector(".lado:hover, .hud-esq:hover")) e.classList.remove("hud-on"); }, 2600);
+}
+function ir(i) {
+  paso = Math.max(0, Math.min(PASOS.length - 1, i)); pinta(); hud();
+  $("#ant").disabled = paso === 0 && !foco; $("#sig").disabled = paso === PASOS.length - 1 && foco;
+}
+function alternaFoco(v) { foco = v ?? !foco; pinta(); $("#ant").disabled = paso === 0 && !foco; $("#sig").disabled = paso === PASOS.length - 1 && foco; }
+function fondo(abrir) {
+  $("#fondo").classList.toggle("abierto", abrir); $("#cortina").classList.toggle("on", abrir);
+  $("#fondo").setAttribute("aria-hidden", String(!abrir));
+}
+// → : first the next step, then its focus; ← : the other way round
+function avanza() { if (!foco) alternaFoco(true); else if (paso < PASOS.length - 1) { foco = false; ir(paso + 1); } hud(); }
+function retrocede() { if (foco) alternaFoco(false); else if (paso > 0) { foco = true; ir(paso - 1); } hud(); }
+$("#ant").addEventListener("click", retrocede);
+$("#sig").addEventListener("click", avanza);
+$("#btn-foco").addEventListener("click", () => alternaFoco());
+$("#escenario").addEventListener("click", () => alternaFoco());
+$("#escenario").addEventListener("mousemove", hud);
+["#hud-esq", "#ant", "#sig"].forEach((q) => $(q).addEventListener("click", (e) => e.stopPropagation()));
+$("#btn-fondo").addEventListener("click", () => fondo(true));
+$("#nota").addEventListener("click", (e) => { e.stopPropagation(); fondo(true); });
+$("#cerrar").addEventListener("click", () => fondo(false));
+$("#cortina").addEventListener("click", () => fondo(false));
+document.addEventListener("keydown", (e) => {
+  if ($("#how").hidden) return;
+  if (e.key === "ArrowRight") { avanza(); e.preventDefault(); }
+  else if (e.key === "ArrowLeft") { retrocede(); e.preventDefault(); }
+  else if (e.key === " " || e.key === "f") { alternaFoco(); e.preventDefault(); }
+  else if (e.key === "ArrowUp" || e.key === "Enter") { fondo(true); e.preventDefault(); }
+  else if (e.key === "ArrowDown" || e.key === "Escape") { fondo(false); e.preventDefault(); }
+});
+PASOS.forEach((p) => { const i = new Image(); i.src = `img/${p.img}.jpg`; });
+ir(0);
+ver((location.hash || "").slice(1));
+// the section ids match the #token, so the browser jumps to them on load: start at the top
+addEventListener("load", () => { window.scrollTo(0, 0); mueveInd(); });
+</script>
+<script src="../assets/js/court-explorer.js?v=1"></script>
+</body>
+</html>

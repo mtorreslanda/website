@@ -1,0 +1,90 @@
+/* TennisVision court explorer: the point from above, shot by shot, in the broadcast-graphics skin of the
+   TennisVision product (dark, Oswald / Barlow Condensed). Shared by the project page (as a TV screen on the
+   sheet) and the product microsite (its Court tab). Everything is scoped under .cx. */
+.cx {
+  --noche: #0f1720; --panel: #18232f; --borde: #2a3a4a; --crema: #f2efe8; --gris: #9db0c1; --ambar: #f4a259; --verde: #9be86a;
+  --cx-display: 'Oswald', 'Arial Narrow', Arial, sans-serif; --cx-body: 'DM Sans', 'Segoe UI', Arial, sans-serif;
+  --cx-mono: 'JetBrains Mono', Consolas, monospace; --cx-sport: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
+  color-scheme: dark; background: var(--noche); color: var(--crema); font-family: var(--cx-body); font-size: 16px; line-height: 1.5;
+  display: grid; gap: 16px; padding: clamp(14px, 2.4vw, 26px); border-radius: 14px; min-width: 0;
+}
+.cx button { font: inherit; color: inherit; }
+.cx :focus-visible { outline: 2px solid var(--ambar); outline-offset: 2px; }
+.cx h2, .cx h3 { margin: 0; line-height: 1.08; }
+.cx-cab { display: flex; justify-content: space-between; align-items: end; gap: 16px 32px; flex-wrap: wrap; }
+.cx-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--ambar); }
+.cx-cab h2 { font-family: var(--cx-sport); font-style: italic; font-weight: 700; font-size: clamp(34px, 4.4vw, 60px); letter-spacing: .5px;
+             text-transform: uppercase; line-height: .95; }
+.cx-cab h2 em { color: var(--ambar); font-size: 1.45em; margin-right: .08em; font-style: italic; }
+.cx-bug { display: grid; grid-template-columns: auto auto repeat(3, 34px); align-items: center; background: #0b1622; border: 1px solid var(--borde);
+  border-radius: 6px; overflow: hidden; font-family: var(--cx-sport); font-weight: 600; font-size: 24px; font-variant-numeric: tabular-nums;
+  box-shadow: 0 10px 30px rgb(0 0 0 / .35); }
+.cx-bug > * { padding: 4px 8px; text-align: center; }
+.cx-bug .nom { text-align: left; padding-left: 12px; letter-spacing: 1px; font-style: italic; min-width: 120px; }
+.cx-bug .saq { width: 22px; color: #d8f55a; font-size: 16px; }
+.cx-bug .set { color: var(--gris); }
+.cx-bug .pts { background: var(--crema); color: var(--noche); font-weight: 700; }
+.cx-bug .fila2 { border-top: 1px solid var(--borde); }
+.cx-franja { display: flex; flex-wrap: wrap; border-block: 1px solid var(--borde); font-size: 14px; color: var(--gris); }
+.cx-franja span { padding: 8px 18px 8px 0; margin-right: 18px; border-right: 1px solid var(--borde); }
+.cx-franja span:last-child { border-right: 0; }
+.cx-franja b { font-family: var(--cx-sport); font-weight: 600; font-size: 20px; color: var(--crema); letter-spacing: .3px; }
+.cx-grid { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.cx-izq { display: grid; gap: 12px; min-width: 0; }
+/* the court tilted like a broadcast graphic */
+.cx-cancha { perspective: 1500px; perspective-origin: 50% 0%; padding-block: 4px 0; overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 0%, #17324a 0%, var(--noche) 70%); border-radius: 14px; }
+.cx-cancha svg { display: block; width: 100%; height: auto; transform: rotateX(38deg) scale(1.04); transform-origin: 50% 35%; margin-block: -2% -9%;
+  filter: drop-shadow(0 30px 30px rgb(0 0 0 / .45)); }
+.cx-cancha .vuelo-ida { stroke-dasharray: 1; stroke-dashoffset: 1; animation: cx-dibujar .65s ease-out forwards; }
+@keyframes cx-dibujar { to { stroke-dashoffset: 0; } }
+.cx-cancha .onda { animation: cx-onda 1.4s ease-out forwards; transform-box: fill-box; transform-origin: center; }
+@keyframes cx-onda { from { transform: scale(.4); opacity: 1; } to { transform: scale(2.6); opacity: 0; } }
+.cx-cancha .bote { cursor: pointer; outline: none; }
+.cx-cancha .bote:hover circle.d { opacity: .8; }
+.cx-mandos { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cx-mando { background: var(--panel); border: 1px solid var(--borde); border-radius: 8px; padding: 9px 14px; cursor: pointer; font-weight: 500; }
+.cx-mando:hover { border-color: var(--gris); }
+.cx-mando.on { background: var(--ambar); color: var(--noche); border-color: var(--ambar); font-weight: 700; }
+.cx-mandos input[type=range] { flex: 1; min-width: 140px; accent-color: var(--ambar); }
+.cx-reloj { font-family: var(--cx-mono); font-size: 13px; color: var(--gris); font-variant-numeric: tabular-nums; min-width: 92px; }
+/* the rally strip: one bar per shot, the near player up, the far player down */
+.cx-latido { background: var(--panel); border-radius: 12px; padding: 10px 12px 6px; }
+.cx-latido-cab { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--gris); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; }
+.cx-latido svg { display: block; width: 100%; height: auto; }
+.cx-latido .barra-g { cursor: pointer; }
+.cx-latido .barra-g:hover rect { opacity: 1; }
+/* the shot card, like a TV caption */
+.cx-ficha { display: grid; gap: 9px; align-content: start; }
+.cx .tv-tag { display: inline-flex; width: max-content; gap: 10px; align-items: center; background: var(--crema); color: var(--noche); padding: 4px 14px 5px;
+  transform: skewX(-12deg); font-family: var(--cx-mono); font-size: 12px; font-weight: 600; letter-spacing: 1.5px; }
+.cx .tv-tag > * { transform: skewX(12deg); }
+.cx .tv-quien { display: flex; align-items: stretch; gap: 12px; }
+.cx .tv-quien i { width: 6px; border-radius: 2px; }
+.cx .tv-quien h3 { font-family: var(--cx-sport); font-style: italic; font-weight: 700; font-size: clamp(22px, 2vw, 28px); letter-spacing: .5px; text-transform: uppercase; }
+.cx .tv-quien h3 span { color: var(--gris); font-weight: 400; }
+.cx .tv-num { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--borde); padding-top: 8px; }
+.cx .tv-num b { font-family: var(--cx-sport); font-style: italic; font-size: clamp(46px, 4vw, 58px); font-weight: 700; line-height: .85; font-variant-numeric: tabular-nums; }
+.cx .tv-num small { font-family: var(--cx-sport); font-style: italic; font-size: 20px; color: var(--gris); }
+.cx .tv-num em { flex-basis: 100%; font-style: normal; font-size: 13px; color: var(--gris); }
+.cx .tv-cmp { display: grid; gap: 6px; font-size: 13px; color: var(--gris); }
+.cx .tv-cmp .pista-b { position: relative; height: 8px; background: var(--borde); border-radius: 4px; }
+.cx .tv-cmp .pista-b span { position: absolute; inset: 0 auto 0 0; border-radius: 4px; transition: width .5s ease; }
+.cx .tv-cmp .pista-b i { position: absolute; top: -4px; width: 2px; height: 16px; background: var(--crema); }
+.cx .tv-lista { display: grid; grid-template-columns: minmax(0, 1fr) auto; margin: 0; border-top: 1px solid var(--borde); }
+.cx .tv-lista dt, .cx .tv-lista dd { margin: 0; padding: 4px 0; border-bottom: 1px solid var(--borde); }
+.cx .tv-lista dt { color: var(--gris); font-size: 14px; }
+.cx .tv-lista dd { text-align: right; font-family: var(--cx-sport); font-weight: 600; font-size: 19px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.cx .tv-lista dd small { display: block; font-family: var(--cx-body); font-size: 12px; color: var(--gris); font-weight: 400; }
+.cx .perfil { background: var(--panel); border-radius: 10px; padding: 8px 10px 4px; }
+.cx .perfil svg { width: 100%; height: auto; display: block; }
+.cx .perfil .tit { font-size: 12px; color: var(--gris); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+.cx-pie { font-size: 13px; color: var(--gris); }
+.cx-pie a { color: var(--ambar); }
+@media (max-width: 900px) { .cx-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) {
+  .cx-bug { font-size: 19px; grid-template-columns: auto auto repeat(3, 28px); } .cx-bug .nom { min-width: 96px; }
+  .cx-franja span { border-right: 0; padding-right: 0; }
+  .cx-latido-cab span:nth-child(2) { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .cx * { transition: none !important; animation: none !important; } }
