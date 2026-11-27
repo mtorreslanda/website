@@ -1,0 +1,252 @@
+[
+ {
+  "id": "q_banco",
+  "q": "¿El banco es autoridad para efectos del amparo cuando congela mi cuenta?",
+  "q_en": "Is a bank an authority, for an amparo, when it freezes my account?",
+  "answer": "Sí, el banco es autoridad responsable cuando bloquea cuentas de manera unilateral y discrecional, impidiendo el acceso a recursos. Según el pasaje [3], esto se determina cuando las instituciones bancarias actúan sin base contractual, lo que las hace sujetas al juicio de amparo. Por el contrario, si el bloqueo se realiza con base en las cláusulas del contrato celebrado con el usuario, no es un acto de autoridad y el juicio es improcedente, como indica el pasaje [2].",
+  "t_search": 43.6,
+  "t_llm": 5.1,
+  "passages": [
+   {
+    "n": 1,
+    "court": "9th",
+    "case": "480/2025",
+    "page": 6,
+    "section": "admissibility",
+    "snippet": "Se actualiza la causal de improcedencia prevista en la fracción XXI del artículo 61 de la Ley de Amparo, en virtud de que han cesado los efectos de los actos reclamados siguientes: Autoridades responsables Acto reclamado 1. Titula…"
+   },
+   {
+    "n": 2,
+    "court": "7th",
+    "case": "507/2025",
+    "page": 11,
+    "section": "admissibility",
+    "snippet": "“BLOQUEO O RESTRICCIÓN DE CUENTAS BANCARIAS. NO ES UN ACTO DE AUTORIDAD PARA EFECTOS DE LA PROCEDENCIA DEL JUICIO DE AMPARO, CUANDO LA INSTITUCIÓN FINANCIERA LO REALIZA CON BASE EN LAS CLÁUSULAS DEL CONTRATO QUE CELEBRÓ CON EL USU…"
+   },
+   {
+    "n": 3,
+    "court": "10th",
+    "case": "1355/2025",
+    "page": 7,
+    "section": "admissibility",
+    "snippet": "Hechos: Una institución bancaria bloqueó la cuenta de una persona moral, impidiendo que pudiera disponer del dinero contenido en ella. La persona moral promovió amparo indirecto en el que señaló como autoridad responsable a la ins…"
+   },
+   {
+    "n": 4,
+    "court": "9th",
+    "case": "417/2025",
+    "page": 15,
+    "section": "admissibility",
+    "snippet": "Las autoridades adscritas a la Subtesorería de Fiscalización de la Tesorería de la Ciudad de México aducen que se actualiza la causa de improcedencia prevista en el artículo 61, fracción XXI de la Ley de Amparo, en virtud de que h…"
+   },
+   {
+    "n": 5,
+    "court": "9th",
+    "case": "1383/2025",
+    "page": 12,
+    "section": "admissibility",
+    "snippet": "En el caso concreto, la quejosa reclamó el congelamiento de su cuenta bancaria *********** aperturada en la institución bancaria Banco Inbursa, sociedad anónima de capital variable, Institución Banca Múltiple Grupo Financiero Inbu…"
+   },
+   {
+    "n": 6,
+    "court": "10th",
+    "case": "372/2025",
+    "page": 11,
+    "section": "admissibility",
+    "snippet": "En efecto, del análisis de dichos actos se desprende que las autoridades responsables únicamente solicitaron a la Comisión Nacional Bancaria y de Valores que comunicaran a las instituciones financieras respectivas que procedieran …"
+   }
+  ],
+  "citations": [
+   {
+    "n": 3,
+    "court": "10th",
+    "case": "1355/2025",
+    "page": 7,
+    "status": "literal",
+    "pre": "…la citada institución no podía ser considerada como autoridad responsable para efectos del juicio de amparo. La quejosa interpuso recurso de revisión. Criterio jurídico: ",
+    "quote": "Este Tribunal Colegiado de Circuito determina que las instituciones bancarias tienen el carácter de autoridad responsable para efectos del juicio de amparo cuando de manera unilateral y discrecional bloquean las cuentas de los usuarios del servicio financiero, impidiéndoles acceder a los recursos en ellas contenidos.",
+    "post": ""
+   },
+   {
+    "n": 2,
+    "court": "7th",
+    "case": "507/2025",
+    "page": 11,
+    "status": "literal",
+    "pre": "“",
+    "quote": "BLOQUEO O RESTRICCIÓN DE CUENTAS BANCARIAS. NO ES UN ACTO DE AUTORIDAD PARA EFECTOS DE LA PROCEDENCIA DEL JUICIO DE AMPARO, CUANDO LA INSTITUCIÓN FINANCIERA LO REALIZA CON BASE EN LAS CLÁUSULAS DEL CONTRATO QUE CELEBRÓ CON EL USUARIO.",
+    "post": " Hechos: Una institución financiera realizó el bloqueo de fondos en una cuenta bancaria porque consideró que se realizó una operación probablemente fraudulenta. La person…"
+   }
+  ]
+ },
+ {
+  "id": "q_inexistencia",
+  "q": "¿Qué pasa si la autoridad niega el acto en su informe justificado y yo no aporto pruebas de que existe?",
+  "q_en": "What if the authority denies the act and I bring no evidence that it exists?",
+  "answer": "Si el acto reclamado es de naturaleza positiva y la autoridad lo niega, la carga probatoria se traslada a la parte quejosa, quien deberá aportar elementos para desvirtuar esa negativa antes de la audiencia constitucional. Si no se aportan tales pruebas, el acto no podrá tenerse por cierto conforme a lo manifestado por la autoridad. En cambio, si el acto es de naturaleza omisiva y la autoridad niega su existencia, se verificará su aptitud legal para actuar, determinando si la omisión debe tenerse por cierta salvo prueba en contrario o si se debe sobreseer el juicio.",
+  "t_search": 47.3,
+  "t_llm": 4.2,
+  "passages": [
+   {
+    "n": 1,
+    "court": "1st",
+    "case": "1644/2025",
+    "page": 6,
+    "section": "existence of the act",
+    "snippet": "De modo que, en caso contrario, esto es, cuando la autoridad rinde dicho informe, debe distinguirse si reconoció la existencia del acto reclamado, para tenerlo por cierto con base en lo manifestado por ella; o bien, si lo negó, pa…"
+   },
+   {
+    "n": 2,
+    "court": "1st",
+    "case": "390/2025",
+    "page": 7,
+    "section": "existence of the act",
+    "snippet": "De modo que, en caso contrario, esto es, cuando la autoridad rinde dicho informe, debe distinguirse si reconoció la existencia del acto reclamado, para tenerlo por cierto con base en lo manifestado por ella; o bien, si lo negó, pa…"
+   },
+   {
+    "n": 3,
+    "court": "1st",
+    "case": "1299/2025",
+    "page": 7,
+    "section": "existence of the act",
+    "snippet": "probatoria a fin de determinar si debe tenerse por cierto –o no– a partir de tales elementos. Finalmente, es pertinente considerar que si el acto reclamado es de naturaleza positiva y la autoridad responsable niega su existencia, …"
+   },
+   {
+    "n": 4,
+    "court": "1st",
+    "case": "1406/2025",
+    "page": 6,
+    "section": "existence of the act",
+    "snippet": "De modo que, en caso contrario, esto es, cuando la autoridad rinde dicho informe, debe distinguirse si reconoció la existencia del acto reclamado, para tenerlo por cierto con base en lo manifestado por ella; o bien, si lo negó, pa…"
+   },
+   {
+    "n": 5,
+    "court": "1st",
+    "case": "774/2025",
+    "page": 8,
+    "section": "existence of the act",
+    "snippet": "De modo que, en caso contrario, esto es, cuando la autoridad rinde dicho informe, debe distinguirse si reconoció la existencia del acto reclamado, para tenerlo por cierto con base en lo manifestado por ella; o bien, si lo negó, pa…"
+   },
+   {
+    "n": 6,
+    "court": "1st",
+    "case": "1814/2025",
+    "page": 8,
+    "section": "existence of the act",
+    "snippet": "De modo que, en caso contrario, esto es, cuando la autoridad rinde dicho informe, debe distinguirse si reconoció la existencia del acto reclamado, para tenerlo por cierto con base en lo manifestado por ella; o bien, si lo negó, pa…"
+   }
+  ],
+  "citations": [
+   {
+    "n": 1,
+    "court": "1st",
+    "case": "1644/2025",
+    "page": 6,
+    "status": "literal",
+    "pre": "…on las reglas que rigen en materia probatoria a fin de determinar si debe tenerse por cierto –o no– a partir de tales elementos. Finalmente, es pertinente considerar que ",
+    "quote": "si el acto reclamado es de naturaleza positiva y la autoridad responsable niega su existencia, la carga probatoria se trasladará a la parte quejosa y, por consiguiente, ésta deberá aportar los elementos que estime necesarios para desvirtuar esa negativa antes de la celebración de la audiencia constitucional",
+    "post": "4. En cambio, si son de naturaleza omisiva y la autoridad responsable niega su existencia, será indispensable verificar si ésta se encontraba en aptitud legal de realizar…"
+   },
+   {
+    "n": 1,
+    "court": "1st",
+    "case": "1644/2025",
+    "page": 6,
+    "status": "literal",
+    "pre": "…ridad responsable niega su existencia, será indispensable verificar si ésta se encontraba en aptitud legal de realizar la actuación exigida por la parte quejosa, ya que, ",
+    "quote": "de ser el caso, la omisión atribuida deberá tenerse por cierta salvo prueba en contrario; mientras que, de no ser así, deberá tenerse por inexistente y, en consecuencia, se deberá sobreseer en el juicio",
+    "post": "5. Ahora, del informe justificado rendido en el presente asunto, se advierte la información esquematizada a continuación: ¿Rindió informe justificado? Autoridad responsab…"
+   }
+  ]
+ },
+ {
+  "id": "q_plazo",
+  "q": "¿Cuál es el plazo para presentar la demanda de amparo y desde cuándo se cuenta?",
+  "q_en": "What is the deadline to file an amparo, and from when does it run?",
+  "answer": "El plazo general para presentar la demanda de amparo es de quince días, conforme al artículo 17. Este término se computa a partir del día siguiente a la notificación, al conocimiento del acto o a cuando se ostente sabedor de él, según el artículo 18. Los criterios para iniciar el cómputo son excluyentes, por lo que no existe un orden de prelación entre ellos.",
+  "t_search": 18.2,
+  "t_llm": 5.4,
+  "passages": [
+   {
+    "n": 1,
+    "court": "1st",
+    "case": "1154/2025",
+    "page": 11,
+    "section": "admissibility",
+    "snippet": "Como se mencionó, la demanda de amparo debe presentarse dentro de los plazos establecidos en la ley, al respecto, el Pleno del Alto Tribunal al resolver la contradicción de tesis 57/2008, analizó cuándo inicia el cómputo para la p…"
+   },
+   {
+    "n": 2,
+    "court": "1st",
+    "case": "691/2025",
+    "page": 17,
+    "section": "admissibility",
+    "snippet": "Como se mencionó, la demanda de amparo debe presentarse dentro de los plazos establecidos en la ley, al respecto, el Pleno del Alto Tribunal al resolver la contradicción de tesis 57/2008, analizó cuándo inicia el cómputo para la p…"
+   },
+   {
+    "n": 3,
+    "court": "2nd",
+    "case": "896/2025",
+    "page": 11,
+    "section": "admissibility",
+    "snippet": "De manera que si las responsables no han acatado en sus términos una resolución emitida en un juicio contencioso, están extinguiendo una situación jurídica en perjuicio del impetrante de amparo. De conformidad con lo antedicho par…"
+   },
+   {
+    "n": 4,
+    "court": "7th",
+    "case": "184/2025",
+    "page": 9,
+    "section": "admissibility",
+    "snippet": "Si en contra de dicha resolución procede amparo directo, deberá estarse a lo dispuesto en el capítulo respectivo a ese procedimiento; […] De la fracción XIII y del primer párrafo de la fracción XIV del artículo 61 citado, se obtie…"
+   },
+   {
+    "n": 5,
+    "court": "7th",
+    "case": "1101/2025",
+    "page": 14,
+    "section": "admissibility",
+    "snippet": "XIV. Contra normas generales o actos consentidos tácitamente, entendiéndose por tales aquéllos contra los que no se promueva el juicio de amparo dentro de los plazos previstos. […] De la fracción XIII y del primer párrafo de la fr…"
+   },
+   {
+    "n": 6,
+    "court": "8th",
+    "case": "400/2025",
+    "page": 14,
+    "section": "admissibility",
+    "snippet": "(…)” Del contenido sistemático de los preceptos citados, se evidencia que el plazo para presentar la demanda de amparo es de quince días, salvo que se trate de los supuestos de excepción ahí previstos; así como que dicho término s…"
+   }
+  ],
+  "citations": [
+   {
+    "n": 4,
+    "court": "7th",
+    "case": "184/2025",
+    "page": 9,
+    "status": "literal",
+    "pre": "…es de voluntad que revelen ese consentimiento; o bien, tácitamente, es decir, que contra ellos no se promueva el juicio de amparo dentro de los plazos legales previstos. ",
+    "quote": "Por su parte, el artículo 17 establece que, por regla general, el plazo para presentar la demanda de amparo será de quince días, salvo las excepciones que ahí enlista.",
+    "post": " A su vez, el artículo 18 precisa tres momentos a partir de los cuales debe computarse el plazo de quince días para la promoción del juicio de amparo, los cuales se cuent…"
+   },
+   {
+    "n": 4,
+    "court": "7th",
+    "case": "184/2025",
+    "page": 9,
+    "status": "repaired",
+    "pre": "…. Por su parte, el artículo 17 establece que, por regla general, el plazo para presentar la demanda de amparo será de quince días, salvo las excepciones que ahí enlista. ",
+    "quote": "A su vez, el artículo 18 precisa tres momentos a partir de los cuales debe computarse el plazo de quince días para la promoción del juicio de amparo, los cuales se cuentan, respectivamente, a partir del día siguiente:",
+    "post": " a) Al en que surta efectos, conforme a la ley del acto, la notificación al quejoso de la resolución o acuerdo que reclame; b) Al en que el quejoso haya tenido conocimien…"
+   },
+   {
+    "n": 6,
+    "court": "8th",
+    "case": "400/2025",
+    "page": 14,
+    "status": "literal",
+    "pre": "…siguiente al en que haya tenido conocimiento del acto reclamado o de su ejecución y, c) A partir del día siguiente al en que se hubiese ostentado sabedor de tales actos. ",
+    "quote": "En relación con los tres criterios que deben tomarse en cuenta para comenzar a computar el plazo de quince días, la Suprema Corte de Justicia de la Nación determinó que son excluyentes, por lo que no debe seguirse un orden de prelación para tomar cualquiera de ellos como referencia para empezar a contar dicho término.",
+    "post": " Ahora bien, de las manifestaciones expresadas bajo protesta de decir verdad por los quejosos, se advierte que tuvieron conocimiento de los actos reclamados desde el cuat…"
+   }
+  ]
+ }
+]

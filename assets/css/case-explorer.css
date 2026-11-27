@@ -1,0 +1,56 @@
+/* «Ask the rulings»: the case-law demo on the legal-rag page. Real outputs of the system, replayed. */
+.cx-qs { display: flex; flex-wrap: wrap; gap: .8rem; margin-bottom: 1.6rem; }
+.cx-qs button { font: inherit; text-align: left; max-width: 26rem; padding: .8rem 1rem; background: transparent; cursor: pointer;
+                border: 1px solid rgba(26, 26, 26, .35); color: var(--ink); line-height: 1.35; transition: background .2s, color .2s, border-color .2s; }
+.cx-qs button small { display: block; margin-top: .35rem; font-family: var(--mono); font-size: .68rem; letter-spacing: .04em; color: var(--grey); }
+.cx-qs button:hover { border-color: var(--accent); }
+.cx-qs button[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.cx-qs button[aria-selected="true"] small { color: #CFCBD9; }
+
+.cx-desk { padding-bottom: 0; }
+.cx-search { display: flex; align-items: baseline; gap: .7rem; padding: 1.1rem 1.2rem; border: 1px solid rgba(26, 26, 26, .55);
+             background: #fff; font-family: var(--serif); font-size: clamp(1.05rem, 1.7vw, 1.35rem); font-style: italic; min-height: 3.6rem; }
+.cx-search .cx-prompt { font-family: var(--mono); font-style: normal; color: var(--accent); }
+.cx-caret { display: inline-block; width: 2px; height: 1.1em; background: var(--accent); transform: translateY(.15em); animation: cxblink 1s steps(1) infinite; }
+@keyframes cxblink { 50% { opacity: 0; } }
+.cx-status { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .7rem .2rem 1rem;
+             font-family: var(--mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--grey); }
+.cx-status b { color: var(--ink); font-weight: 500; }
+
+.cx-cols { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.25fr); gap: 2rem; padding-bottom: 1.4rem; }
+.cx-hits { list-style: none; border-top: 1px solid var(--ink); }
+.cx-hits li { padding: .75rem 0 .8rem; border-bottom: 1px solid var(--line); opacity: .9; transition: background .25s, opacity .3s; }
+.cx-hits li.wait { opacity: 0; }
+.cx-hits li.cited { background: rgba(91, 69, 176, .07); box-shadow: inset 3px 0 0 var(--accent); padding-left: .8rem; }
+.cx-hits li.focus { background: rgba(91, 69, 176, .16); }
+.cx-hits .cx-where { font-family: var(--mono); font-size: .72rem; letter-spacing: .04em; color: var(--ink); }
+.cx-hits .cx-where em { font-style: normal; color: var(--accent); margin-right: .35rem; }
+.cx-hits .cx-where span { color: var(--grey); }
+.cx-hits p { margin-top: .35rem; font-size: .86rem; line-height: 1.45; color: #4A4A4A; }
+
+.cx-answer { border-top: 1px solid var(--ink); padding-top: .8rem; }
+.cx-answer > i { font-style: normal; font-family: var(--mono); font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.cx-text { margin: .7rem 0 1.2rem; font-family: var(--serif); font-size: 1.12rem; line-height: 1.6; min-height: 6rem; }
+.cx-text button { font: inherit; font-family: var(--mono); font-size: .8rem; padding: 0 .3rem; margin: 0 .1rem; cursor: pointer;
+                  background: var(--accent); color: #fff; border: 0; vertical-align: .1em; }
+.cx-cites { display: grid; gap: 1rem; }
+.cx-cite { position: relative; padding: .9rem 7rem .9rem 1rem; background: #fff; border: 1px solid rgba(91, 69, 176, .55); cursor: default; }
+.cx-cite.wait { visibility: hidden; }
+.cx-cite .cx-where { font-family: var(--mono); font-size: .72rem; color: var(--accent); letter-spacing: .04em; }
+.cx-cite p { margin-top: .45rem; font-size: .9rem; line-height: 1.55; color: #555; }
+.cx-cite mark { background: rgba(91, 69, 176, .16); color: var(--ink); padding: .05em 0; }
+.cx-stamp { position: absolute; right: .9rem; top: 50%; width: 5.2rem; height: 5.2rem; margin-top: -2.6rem; border-radius: 50%;
+            border: 3px solid var(--accent); color: var(--accent); display: grid; place-content: center; transform: rotate(-14deg);
+            font-family: var(--mono); font-size: .56rem; font-weight: 500; letter-spacing: .02em; text-align: center; line-height: 1.2; }
+.cx-stamp::before { content: ''; position: absolute; inset: 4px; border-radius: 50%; border: 1px solid var(--accent); }
+.cx-stamp b { display: block; font-size: 1rem; }
+.cx-cite.stamped .cx-stamp { animation: cxstamp .42s cubic-bezier(.2, 1.6, .4, 1) both; }
+@keyframes cxstamp { from { opacity: 0; transform: rotate(-14deg) scale(1.9); } to { opacity: .92; transform: rotate(-14deg) scale(1); } }
+.cx-note { margin-top: 1rem; font-size: .86rem; color: var(--grey); line-height: 1.5; }
+
+@media (max-width: 900px) {
+  .cx-cols { grid-template-columns: 1fr; }
+  .cx-cite { padding-right: 1rem; padding-bottom: 5.2rem; }
+  .cx-stamp { top: auto; bottom: .6rem; margin-top: 0; width: 4rem; height: 4rem; }
+}
+@media (prefers-reduced-motion: reduce) { .cx-caret { animation: none; } .cx-cite.stamped .cx-stamp { animation: none; opacity: .92; } }
