@@ -5,47 +5,197 @@
 <script>document.documentElement.classList.add('js')</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Signature detection in documents — Miguel Ángel Castro Torreslanda</title>
-<meta name="description" content="Flags which PDFs in a folder carry a handwritten signature or initials, tuned for recall, with an optional local vision-language model as a second opinion.">
+<meta name="description" content="Point it at a folder of PDFs: it tells you which ones carry a handwritten signature or initials, with a crop of each. Tuned for recall, runs locally, with an optional local vision model as a second opinion.">
 <meta property="og:title" content="Signature detection in documents — Miguel Ángel Castro Torreslanda">
-<meta property="og:description" content="Flags which PDFs in a folder carry a handwritten signature or initials, tuned for recall, with an optional local vision-language model as a second opinion.">
-<meta property="og:image" content="https://mtorreslanda.com/assets/img/signature-fp.png">
-<meta name="theme-color" content="#F5F3EE">
+<meta property="og:description" content="Point it at a folder of PDFs: it tells you which ones carry a handwritten signature or initials, with a crop of each.">
+<meta property="og:image" content="https://mtorreslanda.com/assets/img/sig-s5-report.png">
+<meta property="og:type" content="website">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/site.css?v=6">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/project.css?v=7">
+<link rel="stylesheet" href="../assets/css/scan-explorer.css?v=7">
+<style>
+  /* Signature detection: a scanned page, in scanner cyan (decision SH62) */
+  :root { --accent: #1C7FB5; --scan: #5CC8FF; --print: #2F6F93; }
+  .p-title { font-size: clamp(3.2rem, 7.6vw, 7.8rem); }
+  .p-design { list-style: none; display: grid; gap: 1.4rem; max-width: 72ch; margin-bottom: 3.5rem; }
+  .p-design li { padding-left: 1.4rem; border-left: 2px solid var(--accent); line-height: 1.6; color: #3A3A3A; }
+  .p-design b { color: var(--ink); }
+  .p-step-img, .p-how-fig img { background: #FBFAF7; }
+</style>
 </head>
 <body>
-<nav class="nav"><div class="wrap">
-  <a class="logo" href="../index.html">M<span>·</span>A<span>·</span>C</a>
+<nav class="nav" aria-label="Main">
+  <a href="../index.html" class="nav-logo" aria-label="Miguel Ángel Castro Torreslanda, home">
+    <svg viewBox="0 0 170 100" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <defs><filter id="pencil" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G" result="d"/>
+        <feComposite in="d" in2="n" operator="in" result="grain"/><feMerge><feMergeNode in="d"/><feMergeNode in="grain"/></feMerge></filter></defs>
+      <!-- Signature detection: the monogram inside a detection box, corner brackets and a scan line, in cyan pencil (SH62) -->
+      <g class="guides" stroke="#A0A0A0" stroke-width=".6">
+        <line x1="2" y1="18" x2="168" y2="18" style="--len:170"/><line x1="2" y1="82" x2="168" y2="82" style="--len:170"/>
+        <line x1="14" y1="2" x2="14" y2="98" style="--len:100"/><line x1="156" y1="2" x2="156" y2="98" style="--len:100"/>
+        <line x1="14" y1="50" x2="156" y2="50" style="--len:145"/></g>
+      <g class="hatch" stroke="#1C7FB5" stroke-width=".9" opacity=".4" filter="url(#pencil)">
+        <path d="M30 70 L44 56 M34 76 L58 52 M46 78 L72 52 M60 78 L86 52 M74 78 L100 52 M88 78 L114 52 M102 78 L128 52 M116 78 L138 56 M128 78 L140 66" style="--len:40"/></g>
+      <g class="strokes" filter="url(#pencil)" stroke="#1C7FB5" stroke-width="2.4">
+        <path d="M24 34 L24 20 L40 20 M130 20 L146 20 L146 34 M146 66 L146 80 L130 80 M40 80 L24 80 L24 66" style="--len:120"/>
+        <path d="M18 50 L152 50" stroke-width="1.2" stroke-dasharray="2 4" style="--len:134"/>
+        <path d="M55 64 L55 36 L67 54 L79 36 L79 64" stroke-width="2.6" style="--len:120"/>
+        <path d="M90 36 L118 36 M104 36 L104 64" stroke-width="2.6" style="--len:60"/></g>
+    </svg>
+  </a>
   <div class="nav-links">
     <a href="../index.html#work">Work</a>
     <a class="opt" href="../index.html#coursework">Coursework</a>
     <a href="../index.html#about">About</a>
     <a href="../index.html#contact">Contact</a>
   </div>
-</div></nav>
-<main class="wrap">
-<header class="case-head">
-  <a class="back" href="../index.html#work">← All work</a>
-  <div class="kicker" style="margin-top:28px">Computer vision · Document AI · 2026</div>
-  <h1>Signature detection in documents</h1>
-  <p class="oneliner">Flags which PDFs in a folder carry a handwritten signature or initials, tuned for recall, with an optional local vision-language model as a second opinion.</p>
-  <div class="tags"><span>YOLOS</span><span>Transformers</span><span>Synthetic data</span><span>VLM</span><span>Threshold calibration</span></div>
+</nav>
+
+<header class="p-hero">
+  <!-- the printed sheet: a scanned letter, its signature inside a detection box, and the scanner's light bar -->
+  <svg class="p-print" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <filter id="ink" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="11" result="g"/>
+        <feDisplacementMap in="SourceGraphic" in2="g" scale="1.4" xChannelSelector="R" yChannelSelector="G" result="d"/>
+        <feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="3" seed="5" result="blot"/>
+        <feColorMatrix in="blot" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.55" result="fade"/>
+        <feComposite in="d" in2="fade" operator="in"/>
+      </filter>
+    </defs>
+    <g filter="url(#ink)" fill="none" stroke="currentColor">
+      <g stroke-width="6" stroke-linecap="round" id="textlines" opacity=".4"></g>
+      <g transform="translate(0,150)">
+      <path d="M1160 560 C1180 470 1200 470 1196 540 C1192 600 1214 600 1232 520 C1246 462 1262 470 1256 548 C1252 598 1290 560 1300 520 C1310 486 1330 500 1322 548 C1318 572 1350 560 1380 540 C1410 520 1440 528 1470 520"
+            stroke-width="4"/>
+      <path d="M1130 590 L1500 586" stroke-width="2"/>
+      <g stroke-width="3"><path d="M1110 450 L1110 420 L1140 420 M1490 420 L1520 420 L1520 450 M1520 600 L1520 630 L1490 630 M1140 630 L1110 630 L1110 600"/></g>
+      <text x="1110" y="668" fill="currentColor" stroke="none" font-family="JetBrains Mono, monospace" font-size="26" letter-spacing="4">signature · 0.99</text>
+      </g>
+      <g fill="currentColor" stroke="none" font-family="JetBrains Mono, monospace" font-size="20" letter-spacing="6">
+        <text x="190" y="878">SCAN 300 DPI · PAGE 1 / 1 · FLAGGED FOR REVIEW</text></g>
+    </g>
+    <rect x="0" y="0" width="1600" height="10" fill="#5CC8FF" opacity=".55" class="p-scanbar"/>
+  </svg>
+  <div class="p-kicker"><b>08</b> &nbsp;·&nbsp; Computer vision · Document AI · 2026</div>
+  <div class="p-titlebar">
+    <h1 class="p-title" data-pencil data-pencil-glyphs="../assets/data/title-glyphs.json"><span>Signature detection</span></h1>
+  </div>
+  <p class="p-lede">Point it at a folder of PDFs. It tells you which ones carry a handwritten signature or initials, and shows you each signature it found.</p>
+  <div class="p-cta"><a href="#scan">Scan a folder ↓</a><a href="https://github.com/mtorreslanda/signature-detection">Notebook & write-up ↗</a></div>
+  <canvas class="p-field" data-costume="scanner" aria-hidden="true"></canvas>
 </header>
-<figure class="cover"><div class="frame"><img src="../assets/img/signature-fp.png" alt="Bar chart: share of unsigned pages flagged at 95% recall: detector 28%, with verifier 17%, with local VLM 6%, both 10%." loading="lazy" decoding="async"></div><figcaption>False alarms at the same 95% recall on real scanned pages. The local vision-language model gives the biggest cut; at 98% recall the combination of both checks is the more stable choice (21% vs 38%).</figcaption></figure>
-<div class="metrics"><div><b>0.984</b><span>AUC with detector + VLM verifier combined</span></div><div><b>0.943</b><span>AUC of the detector alone</span></div><div><b>96.6%</b><span>of signatures caught on 400 hand-labelled real scans</span></div><div><b>177 PDFs / 103 s</b><span>end-to-end on one GPU</span></div></div>
-<div class="prose">
-<h2 class="rv">The problem</h2><div class="body rv"><p>Reviewing which of hundreds of scanned contracts are actually signed is slow, and a missed signature costs more than a false alarm. The tool marks documents; a person reviews the marked ones.</p></div>
-<h2 class="rv">How it works</h2><div class="body rv"><ol class="pipeline"><li><b>PDF</b><span>render pages, read digital signatures</span></li><li><b>Detector</b><span>transformer object detector</span></li><li><b>Verifier</b><span>optional local VLM on each crop</span></li><li><b>Output</b><span>CSV + local gallery for review</span></li></ol></div>
-<h2 class="rv">What mattered</h2><div class="body rv"><ul class='facts'><li><b>Recall first.</b> Thresholds are chosen on a held-out split at 95–98% recall, never on the test set.</li><li><b>Unlabelled is not negative.</b> In public document datasets about 1 in 5 of the hard "no signature" examples actually contained one; training on them hurt. Clean negatives fixed it.</li><li><b>Synthetic signatures</b> composed onto scanned backgrounds with scanner noise extend the training set.</li><li><b>Second opinion.</b> A local vision-language model re-checks each crop (0.22 s per crop) and cuts false positives at the same recall.</li></ul></div>
-</div>
-<div class="note"><b>About the data.</b> Trained and evaluated only on public document datasets.</div>
-<nav class="next"><a href="augmented-rapport.html"><small>← Previous</small><span>Augmented Rapport</span></a><a href="water-from-space.html"><small>Next →</small><span>Water quality from space</span></a></nav>
-</main>
-<footer><div class="wrap">
-  <span>© 2026 Miguel Ángel Castro Torreslanda</span>
-</div></footer>
-<script src="../assets/js/site.js?v=6"></script>
-<script>if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.querySelectorAll('video[data-autoplay]').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });</script>
+
+<section class="p-numbers" aria-label="Key results">
+  <div><b data-count="96.6" data-dec="1" data-suffix="%">96.6%</b><span>of signatures found on real scanned pages by the detector alone</span></div>
+  <div><b data-count="0.984" data-dec="3">0.984</b><span>AUC with the crop classifier and the local vision model combined</span></div>
+  <div><b data-count="6" data-dec="0" data-suffix="%">6%</b><span>false alarms at 95% recall with the vision model, down from 28%</span></div>
+  <div><b data-count="13" data-dec="0">13</b><span>pages per second on one desktop GPU; no document leaves the machine</span></div>
+</section>
+
+<section class="p-beats">
+  <div><i>01 · The problem</i><h3>Hundreds of scans. Which ones are signed?</h3>
+    <p>Checking a folder of scanned contracts page by page is slow, and a missed signature costs far more than a false alarm.</p></div>
+  <div><i>02 · What it does</i><h3>A folder in, a review list out.</h3>
+    <p>It reads every page of every PDF, finds handwritten signatures and initials, and returns the signed documents with a crop of each signature and its page.</p></div>
+  <div><i>03 · The proof</i><h3>Built not to let a signature through.</h3>
+    <p>Every threshold is fixed beforehand at 98% recall on separate real pages. A person reviews what it flags, starting with the most doubtful.</p></div>
+</section>
+
+<section class="p-explore" id="scan">
+  <div class="p-sechead"><i>Try it</i><h2>Scan a folder</h2>
+    <p>Ten PDFs built from public scanned-document datasets: seven signed, three not. What you see is the real output of the models on these pages: every candidate box the detector proposed, and the score each second opinion gave it. Switch the mode to see what each one keeps.</p></div>
+  <div class="sx" data-src="../assets/data/sig-demo.json">
+    <div class="sx-modes" role="tablist" aria-label="Mode"></div>
+    <figure class="p-mount sx-desk">
+      <div class="sx-cols">
+        <ol class="sx-files" aria-label="PDFs in the folder"></ol>
+        <div class="sx-view">
+          <div class="sx-head"><span class="sx-name">&nbsp;</span><span class="sx-pager"></span></div>
+          <div class="sx-page"><img alt="" class="sx-img"><div class="sx-boxes"></div><div class="sx-bar" hidden></div></div>
+        </div>
+        <div class="sx-found"><i>Signatures found</i><div class="sx-crops" aria-live="polite"></div></div>
+      </div>
+      <div class="sx-tally" aria-live="polite">&nbsp;</div>
+      <figcaption class="p-plate"><span><b>Fig. 1</b> &nbsp;Real model output on public pages</span><span>Detector + classifier + Qwen3.5-9B, on one desktop GPU</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="p-how" id="how">
+  <div class="p-sechead"><i>How it works</i><h2>From a folder of PDFs to a review list</h2></div>
+  <div class="p-how-grid">
+    <figure class="p-mount p-how-fig"><img src="../assets/img/sig-s1-page.jpg" alt="" data-how-img><figcaption class="p-plate"><span><b data-how-n>Fig. 2</b> &nbsp;<span data-how-cap>Every page, rendered</span></span></figcaption></figure>
+    <ol class="p-steps">
+      <li data-img="sig-s1-page.jpg"><img class="p-step-img" src="../assets/img/sig-s1-page.jpg" alt="" loading="lazy"><i>01 <span class="p-step-of">/ 05</span></i><h3>Every page, rendered</h3><p>Each PDF is rendered page by page at about 110 dpi, eight pages at a time, so memory does not grow with the length of the document.</p></li>
+      <li data-img="sig-s2-detector.jpg"><img class="p-step-img" src="../assets/img/sig-s2-detector.jpg" alt="" loading="lazy"><i>02 <span class="p-step-of">/ 05</span></i><h3>A detector proposes boxes</h3><p>A YOLOS transformer detector, fine-tuned for signatures and initials on public document datasets and synthetic signed documents, proposes the eight best candidates per page. On its own it finds 96.6% of signatures, and some logos too.</p></li>
+      <li data-img="sig-s3-classifier.png"><img class="p-step-img" src="../assets/img/sig-s3-classifier.png" alt="" loading="lazy"><i>03 <span class="p-step-of">/ 05</span></i><h3>A classifier checks each crop</h3><p>A DINOv2 classifier looks at each candidate with some context around it. A "Copy" stamp the detector scored 0.96 gets 0.00 here.</p></li>
+      <li data-img="sig-s4-vlm.jpg"><img class="p-step-img" src="../assets/img/sig-s4-vlm.jpg" alt="" loading="lazy"><i>04 <span class="p-step-of">/ 05</span></i><h3>A local vision model, optionally</h3><p>Each candidate, boxed in red, goes to Qwen3.5-9B running locally with one fixed question. The score is the probability of "yes". At the same recall, false alarms fall from 28% to 6%.</p></li>
+      <li data-img="sig-s5-report.png"><img class="p-step-img" src="../assets/img/sig-s5-report.png" alt="" loading="lazy"><i>05 <span class="p-step-of">/ 05</span></i><h3>A report to review</h3><p>The signed documents, from the most doubtful to the most certain, each signature cropped next to its page. Saved as HTML and CSV next to the PDFs, which are never modified.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="p-proof">
+  <div class="p-sechead"><i>Design choices</i><h2>What made it work</h2></div>
+  <ul class="p-design">
+    <li><b>Recall first.</b> Thresholds are set at 98% recall on a held-out set of real pages, never on the pages used to report results.</li>
+    <li><b>Unlabelled is not negative.</b> In public document datasets, about one in five of the hard "no signature" examples actually contained one; training on them as negatives hurt. Clean negatives fixed it.</li>
+    <li><b>A second opinion is cheaper than a better detector.</b> At the same recall, the vision model cuts false alarms on real scans from 28% to 6%.</li>
+    <li><b>Safe by construction.</b> Weights load only from safetensors and are checked by SHA-256; no remote code runs, and the tool writes only inside its own output folder.</li>
+  </ul>
+  <dl class="p-results">
+    <div><dt>Detector</dt><dd>96.6% of signatures found on real scans · AUC 0.943</dd></div>
+    <div><dt>+ vision model</dt><dd>AUC 0.978 · false alarms at 95% recall 28% → 6%</dd></div>
+    <div><dt>+ both checks</dt><dd>AUC 0.984 · 94% recall with 9% false alarms at the fixed threshold</dd></div>
+    <div><dt>Speed</dt><dd>about 13 pages per second (classifier mode) · ~0.2 s per candidate for the vision model</dd></div>
+    <div><dt>Where it runs</dt><dd>a Jupyter notebook on any machine: AMD or NVIDIA GPU, Apple silicon or CPU</dd></div>
+    <div><dt>Weights</dt><dd>detector and classifier in the repository's release, downloaded and verified on first run</dd></div>
+  </dl>
+  <a class="p-writeup" href="https://github.com/mtorreslanda/signature-detection">Get the notebook on GitHub <span>↗</span></a>
+</section>
+
+<footer class="p-foot">
+  <a class="p-next" href="water-from-space.html"><i>Next project</i><b>Water quality from space →</b></a>
+  <p>© 2026 Miguel Ángel Castro Torreslanda · The pages in the demo come from public scanned-document datasets.</p>
+</footer>
+
+<script>
+/* the printed scanned sheet: lines of text */
+(function () {
+  var NS = 'http://www.w3.org/2000/svg', g = document.getElementById('textlines');
+  var r = 7; function rnd() { r = (r * 9301 + 49297) % 233280; return r / 233280; }
+  for (var y = 130; y < 420; y += 38) { var x0 = 190, x1 = 190 + 700 + rnd() * 560; if (y === 130 + 38 * 3) x1 = 700;
+    var p = document.createElementNS(NS, 'path'); p.setAttribute('d', 'M' + x0 + ' ' + y + ' L' + x1 + ' ' + y); g.appendChild(p); }
+  [470, 508].forEach(function (y) { var p = document.createElementNS(NS, 'path'); p.setAttribute('d', 'M190 ' + y + ' L' + (520 + (y - 470) * 4) + ' ' + y); g.appendChild(p); });
+  var p = document.createElementNS(NS, 'path'); p.setAttribute('d', 'M1160 660 L1400 660'); g.appendChild(p);
+})();
+/* numbers that count up when they come into view */
+(function () {
+  var els = document.querySelectorAll('[data-count]');
+  if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  function show(b, v) { var dec = +(b.dataset.dec || 0), s = v.toFixed(dec);
+    if (b.hasAttribute('data-sep')) s = Math.round(v).toLocaleString('en-US'); b.textContent = s + (b.dataset.suffix || ''); }
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (!e.isIntersecting) return; io.unobserve(e.target);
+      var b = e.target, to = parseFloat(b.dataset.count), t0 = performance.now();
+      (function tick(now) { var k = Math.min(1, (now - t0) / 1400); show(b, to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(tick); })(t0);
+    });
+  }, { threshold: .6 });
+  els.forEach(function (b) { show(b, 0); io.observe(b); });
+})();
+window.addEventListener('scroll', function () { document.querySelector('.nav').classList.toggle('scrolled', scrollY > 50); }, { passive: true });
+</script>
+<script src="../assets/js/robot.js?v=7"></script>
+<script src="../assets/js/robot-side.js?v=7"></script>
+<script src="../assets/js/pencil-name.js?v=7"></script>
+<script src="../assets/js/costume-scanner.js?v=7"></script>
+<script src="../assets/js/scan-explorer.js?v=7"></script>
+<script src="../assets/js/project.js?v=7"></script>
 </body>
 </html>

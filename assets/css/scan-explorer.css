@@ -1,0 +1,80 @@
+/* «Scan a folder»: the signature-detection demo. Real model scores on public pages, replayed. */
+.p-scanbar { animation: pscan 7s linear infinite; }
+@keyframes pscan { from { transform: translateY(0); } to { transform: translateY(900px); } }
+
+.sx-modes { display: flex; flex-wrap: wrap; gap: .8rem; margin-bottom: 1.6rem; }
+.sx-modes button { font: inherit; text-align: left; max-width: 19rem; padding: .75rem 1rem; background: transparent; cursor: pointer;
+                   border: 1px solid rgba(26, 26, 26, .35); color: var(--ink); line-height: 1.3; transition: background .2s, color .2s, border-color .2s; }
+.sx-modes button small { display: block; margin-top: .3rem; font-family: var(--mono); font-size: .66rem; letter-spacing: .04em; color: var(--grey); }
+.sx-modes button:hover { border-color: var(--accent); }
+.sx-modes button[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.sx-modes button[aria-selected="true"] small { color: #C9D6DE; }
+
+.sx-desk { padding-bottom: 0; }
+.sx-cols { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 33rem) minmax(0, 1fr); gap: 1.8rem; align-items: start; }
+
+.sx-files { list-style: none; border-top: 1px solid var(--ink); }
+.sx-files li { border-bottom: 1px solid var(--line); }
+.sx-files button { all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: .6rem; width: 100%;
+                   padding: .55rem .3rem; cursor: pointer; font-family: var(--mono); font-size: .74rem; color: var(--ink); }
+.sx-files button:hover { background: rgba(28, 127, 181, .06); }
+.sx-files button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.sx-files li.cur button { background: rgba(28, 127, 181, .12); box-shadow: inset 3px 0 0 var(--accent); }
+.sx-files .fn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sx-files .fn::before { content: 'PDF'; font-size: .56rem; letter-spacing: .06em; padding: .05rem .25rem; margin-right: .45rem;
+                        border: 1px solid rgba(26, 26, 26, .4); color: var(--grey); vertical-align: .1em; }
+.sx-chip { flex: none; font-size: .62rem; letter-spacing: .06em; text-transform: uppercase; padding: .12rem .4rem; border: 1px solid transparent; }
+.sx-chip.wait { color: #A8A8A8; }
+.sx-chip.busy { color: var(--accent); }
+.sx-chip.yes { background: var(--accent); color: #fff; }
+.sx-chip.no { color: var(--grey); border-color: rgba(26, 26, 26, .25); }
+.sx-chip.yes.bad { background: #B2563A; }
+.sx-chip.no.bad { color: #B2563A; border-color: #B2563A; }
+
+.sx-head { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: .55rem; font-family: var(--mono); font-size: .74rem; color: var(--grey); }
+.sx-head .sx-name { color: var(--ink); }
+.sx-pager button { all: unset; cursor: pointer; padding: 0 .35rem; margin-left: .2rem; border: 1px solid rgba(26, 26, 26, .3); }
+.sx-pager button[aria-current="true"] { background: var(--ink); color: var(--paper); }
+.sx-page { position: relative; background: #fff; border: 1px solid rgba(26, 26, 26, .25); line-height: 0; overflow: hidden; }
+.sx-page img { width: 100%; height: auto; display: block; }
+.sx-boxes { position: absolute; inset: 0; }
+.sx-box { position: absolute; border: 2px dashed rgba(120, 120, 120, .75); transition: opacity .35s, border-color .25s; }
+.sx-box.keep { border: 2.5px solid var(--accent); background: rgba(92, 200, 255, .12); }
+.sx-box.wait { opacity: 0; }
+.sx-box span { position: absolute; left: -2px; bottom: 100%; padding: .1rem .3rem; line-height: 1.1; white-space: nowrap;
+               font-family: var(--mono); font-size: .62rem; background: rgba(120, 120, 120, .85); color: #fff; }
+.sx-box.keep span { background: var(--accent); }
+.sx-box.low span { display: none; }
+.sx-bar { position: absolute; left: 0; right: 0; top: 0; height: 14px; margin-top: -7px; pointer-events: none;
+          background: linear-gradient(to bottom, rgba(92, 200, 255, 0), rgba(92, 200, 255, .85) 50%, rgba(92, 200, 255, 0));
+          box-shadow: 0 0 22px 6px rgba(92, 200, 255, .45); }
+
+.sx-found { border-top: 1px solid var(--ink); padding-top: .8rem; }
+.sx-found > i { font-style: normal; font-family: var(--mono); font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.sx-crops { display: grid; gap: .9rem; margin-top: .8rem; }
+.sx-crop { background: #fff; border: 1px solid rgba(28, 127, 181, .5); padding: .5rem; animation: sxin .35s ease both; }
+.sx-crop img { width: 100%; height: auto; display: block; max-height: 9rem; object-fit: contain; }
+.sx-crop div { display: flex; justify-content: space-between; margin-top: .4rem; font-family: var(--mono); font-size: .66rem; color: var(--grey); }
+.sx-crop div b { color: var(--accent); font-weight: 500; }
+.sx-crop .sx-meter { height: 4px; background: #E6E6E6; margin-top: .3rem; }
+.sx-crop .sx-meter i { display: block; height: 4px; background: var(--accent); }
+.sx-empty { font-size: .9rem; color: var(--grey); line-height: 1.5; margin-top: .8rem; }
+@keyframes sxin { from { opacity: 0; transform: translateY(6px); } }
+
+.sx-tally { display: flex; flex-wrap: wrap; gap: .4rem 2rem; padding: 1.1rem .2rem .6rem; margin-top: 1.2rem; border-top: 1px solid var(--line);
+            font-family: var(--mono); font-size: .74rem; letter-spacing: .04em; color: var(--grey); }
+.sx-tally b { color: var(--ink); font-weight: 500; }
+.sx-note { margin-top: 1rem; font-size: .86rem; color: var(--grey); line-height: 1.5; max-width: 80ch; }
+
+@media (max-width: 1000px) {
+  .sx-cols { grid-template-columns: minmax(0, 13rem) minmax(0, 1fr); }
+  .sx-found { grid-column: 1 / -1; }
+  .sx-crops { grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); }
+}
+@media (max-width: 640px) {
+  .sx-cols { grid-template-columns: 1fr; }
+  .sx-files { display: flex; flex-wrap: wrap; gap: .3rem; border: 0; }
+  .sx-files li { border: 1px solid var(--line); }
+  .sx-files .fn { max-width: 9rem; }
+}
+@media (prefers-reduced-motion: reduce) { .p-scanbar { animation: none; display: none; } .sx-crop { animation: none; } }

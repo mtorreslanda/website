@@ -1,0 +1,44 @@
+/* «Who has the ball?»: the possession demo on the more-than-a-hack page. Real model output on a public match. */
+.po-desk { padding-bottom: 0; }
+.po-match { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1.4rem; align-items: center; margin-bottom: 1.4rem; }
+.po-strips { width: 100%; height: 84px; display: block; }
+.po-scores { font-family: var(--mono); font-size: .72rem; line-height: 1.7; color: var(--grey); white-space: nowrap; }
+.po-scores b { color: var(--ink); font-weight: 500; }
+
+.po-cols { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 2rem; align-items: start; }
+.po-pitchwrap { position: relative; }
+.po-pitch { width: 100%; aspect-ratio: 105 / 68; display: block; }
+.po-view { display: flex; gap: .5rem; margin-top: .7rem; }
+.po-view button { font: inherit; font-size: .85rem; padding: .45rem .8rem; cursor: pointer; background: transparent; color: var(--ink);
+                  border: 1px solid rgba(26, 26, 26, .35); transition: background .2s, color .2s; }
+.po-view button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.po-view button:hover { border-color: var(--accent); }
+
+.po-calls { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.po-calls div { border-top: 1px solid var(--ink); padding-top: .5rem; }
+.po-calls i { font-style: normal; font-family: var(--mono); font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.po-calls div + div i { color: var(--grey); }
+.po-calls b { display: block; margin-top: .4rem; padding: .55rem .7rem; font-weight: 500; font-size: 1.05rem; border: 1px solid var(--ink);
+              background: #fff; transition: background .2s, color .2s; }
+.po-calls b.H { background: var(--home); }
+.po-calls b.A { background: var(--away); color: #fff; }
+.po-calls b.D { background: var(--dead); color: #fff; }
+.po-calls b.off { outline: 3px solid #B2563A; outline-offset: 2px; }
+.po-probs { margin-top: 1.3rem; display: grid; gap: .55rem; }
+.po-probs div { display: grid; grid-template-columns: 5.2rem 1fr 3rem; align-items: center; gap: .6rem; font-family: var(--mono); font-size: .72rem; color: var(--grey); }
+.po-probs i { display: block; height: 12px; background: #E4E2DB; position: relative; }
+.po-probs i::after { content: ''; position: absolute; inset: 0 auto 0 0; width: var(--w, 0%); background: var(--c, var(--ink)); transition: width .15s; }
+.po-probs .po-ph { --c: #C9C4B4; } .po-probs .po-pa { --c: var(--away); } .po-probs .po-pd { --c: var(--dead); }
+.po-probs em { font-style: normal; text-align: right; color: var(--ink); }
+.po-note { margin-top: 1.2rem; font-size: .88rem; line-height: 1.5; color: var(--grey); }
+
+.po-time { display: flex; align-items: center; gap: 1rem; margin-top: 1.4rem; }
+.po-play { font: inherit; width: 2.4rem; height: 2.4rem; flex: none; cursor: pointer; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); }
+.po-time input { flex: 1; accent-color: var(--accent); }
+.po-clock { font-family: var(--mono); font-size: 1.1rem; color: var(--accent); min-width: 3.4rem; text-align: right; }
+.po-window { width: 100%; height: 46px; display: block; margin: .6rem 0 0; }
+
+@media (max-width: 860px) {
+  .po-cols { grid-template-columns: 1fr; }
+  .po-match { grid-template-columns: 1fr; }
+}
