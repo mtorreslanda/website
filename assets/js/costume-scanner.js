@@ -1,8 +1,7 @@
 /* Signature detection: the same pixel robot as on every project page, now a document clerk with a cyan eyeshade.
-   Routines on the dividing line at the bottom of the first screen (SH38):
+   Routine on the dividing line at the bottom of the first screen (SH38):
      scanner   · a flatbed scanner rises from the line; the robot lays a page on it, the light bar sweeps, and the page
-                 comes out on the other side with its signature boxed in cyan;
-     magnifier · the robot holds up a page and goes over it with a magnifying glass until it finds the signature.
+                 comes out on the other side with its signature boxed in cyan (the only routine: the magnifier was dropped, SH63).
    Front view from robot.js, side view from robot-side.js; the eyeshade and the props are drawn on top. */
 (function () {
   'use strict';
@@ -13,8 +12,7 @@
   var BOT = { seed: 0, accent: '#1C7FB5', antenna: 'none', head: 'rounded', eyes: 'dots', mouth: 'smile', bolts: false,
               body: 'barrel', chest: 'panel', arms: 'short', legs: 'legs' };
   var INK = '#1A1A1A', EYE = '#F5F3EE', SHADE = '#5CC8FF', SHADE_D = '#1C7FB5', CASE = '#D9D6CE', CASE_D = '#A9A59B',
-      CASE_L = '#ECEAE4', GLASS = '#2B3A44', LIGHT = '#5CC8FF', PAGE = '#FFFDF7', LINE = '#B9B5AA', BRASS = '#B8862F',
-      HANDLE = '#3A3A3A';
+      CASE_L = '#ECEAE4', GLASS = '#2B3A44', LIGHT = '#5CC8FF', PAGE = '#FFFDF7', LINE = '#B9B5AA';
   var SIDE_COL = { x: INK, a: BOT.accent, e: EYE, k: INK, s: INK, d: INK, h: INK, b: INK, l: EYE };
   var S = 6, GRID = 18;
   var ctx = cv.getContext('2d');
@@ -94,13 +92,7 @@
     ctx.save(); ctx.translate(x, y); ctx.scale(k, k); ctx.strokeStyle = '#2E8B57'; ctx.lineWidth = 4; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(-S * 1.4, 0); ctx.lineTo(-S * .3, S * 1.1); ctx.lineTo(S * 1.8, -S * 1.5); ctx.stroke(); ctx.restore();
   }
-  function lens(x, y, hx, hy) {                                                                     // a magnifying glass, handle to the hand
-    ctx.strokeStyle = HANDLE; ctx.lineWidth = S * .5; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(x + S * 1.6, y + S * 1.6); ctx.stroke();
-    ctx.fillStyle = 'rgba(92,200,255,.16)'; ctx.beginPath(); ctx.arc(x, y, S * 2.6, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = BRASS; ctx.lineWidth = S * .6; ctx.stroke();
-    ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, S * 1.7, 3.6, 4.4); ctx.stroke();
-  }
+
 
   /* ---------------------------------------------------------------- the robot on the line */
   var bot = { x: 0, face: 1, view: 'front', pose: {}, side: {}, lift: 0, tilt: 0, t: 0, back: null, front: null };
@@ -156,26 +148,7 @@
       });
     } };
   }
-  // the magnifying glass
-  function magnifyRoutine() {
-    return { dur: 6.6, start: function () { bot.face = 1; }, run: function (t) {
-      bot.tilt = 0; bot.lift = 0;
-      var up = t > .3 && t < 6.2, k = t < .6 ? (t - .3) / .3 : t > 5.9 ? (6.2 - t) / .3 : 1;
-      front({ armL: up ? 'reach' : 'down', armR: up ? 'reach' : 'down', look: { x: -1, y: 0 }, blink: (t % 2.6) < .1 }, null, function () {
-        if (!up) return;
-        var hl = R.hand(BOT, 'reach'), pl = cellAt(15 - hl.x, hl.y), pr = cellAt(hl.x, hl.y);
-        var pw = 10 * S, ph = 13 * S * Math.max(0, Math.min(1, k)), x = pl.x - pw + S, y = pl.y - ph + S;
-        var found = t > 3.9;
-        sheet(x, y, pw, ph, ph > 12 * S ? 1 : 0, found ? Math.min(1, (t - 3.9) / .5) : 0);
-        if (ph < 12 * S) return;
-        // the lens goes down the lines, then rests on the signature
-        var u = Math.min(1, Math.max(0, (t - .8) / 3)), row = Math.min(4, Math.floor(u * 5)), f = u * 5 - row;
-        var lx = found ? x + pw * .45 : x + pw * (.2 + .6 * (row % 2 ? 1 - f : f)), ly = found ? y + ph * .76 : y + ph * (.14 + row * .14);
-        lens(lx, ly, pr.x, pr.y);
-      });
-    } };
-  }
-  var ROUTINES = [scanRoutine, magnifyRoutine];
+  var ROUTINES = [scanRoutine];
   var queue = [], cur = null, curT = 0, now = 0, last = 0, bag = [];
   function next() {
     if (!queue.length) {

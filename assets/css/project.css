@@ -184,6 +184,7 @@ img, video { display: block; max-width: 100%; }
   .p-robot, .p-field { display: none; }
   .p-hero { overflow-x: clip; padding-top: 8rem; }
   .p-title { font-size: clamp(2.6rem, 14.5vw, 4.2rem); }
+  .p-title > span { white-space: normal; }                         /* long titles wrap on phones instead of running off the screen */
   .p-cta { flex-direction: column; gap: 1.1rem; align-items: flex-start; }
   .p-numbers { grid-template-columns: 1fr 1fr; }
 }

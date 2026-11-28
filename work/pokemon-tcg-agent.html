@@ -12,12 +12,12 @@
 <meta property="og:type" content="website">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/project.css?v=7">
-<link rel="stylesheet" href="../assets/css/bench-explorer.css?v=7">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/project.css?v=10">
+<link rel="stylesheet" href="../assets/css/bench-explorer.css?v=10">
 <style>
-  /* Pokémon TCG agent: a game record sheet, in card yellow (decision SH62). No game artwork anywhere. */
-  :root { --accent: #A07800; --gold: #FFD447; --print: #8A6A00; --win: #2E7D4F; --loss: #B2563A; }
+  /* Pokémon TCG agent: the playmat with the opponent's half hidden, in trainer red and blue (decision SH63). No game artwork anywhere. */
+  :root { --accent: #1D5690; --gold: #FFCB05; --print: #C0281B; --win: #2E7D4F; --loss: #B2563A; }
   .p-title { font-size: clamp(3.2rem, 7.6vw, 7.8rem); }
   .p-design { list-style: none; display: grid; gap: 1.4rem; max-width: 72ch; margin-bottom: 3.5rem; }
   .p-design li { padding-left: 1.4rem; border-left: 2px solid var(--accent); line-height: 1.6; color: #3A3A3A; }
@@ -40,19 +40,20 @@
         <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/>
         <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G" result="d"/>
         <feComposite in="d" in2="n" operator="in" result="grain"/><feMerge><feMergeNode in="d"/><feMergeNode in="grain"/></feMerge></filter></defs>
-      <!-- Pokémon TCG agent: the monogram on a fanned hand of three plain cards, in gold pencil (SH62) -->
+      <!-- Pokémon TCG agent: the monogram as the picture on one card of our own, 53% where a card shows its strength, blue and red pencil (SH63) -->
       <g class="guides" stroke="#A0A0A0" stroke-width=".6">
         <line x1="2" y1="18" x2="168" y2="18" style="--len:170"/><line x1="2" y1="82" x2="168" y2="82" style="--len:170"/>
         <line x1="14" y1="2" x2="14" y2="98" style="--len:100"/><line x1="156" y1="2" x2="156" y2="98" style="--len:100"/>
         <line x1="14" y1="50" x2="156" y2="50" style="--len:145"/></g>
-      <g class="hatch" stroke="#A07800" stroke-width=".9" opacity=".4" filter="url(#pencil)">
-        <path d="M40 30 L50 20 M38 44 L62 20 M40 54 L66 28 M44 62 L66 40" style="--len:40"/></g>
-      <g class="strokes" filter="url(#pencil)" stroke="#A07800" stroke-width="2.2">
-        <rect x="34" y="16" width="44" height="62" rx="4" transform="rotate(-14 56 47)" style="--len:220"/>
-        <rect x="92" y="16" width="44" height="62" rx="4" transform="rotate(14 114 47)" style="--len:220"/>
-        <rect x="62" y="12" width="46" height="70" rx="4" style="--len:240"/>
-        <path d="M55 64 L55 36 L67 54 L79 36 L79 64" stroke-width="2.6" style="--len:120"/>
-        <path d="M90 36 L118 36 M104 36 L104 64" stroke-width="2.6" style="--len:60"/></g>
+      <g class="hatch" stroke="#2A75BB" stroke-width=".9" opacity=".4" filter="url(#pencil)">
+        <path d="M61 70 L69 62 M61 80 L79 62 M66 86 L90 62 M78 88 L104 62 M92 88 L112 68" style="--len:40"/></g>
+      <g class="strokes" filter="url(#pencil)" stroke="#2A75BB" stroke-width="2.2">
+        <rect x="54" y="4" width="62" height="92" rx="5" style="--len:300"/>
+        <rect x="61" y="16" width="48" height="40" stroke-width="1.4" style="--len:180"/>
+        <path d="M64 10 L80 10 M61 64 L109 64 M61 72 L100 72 M61 80 L104 80" stroke-width="1.1" style="--len:60"/>
+        <path d="M70 50 L70 24 L79 38 L88 24 L88 50" stroke="#E3350D" stroke-width="2.6" style="--len:110"/>
+        <path d="M90 24 L104 24 M97 24 L97 50" stroke="#E3350D" stroke-width="2.6" style="--len:50"/></g>
+      <text x="108" y="12" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="7" fill="#2A75BB" stroke="none">53%</text>
     </svg>
   </a>
   <div class="nav-links">
@@ -64,7 +65,7 @@
 </nav>
 
 <header class="p-hero">
-  <!-- the printed sheet: a search tree over one turn, fanned from a row of plain card frames -->
+  <!-- the printed sheet: the playmat seen from above, our half drawn and labelled, the opponent's half hatched as hidden (SH63) -->
   <svg class="p-print" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs>
       <filter id="ink" x="0" y="0" width="100%" height="100%">
@@ -76,14 +77,23 @@
       </filter>
     </defs>
     <g filter="url(#ink)" fill="none" stroke="currentColor">
-      <g id="tree" stroke-width="2.4"></g>
-      <g fill="currentColor" stroke="none" font-family="JetBrains Mono, monospace" font-size="20" letter-spacing="6">
-        <text x="160" y="878">K = 20 WORLDS · ~480 LINES · ONE TURN</text></g>
+      <path d="M60 450 L1540 450" stroke-width="3" stroke-dasharray="14 10"/>
+      <g stroke-width="3"><rect x="700" y="490" width="200" height="270" rx="12"/><rect x="700" y="140" width="200" height="270" rx="12"/>
+        <rect x="1300" y="520" width="150" height="200" rx="10"/><rect x="1300" y="740" width="150" height="120" rx="10" stroke-dasharray="8 8"/><rect x="1300" y="120" width="150" height="200" rx="10"/></g>
+      <g stroke-width="2.4">
+        <rect x="420" y="800" width="130" height="80" rx="8"/><rect x="570" y="800" width="130" height="80" rx="8"/><rect x="720" y="800" width="130" height="80" rx="8"/><rect x="870" y="800" width="130" height="80" rx="8"/><rect x="1020" y="800" width="130" height="80" rx="8"/>
+        <rect x="420" y="20" width="130" height="80" rx="8"/><rect x="570" y="20" width="130" height="80" rx="8"/><rect x="720" y="20" width="130" height="80" rx="8"/><rect x="870" y="20" width="130" height="80" rx="8"/><rect x="1020" y="20" width="130" height="80" rx="8"/>
+        <rect x="120" y="500" width="110" height="140" rx="8"/><rect x="250" y="500" width="110" height="140" rx="8"/><rect x="120" y="660" width="110" height="140" rx="8"/><rect x="250" y="660" width="110" height="140" rx="8"/></g>
+      <path d="M80 60 L380 360 M80 140 L300 360 M80 220 L220 360 M160 60 L380 280 M240 60 L380 200 M1220 60 L1520 360 M1300 60 L1520 280 M1220 140 L1440 360 M1380 60 L1520 200" stroke-width="2" opacity=".6"/>
+      <g fill="currentColor" stroke="none" font-family="JetBrains Mono, monospace" font-size="24" letter-spacing="5">
+        <text x="740" y="640">ACTIVE</text><text x="690" y="790" font-size="20">BENCH · 5</text><text x="150" y="485">PRIZES · 6</text>
+        <text x="1328" y="508">DECK</text><text x="1312" y="806" font-size="20">DISCARD</text>
+        <text x="760" y="290" font-size="44">? ? ?</text><text x="950" y="210" font-size="22">HIDDEN:</text><text x="950" y="244" font-size="22">HAND · DECK · PRIZES</text></g>
     </g>
   </svg>
   <div class="p-kicker"><b>05</b> &nbsp;·&nbsp; Game AI · Search · Reinforcement learning · 2026</div>
   <div class="p-titlebar">
-    <h1 class="p-title" data-pencil data-pencil-glyphs="../assets/data/title-glyphs.json"><span>Pokémon TCG agent</span></h1>
+    <h1 class="p-title" data-title-fx="pixel" data-title-pal="red" data-pencil-glyphs="../assets/data/title-glyphs.json"><span>Pokémon TCG agent</span></h1>
   </div>
   <p class="p-lede">Adapting AlphaGo to a card game where half the board is hidden: solve the game thousands of times with the hidden cards fixed, learn from the solutions, and search with what was learnt.</p>
   <div class="p-cta"><a href="#bench">Meet the 28 opponents ↓</a><a href="https://github.com/mtorreslanda/pokemon-tcg-agent">The full story ↗</a></div>
@@ -183,24 +193,6 @@
 </footer>
 
 <script>
-/* the printed sheet: a search tree that fans out over one turn */
-(function () {
-  var NS = 'http://www.w3.org/2000/svg', g = document.getElementById('tree');
-  function el(t, a) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); g.appendChild(e); return e; }
-  var r = 9; function rnd() { r = (r * 9301 + 49297) % 233280; return r / 233280; }
-  function grow(x, y, depth, spread) {
-    el('rect', { x: x - 22, y: y - 30, width: 44, height: 60, rx: 5 });
-    if (!depth) return;
-    var n = depth > 2 ? 3 : 2;
-    for (var i = 0; i < n; i++) {
-      var nx = x + 230, ny = y + (i - (n - 1) / 2) * spread * (.8 + rnd() * .4);
-      el('path', { d: 'M' + (x + 22) + ' ' + y + ' C' + (x + 120) + ' ' + y + ' ' + (nx - 120) + ' ' + ny + ' ' + (nx - 22) + ' ' + ny,
-                   'stroke-dasharray': depth === 1 && i ? '6 7' : 'none' });
-      grow(nx, ny, depth - 1, spread / 2.4);
-    }
-  }
-  grow(560, 420, 4, 330);
-})();
 /* numbers that count up when they come into view */
 (function () {
   var els = document.querySelectorAll('[data-count]');
@@ -218,11 +210,11 @@
 })();
 window.addEventListener('scroll', function () { document.querySelector('.nav').classList.toggle('scrolled', scrollY > 50); }, { passive: true });
 </script>
-<script src="../assets/js/robot.js?v=7"></script>
-<script src="../assets/js/robot-side.js?v=7"></script>
-<script src="../assets/js/pencil-name.js?v=7"></script>
-<script src="../assets/js/costume-cards.js?v=7"></script>
-<script src="../assets/js/bench-explorer.js?v=7"></script>
-<script src="../assets/js/project.js?v=7"></script>
+<script src="../assets/js/robot.js?v=10"></script>
+<script src="../assets/js/robot-side.js?v=10"></script>
+<script src="../assets/js/title-fx.js?v=10"></script>
+<script src="../assets/js/costume-cards.js?v=10"></script>
+<script src="../assets/js/bench-explorer.js?v=10"></script>
+<script src="../assets/js/project.js?v=10"></script>
 </body>
 </html>
