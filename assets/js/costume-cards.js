@@ -2,9 +2,9 @@
    a blue jacket, red trainers (SH63). No game artwork: the capture ball and the three creatures are our own
    (Embit, a fire kit; Driblet, a water drop; Pixmo, a glitchy ghost), cameos, not copies.
    Routines on the dividing line at the bottom of the first screen (SH38):
-     encounter · the tall grass rustles, «!», a creature hops out (no text anywhere, SH63), the robot throws the ball, three wobbles, and
-                 either it is caught (stars) or it breaks free and runs off;
-     partner   · the robot sends a creature out, they walk together, it shows its move, and it is called back.
+     encounter · the tall grass rustles, a creature hops out, the robot throws the ball, three wobbles, caught (stars);
+     partner   · the robot sends a creature out, they walk together, and it is called back.
+   Kept simple on purpose: no text and no attacks (SH63).
    Front view from robot.js, side view from robot-side.js; the cap, the jacket and the props are drawn on top. */
 (function () {
   'use strict';
@@ -103,13 +103,13 @@
     art(BALL_BOT, BALL_PAL, 0, 4 * P, {});
     ctx.restore();
   }
-  // the three creatures, facing right; each with its own move
+  // the three creatures, facing right
   var MONS = [
-    { name: 'Embit', move: 'flame', pal: { o: '#F08A24', y: '#FFE08A', c: '#FFF1D0', k: INK, f: '#E3350D', g: GOLD },
+    { name: 'Embit', pal: { o: '#F08A24', y: '#FFE08A', c: '#FFF1D0', k: INK, f: '#E3350D', g: GOLD },
       rows: ['.....o...o..', '....oyo.oyo.', '....ooooooo.', '...ookoooko.', '...ooooooooo', 'f..occcccoo.', 'gf.occccco..', 'fgfoooooooo.', '.f..oo...oo.'] },
-    { name: 'Driblet', move: 'bubbles', pal: { b: '#3D8FD6', l: '#9FD3F5', k: INK, w: WHITE },
+    { name: 'Driblet', pal: { b: '#3D8FD6', l: '#9FD3F5', k: INK, w: WHITE },
       rows: ['.....b......', '....bbb.....', '...bbbbb....', '..blbbbbb...', '..lbbbbbbb..', '.bbbkbbkbbb.', '.bbbbbbbbbb.', '.bbbbkkbbbb.', '..bbbbbbbb..', '...bbbbbb...'] },
-    { name: 'Pixmo', move: 'blink', pal: { p: '#8E5BC4', q: '#C9A7F0', k: INK, w: WHITE },
+    { name: 'Pixmo', pal: { p: '#8E5BC4', q: '#C9A7F0', k: INK, w: WHITE },
       rows: ['...pppppp...', '..pqqppppp..', '.pqpppppppp.', '.ppwkpppwkp.', '.pppppppppp.', '.ppppkkkppp.', '.pppppppppp.', '.pppppppppp.', '.p.pp.pp.pp.', 'p..p..p..p..'],
       alt: ['...pppppp...', '..pqqppppp..', '.pqpppppppp.', '.ppwkpppwkp.', '.pppppppppp.', '.ppppkkkppp.', '.pppppppppp.', '.pppppppppp.', 'pp.pp.pp.pp.', '..p..p..p..p'] }
   ];
@@ -144,7 +144,6 @@
 
   /* ---------------------------------------------------------------- the robot on the line */
   var bot = { x: 0, face: 1, cells: null, lift: 0, front: null };
-  var fx = [];                                                         // particles: flames, bubbles, stars
   function drawRobot() {
     paint(bot.cells || frontCells({}), bot.face < 0);
     ctx.save(); ctx.imageSmoothingEnabled = false; ctx.translate(bot.x, ground - bot.lift);
@@ -170,10 +169,10 @@
   }
   // a wild encounter in the tall grass
   function encounterRoutine() {
-    var m, gx, cx, caught, hand0;
+    var m, gx, cx, hand0;
     return { dur: 10.4, start: function () {
       m = nextMon(); bot.face = W - bot.x > W * .4 ? 1 : -1;
-      gx = bot.x + bot.face * 28 * S; cx = gx - bot.face * 6 * S; caught = Math.random() < .7; hand0 = null;
+      gx = bot.x + bot.face * 28 * S; cx = gx - bot.face * 6 * S; hand0 = null;
     }, run: function (t, dt) {
       bot.lift = 0;
       var f = bot.face, gk = t < .5 ? t / .5 : t > 9.8 ? Math.max(0, (10.4 - t) / .6) : 1;
@@ -185,12 +184,11 @@
       else if (t < 3.7) side({ leg: 2, arm: 'up0' });
       else if (t < 4.3) side({ leg: 0, arm: 'forward' });
       else if (t < 7.2) front({ look: { x: f, y: 1 }, blink: false });
-      else if (caught && t < 8.6) front({ armL: 'up', armR: 'up', look: { x: 0, y: -1 }, step: Math.floor(t * 4) % 2 });
-      else if (caught && t < 9.6) { var d = cx - f * 5 * S - bot.x; bot.x += Math.sign(d) * Math.min(Math.abs(d), 120 * dt); bot.face = f; side(run(t)); }
-      else if (!caught && t < 9.6) front({ armL: 'reach', armR: 'reach', look: { x: f, y: 0 } });
-      else front({ look: { x: f, y: 0 }, armR: caught ? 'reach' : 'down' });
-            // the creature: out of the grass, waiting, then into the ball (or out again and away)
-      var my = ground, mk = 1, mw = 0, malpha = 1, mxp = cx, show = false, mface = -f;
+      else if (t < 8.6) front({ armL: 'up', armR: 'up', look: { x: 0, y: -1 }, step: Math.floor(t * 4) % 2 });
+      else if (t < 9.6) { var d = cx - f * 5 * S - bot.x; bot.x += Math.sign(d) * Math.min(Math.abs(d), 120 * dt); bot.face = f; side(run(t)); }
+      else front({ look: { x: f, y: 0 }, armR: 'reach' });
+            // the creature: out of the grass, waiting, then into the ball
+      var my = ground, mk = 1, mw = 0, mxp = cx, show = false, mface = -f;
       if (t >= 2.0 && t < 4.6) {
         show = true;
         if (t < 2.4) { var q = (t - 2) / .4, p = arc({ x: gx, y: ground + 3 * P }, { x: cx, y: ground }, q, 6 * S); mxp = p.x; my = p.y; }
@@ -210,37 +208,31 @@
         var w2 = t - 5.3, n = Math.floor(w2 / .6);
         if (w2 > 0 && n < 3 && (w2 % .6) < .3) bo.rot = Math.sin((w2 % .6) / .3 * Math.PI) * .35 * (n % 2 ? -1 : 1);
       }
-      if (t >= 7.2 && !caught) {                                             // it breaks free
-        if (t < 7.5) bo.open = 3 * P;
-        var e = t - 7.3;
-        if (e > 0) { show = true; mface = f; mxp = cx + f * e * 130; my = ground - Math.abs(Math.sin(e * 9)) * 4 * P; mk = Math.min(1, e * 5); }
-      }
-      if (caught && t >= 9.6) bx = null;                                     // picked up
-      draws.unshift(function () { if (show) mon(m, mxp, my, { face: mface, k: mk, white: mw, t: t, alpha: malpha }); });
+      if (t >= 9.6) bx = null;                                     // picked up
+      draws.unshift(function () { if (show) mon(m, mxp, my, { face: mface, k: mk, white: mw, t: t }); });
       draws.push(function () {
         if (bx !== null) ball(bx, by, bo);
         if (t >= 4.6 && t < 5.1) flash(target.x, target.y, (t - 4.6) / .5);
-        if (!caught && t >= 7.2 && t < 7.7) flash(target.x, ground - 4 * P, (t - 7.2) / .5);
-        if (caught && t > 7.2 && t < 9.0) {
+        if (t > 7.2 && t < 9.0) {
           var s = (t - 7.2);
           for (var i = 0; i < 3; i++) star(target.x + (i - 1) * 3 * S, ground - 8 * P - s * 30 - (i === 1 ? 8 : 0), 5 + (i === 1 ? 2 : 0));
         }
-        if (caught && t >= 9.6) { var hp = cellAt(14, 9); ball(hp.x, hp.y - 2 * P, {}); }
+        if (t >= 9.6) { var hp = cellAt(14, 9); ball(hp.x, hp.y - 2 * P, {}); }
       });
       var fr0 = bot.front;
       bot.front = function () { draws.forEach(function (d) { d(); }); if (fr0) fr0(); };
       void self;
     } };
   }
-  // a partner: sent out, a walk together, its move, called back
+  // a partner: sent out, a walk together, called back
   function partnerRoutine() {
-    var m, x0, land;
-    return { dur: 9.4, start: function () {
-      m = nextMon(); bot.face = W - bot.x > W * .45 ? 1 : -1; x0 = bot.x; land = null;
+    var m, land;
+    return { dur: 7.2, start: function () {
+      m = nextMon(); bot.face = W - bot.x > W * .45 ? 1 : -1; land = null;
     }, run: function (t, dt) {
       bot.lift = 0;
       var f = bot.face, hand = cellAt(14, 10), draws = [];
-      var mx = null, my = ground, mk = 1, mw = 0, malpha = 1, bx = null, by = null, bo = {};
+      var mx = null, my = ground, mk = 1, mw = 0, bx = null, by = null, bo = {};
       if (t < .5) { side({ leg: 2, arm: 'up0' }); bx = hand.x; by = hand.y - 6 * S; }
       else if (t < 1.0) { side({ leg: 0, arm: 'forward' }); if (!land) land = { x: bot.x + f * 14 * S, y: ground - 4 * P };
                           var b = arc(hand, land, (t - .5) / .5, 5 * S); bx = b.x; by = b.y; }
@@ -249,24 +241,14 @@
       else if (t < 2.2) { front({ armR: 'wave', look: { x: f, y: 0 } }); mx = land.x; my = ground - Math.abs(Math.sin((t - 1.4) * 8)) * 3 * P; }
       else if (t < 5.4) {                                                    // walking together
         bot.x += f * 70 * dt; side(run(t)); mx = bot.x + f * 14 * S; my = ground - Math.abs(Math.sin(t * 7)) * 2 * P;
-      } else if (t < 7.2) {                                                  // its move
-        front({ armL: 'wave', armR: 'wave', look: { x: f, y: 0 } }); mx = bot.x + f * 14 * S;
-        var u = t - 5.4;
-        if (m.move === 'flame' && Math.random() < .6) fx.push({ x: mx + f * 6 * P, y: ground - 5 * P, vx: f * (90 + Math.random() * 60), vy: -10 - Math.random() * 20, t: 0, life: .5, col: Math.random() < .5 ? '#E3350D' : GOLD, s: 5 });
-        if (m.move === 'bubbles' && Math.random() < .12) fx.push({ x: mx + f * 4 * P, y: ground - 8 * P, vx: f * 20, vy: -50 - Math.random() * 20, t: 0, life: 1.2, col: '#9FD3F5', s: 7, ring: true });
-        if (m.move === 'blink') { malpha = Math.floor(u * 6) % 2 ? .25 : 1; mx += Math.sin(u * 3) * 3 * S; }
-      } else if (t < 8.4) {                                                  // called back
+      } else if (t < 6.4) {                                                  // called back: it turns white and shrinks into the ball
         side({ leg: 2, arm: 'forward' }); mx = bot.x + f * 14 * S;
-        var r = (t - 7.2) / 1.2; mw = Math.min(1, r * 2); mk = r < .5 ? 1 : 1 - (r - .5) * 2;
+        var r = (t - 5.4) / 1; mw = Math.min(1, r * 2); mk = r < .5 ? 1 : 1 - (r - .5) * 2;
         var hx = hand.x, hy = hand.y;
-        draws.push(function () {
-          ctx.strokeStyle = GOLD; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(hx, hy);
-          for (var i = 1; i <= 6; i++) ctx.lineTo(hx + (mx - hx) * i / 6, hy + (ground - 4 * P - hy) * i / 6 + (i % 2 ? -5 : 5));
-          ctx.stroke(); ball(hx + f * P, hy - P, {});
-        });
+        draws.push(function () { ball(hx + f * P, hy - P, {}); });
       } else front({ look: { x: f, y: 0 }, armR: 'reach' });
       var face = f;
-      draws.unshift(function () { if (mx !== null && mk > 0) mon(m, mx, my, { face: face, k: mk, white: mw, t: t, alpha: malpha }); if (bx !== null) ball(bx, by, bo); });
+      draws.unshift(function () { if (mx !== null && mk > 0) mon(m, mx, my, { face: face, k: mk, white: mw, t: t }); if (bx !== null) ball(bx, by, bo); });
       var fr0 = bot.front;
       bot.front = function () { draws.forEach(function (d) { d(); }); if (fr0) fr0(); };
     } };
@@ -297,15 +279,7 @@
     bot.x = Math.max(10 * S, Math.min(W - 10 * S, bot.x));
     if (curT >= cur.dur) next();
     ctx.clearRect(0, 0, W, H);
-    fx = fx.filter(function (p) { p.t += dt; return p.t < p.life; });
     drawRobot();
-    fx.forEach(function (p) {
-      p.x += p.vx * dt; p.y += p.vy * dt;
-      ctx.globalAlpha = 1 - p.t / p.life;
-      if (p.ring) { ctx.strokeStyle = p.col; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, p.s / 2, 0, Math.PI * 2); ctx.stroke(); }
-      else { ctx.fillStyle = p.col; ctx.fillRect(Math.round(p.x), Math.round(p.y), p.s, p.s); }
-      ctx.globalAlpha = 1;
-    });
     if (!reduce) requestAnimationFrame(frame);
   }
   resize();
